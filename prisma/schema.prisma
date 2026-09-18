@@ -1,0 +1,59 @@
+// Zod schemas in src/domain/schemas are the source of truth for JSON columns
+// and string enums. Every read of a Json column is parsed with Zod in src/server/repo.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Apartment {
+  id            String   @id @default(uuid()) @db.Uuid
+  /// Supabase auth.users.id
+  userId        String   @db.Uuid
+  name          String
+  address       String
+  city          String
+  /// ISO 3166-1 alpha-2
+  country       String   @db.Char(2)
+  lat           Float?
+  lng           Float?
+  floorLevel    Int
+  /// "rent" | "own"
+  tenure        String
+  totalAreaM2   Float
+  yearBuilt     Int?
+  /// Direction of north, clockwise degrees from plan "up"
+  northAngleDeg Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  rooms         Room[]
+
+  @@index([userId])
+}
+
+model Room {
+  id                       String    @id @default(uuid()) @db.Uuid
+  apartmentId              String    @db.Uuid
+  apartment                Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  name                     String
+  /// RoomType enum, see src/domain/schemas/room.ts
+  type                     String
+  /// Point[] in cm, clockwise, y-down
+  polygon                  Json
+  ceilingHeight            Int
+  /// Opening[]
+  openings                 Json      @default("[]")
+  /// FixedElement[]
+  fixedElements            Json      @default("[]")
+  /// Record<wallIndex, Cardinal>
+  wallOrientationOverrides Json      @default("{}")
+  sortOrder                Int       @default(0)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@index([apartmentId])
+}
