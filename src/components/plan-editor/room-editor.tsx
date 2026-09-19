@@ -5,7 +5,8 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FillSampleButton } from "@/components/dev/fill-sample-button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NumberField, SelectField, TextField } from "@/components/wizard/fields";
 import { area, bbox, rectPolygon } from "@/domain/geometry/polygon";
 import { m2 } from "@/domain/geometry/units";
@@ -15,6 +16,7 @@ import { clampOffset, newOpening, nextId } from "@/domain/room/openings-edit";
 import { type FixedElement, type Opening, type OpeningKind, type Room, type RoomShape, RoomType } from "@/domain/schemas/room";
 import { useRouter } from "@/i18n/navigation";
 import { zodFieldErrors } from "@/lib/action-result";
+import { pickSample, SAMPLE_ROOMS } from "@/lib/dev/samples";
 import { cn } from "@/lib/utils";
 import { createRoomAction, deleteRoomAction, updateRoomAction } from "@/server/actions/rooms";
 import { OpeningForm } from "./opening-form";
@@ -94,6 +96,15 @@ export function RoomEditor({ apartmentId, northAngleDeg, room }: RoomEditorProps
     setFixed((fs) => [...fs, { id, label: tf("other"), kind: "other", rect: { x: 0, y: 0, w: 60, d: 60 }, height: 250 }]);
   };
 
+  const fillSample = (counter: number) => {
+    const { polygon, ...rest } = pickSample(SAMPLE_ROOMS, counter);
+    const box = bbox(polygon);
+    setDims({ w: box.w, d: box.d });
+    setMeta(rest);
+    setSelectedId(null);
+    setServerErrors({});
+  };
+
   const save = () => {
     if (!shape) return;
     startTransition(async () => {
@@ -156,6 +167,9 @@ export function RoomEditor({ apartmentId, northAngleDeg, room }: RoomEditorProps
         <Card>
           <CardHeader>
             <CardTitle>{room ? t("editTitle") : t("newTitle")}</CardTitle>
+            <CardAction>
+              <FillSampleButton onFill={fillSample} />
+            </CardAction>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3">
             <TextField className="col-span-2" label={t("name")} value={meta.name} maxLength={60} error={fieldErrors["name"]} onChange={(v) => setMeta((m) => ({ ...m, name: v }))} />

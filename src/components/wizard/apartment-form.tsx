@@ -5,9 +5,11 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { CompassInput } from "@/components/plan-editor/compass";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FillSampleButton } from "@/components/dev/fill-sample-button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Apartment, ApartmentInput, Tenure } from "@/domain/schemas/apartment";
 import { useRouter } from "@/i18n/navigation";
+import { pickSample, SAMPLE_APARTMENTS } from "@/lib/dev/samples";
 import { createApartmentAction, updateApartmentAction } from "@/server/actions/apartments";
 import { NumberField, SelectField, TextField } from "./fields";
 
@@ -58,6 +60,14 @@ export function ApartmentForm({ apartment }: { apartment?: Apartment }) {
       <Card>
         <CardHeader>
           <CardTitle>{apartment ? t("editTitle") : t("createTitle")}</CardTitle>
+          <CardAction>
+            <FillSampleButton
+              onFill={(n) => {
+                setDraft(pickSample(SAMPLE_APARTMENTS, n));
+                setErrors({});
+              }}
+            />
+          </CardAction>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <TextField

@@ -9,8 +9,8 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | Phase | Scope | State |
 | --- | --- | --- |
 | 0 | Scaffold: Next.js 16, Supabase, Prisma 7, Zod 4, next-intl, Vitest, Playwright | done |
-| 1 | Apartment input wizard: rooms by dimensions or click-to-draw, openings, compass | done, awaiting your E2E run |
-| 2 | Style profile | – |
+| 1 | Apartment input wizard: rooms by dimensions or click-to-draw, openings, compass | done |
+| 2 | Style profile: household, budgets, style quiz, colours, must-keep furniture | done, awaiting your E2E run |
 | 3 | Context builder (climate, daylight, renter rules, trends) | – |
 | 4 | Design generation (Claude) | – |
 | 5 | Validator and repair loop | – |
@@ -71,10 +71,13 @@ src/
     plan-editor/        SVG room editor: draw, resize, place/drag openings, compass
     plan-view/          read-only plan shapes, reused by the editor
     wizard/             form fields, apartment form
+    profile/            style profile sections (household, budget, quiz, colours, must-keep)
+    dev/                dev-only "Fill sample data" button
   domain/               pure TypeScript, no framework imports, unit-tested
-    schemas/            Zod: apartment, room/openings, design, validation-issue
+    schemas/            Zod: apartment, room/openings, profile, design, validation-issue
     geometry/           vectors, polygons, walls/orientation, openings/door swing
     room/               room checks (RoomInput), factory, opening helpers
+    profile/            quiz pairs + scoring, profile status, colour swatches
   server/               server-only: Prisma client, Supabase, auth, repos, actions
   i18n/, messages/      next-intl routing and messages
 tests/e2e/              Playwright
@@ -125,12 +128,34 @@ tests/e2e/              Playwright
 - dragging fixed elements on the canvas
 - geocoding (phase 3)
 
-## Verifying phase 1
+## Phase 2: what was built
 
-1. Run `npm test`. There are 42 unit tests (geometry, room checks, opening helpers), and all pass.
+- **Style profile page** (`/apartments/:id/profile`), one profile per apartment, stored in the `UserProfile` table (migration `20260920000000_phase2_style_profile`, RLS enabled). Sections:
+  - **Household:** adults, kids with ages, pets (type and count), work-from-home days per week.
+  - **Budget per room:** a slider (0–20 000 €) plus a number input for each room, with the total and a list of rooms that still have no budget.
+  - **Style quiz:** 10 fixed pairs covering 8 styles (Scandinavian, Japandi, Mid-century, Industrial, Modern classic, Boho, Minimal, Mediterranean). Pick, skip, go back or redo. When complete, the top 3 styles are shown as bars.
+  - **Colours:** liked and disliked colours from 16 curated swatches or a custom colour. A colour can only be in one list; picking it in the other list moves it.
+  - **Furniture you keep:** name, category, width/depth/height, colour and target room.
+- **Scores are computed on the server.** The client sends only quiz answers; `scoreQuiz()` (`src/domain/profile/quiz.ts`) turns them into a normalised score vector (sum 1) on save.
+- **Server clean-up:** budgets and must-keep assignments that point at rooms outside the apartment are dropped (`pruneToRooms`).
+- **Overview:** the step badges are now links. "2. Style profile" shows **Done** once the quiz is complete (all 10 pairs answered, at least 5 real choices) and every room has a budget above 0.
+- **Placeholder quiz art:** simple SVG vignettes in `public/quiz/<style>.svg`. Replace them with licensed photos of the same name.
+
+## Sample data for manual testing
+
+In development builds, every form has a dashed **"Fill sample data"** button. Clicking it repeatedly cycles through the presets defined in `src/lib/dev/samples.ts`: 2 apartments, 4 rooms (living room, bedroom, office, kitchen) and 3 style profiles (family with a dog, WFH couple with cats, student on a small budget). Profile presets adapt to the apartment's actual rooms. A test in `samples.test.ts` checks every preset against the real Zod schemas. The button does not appear in production builds.
+
+## Verifying phases 1 and 2
+
+1. Run `npm test`. There are 72 unit tests (geometry, room checks, opening helpers, profile schema, quiz scoring, profile status, sample data), and all pass.
 2. Run `npm run typecheck && npm run lint`. Both are clean.
 3. `npm run build` passes (checked with placeholder env vars).
-4. With `npm run dev` running, run `npm run test:e2e`. It runs 3 scenarios on desktop and mobile:
+4. With `npm run dev` running, run `npm run test:e2e`. It runs 6 scenarios on desktop and mobile:
    - create an apartment, add a room by dimensions with a door and a window, reload, and check the data persisted
    - check that overlapping openings block saving
    - draw a room by dragging on the canvas (desktop only)
+   - fill a sample profile, save, reload, and check the overview shows "Done"
+   - answer the quiz by tapping cards, then redo it
+   - move a colour from liked to disliked
+
+   Run `npm run db:deploy` first so the phase 2 table exists.

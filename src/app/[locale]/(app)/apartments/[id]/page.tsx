@@ -6,10 +6,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteApartmentButton } from "@/components/wizard/delete-apartment-button";
 import { area } from "@/domain/geometry/polygon";
+import { profileStatus } from "@/domain/profile/status";
 import { m2 } from "@/domain/geometry/units";
 import { Link } from "@/i18n/navigation";
 import { requireUserId } from "@/server/auth";
 import { getApartment } from "@/server/repo/apartments";
+import { getProfile } from "@/server/repo/profiles";
 import { listRooms } from "@/server/repo/rooms";
 
 export default async function ApartmentOverviewPage({ params }: PageProps<"/[locale]/apartments/[id]">) {
@@ -17,19 +19,21 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
   const userId = await requireUserId();
   const apartment = await getApartment(userId, id);
   if (!apartment) notFound();
-  const [rooms, t, tc, tt, tf] = await Promise.all([
+  const [rooms, profile, t, tc, tt, tf] = await Promise.all([
     listRooms(userId, id),
+    getProfile(userId, id),
     getTranslations("Overview"),
     getTranslations("Common"),
     getTranslations("RoomType"),
     getTranslations("ApartmentForm"),
   ]);
 
-  const steps = [
-    { label: t("stepRooms"), active: true },
-    { label: t("stepProfile"), active: false },
-    { label: t("stepContext"), active: false },
-    { label: t("stepDesign"), active: false },
+  const profileState = profileStatus(profile, rooms.map((r) => r.id));
+  const steps: { label: string; href: string | null; done: boolean }[] = [
+    { label: t("stepRooms"), href: `/apartments/${id}#rooms`, done: rooms.length > 0 },
+    { label: t("stepProfile"), href: `/apartments/${id}/profile`, done: profileState.done },
+    { label: t("stepContext"), href: null, done: false },
+    { label: t("stepDesign"), href: null, done: false },
   ];
 
   return (
@@ -51,17 +55,24 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
       </div>
 
       <ol className="flex flex-wrap gap-2" aria-label={t("steps")}>
-        {steps.map((s) => (
+        {steps.map((s, i) => (
           <li key={s.label}>
-            <Badge variant={s.active ? "default" : "outline"}>
-              {s.label}
-              {!s.active && ` · ${tc("comingSoon")}`}
-            </Badge>
+            {s.href ? (
+              <Link href={s.href} data-testid={`step-${i + 1}`} className="inline-flex">
+                <Badge variant={s.done ? "default" : "outline"}>
+                  {s.label} · {s.done ? t("done") : t("notDone")}
+                </Badge>
+              </Link>
+            ) : (
+              <Badge variant="outline" className="opacity-60">
+                {s.label} · {tc("comingSoon")}
+              </Badge>
+            )}
           </li>
         ))}
       </ol>
 
-      <section className="flex flex-col gap-4">
+      <section id="rooms" className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">{t("rooms")}</h2>
           <Link href={`/apartments/${id}/rooms/new`} className={buttonVariants()}>

@@ -31,6 +31,7 @@ model Apartment {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   rooms         Room[]
+  profile       UserProfile?
 
   @@index([userId])
 }
@@ -56,4 +57,27 @@ model Room {
   updatedAt                DateTime  @updatedAt
 
   @@index([apartmentId])
+}
+
+/// Style profile, one per apartment (see src/domain/schemas/profile.ts)
+model UserProfile {
+  id             String    @id @default(uuid()) @db.Uuid
+  apartmentId    String    @unique @db.Uuid
+  apartment      Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  /// Household
+  household      Json
+  /// Record<roomId, EUR>
+  budgetPerRoom  Json      @default("{}")
+  /// QuizAnswer[]
+  quizAnswers    Json      @default("[]")
+  /// Record<StyleKey, number>, derived on the server from quizAnswers
+  styleScores    Json      @default("{}")
+  /// Hex[]
+  colorsLiked    Json      @default("[]")
+  /// Hex[]
+  colorsDisliked Json      @default("[]")
+  /// MustKeepItem[]
+  mustKeep       Json      @default("[]")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }

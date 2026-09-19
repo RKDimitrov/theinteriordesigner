@@ -1,26 +1,5 @@
-import { expect, type Page, test } from "@playwright/test";
-
-const UUID = "[0-9a-f-]{36}";
-
-async function createApartment(page: Page, name: string): Promise<string> {
-  await page.goto("/apartments/new");
-  await page.getByLabel("Name").fill(name);
-  await page.getByLabel("Street address").fill("Teststraße 1");
-  await page.getByLabel("City").fill("Berlin");
-  await page.getByLabel("Country code").fill("de");
-  await page.getByLabel("Total area (m²)").fill("65");
-  await page.getByRole("button", { name: "Create apartment" }).click();
-  await expect(page).toHaveURL(new RegExp(`/apartments/${UUID}$`));
-  await expect(page.getByRole("heading", { name })).toBeVisible();
-  return page.url();
-}
-
-async function deleteApartment(page: Page, url: string) {
-  await page.goto(url);
-  page.once("dialog", (d) => void d.accept());
-  await page.getByRole("button", { name: "Delete" }).click();
-  await expect(page).toHaveURL(/\/apartments$/);
-}
+import { expect, test } from "@playwright/test";
+import { createApartment, deleteApartment, UUID } from "./helpers";
 
 test("create apartment, add room by dimensions with a door and a window, reload keeps data", async ({ page }) => {
   const name = `E2E flat ${Date.now()}`;
