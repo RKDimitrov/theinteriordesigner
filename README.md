@@ -10,8 +10,8 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | --- | --- | --- |
 | 0 | Scaffold: Next.js 16, Supabase, Prisma 7, Zod 4, next-intl, Vitest, Playwright | done |
 | 1 | Apartment input wizard: rooms by dimensions or click-to-draw, openings, compass | done |
-| 2 | Style profile: household, budgets, style quiz, colours, must-keep furniture | done, awaiting your E2E run |
-| 3 | Context builder (climate, daylight, renter rules, trends) | – |
+| 2 | Style profile: household, budgets, style quiz, colours, must-keep furniture | done |
+| 3 | Context builder: location, climate, daylight per room, renter rules, trends | done, awaiting your E2E run |
 | 4 | Design generation (Claude) | – |
 | 5 | Validator and repair loop | – |
 
@@ -78,7 +78,11 @@ src/
     geometry/           vectors, polygons, walls/orientation, openings/door swing
     room/               room checks (RoomInput), factory, opening helpers
     profile/            quiz pairs + scoring, profile status, colour swatches
-  server/               server-only: Prisma client, Supabase, auth, repos, actions
+    context/            climate summary, daylight model, renter rules, context assembly
+    llm/, prompts/      cost estimate, prompt template rendering
+  prompts/              versioned LLM prompt files (*.v1.md) + registry
+  server/               server-only: Prisma client, Supabase, auth, repos, actions,
+                        context (Open-Meteo, cache, trends), llm (client, usage log), rate limit
   i18n/, messages/      next-intl routing and messages
 tests/e2e/              Playwright
 ```
@@ -141,21 +145,38 @@ tests/e2e/              Playwright
 - **Overview:** the step badges are now links. "2. Style profile" shows **Done** once the quiz is complete (all 10 pairs answered, at least 5 real choices) and every room has a budget above 0.
 - **Placeholder quiz art:** simple SVG vignettes in `public/quiz/<style>.svg`. Replace them with licensed photos of the same name.
 
+## Phase 3: what was built
+
+- **Context page** (`/apartments/:id/context`) showing the `DesignContext` that phase 4 will send to the design model:
+  - **Location:** the city is geocoded with Open-Meteo (free, no key) and the coordinates are stored on the apartment. Street addresses are not geocoded, only the city. Changing the city or country clears the stored coordinates.
+  - **Climate:** 10 years of daily ERA5 data (Open-Meteo archive) summarised into heating degree days, humidity, winter daylight and sunshine, then classified (heating low/medium/high, air dry/moderate/humid, winter light low/medium/high) with design hints.
+  - **Daylight per room:** window-to-floor ratio × orientation factor (sun path from `suncalc`, 21st of each month, hourly) × floor-level factor → low/medium/high, main window direction, cool/neutral/warm light and a palette hint.
+  - **Renter rules:** a German ruleset for rented flats in DE (reversible changes, no drilling into tiles, walls back to neutral at move-out, …) and a default ruleset elsewhere. Owners have none.
+  - **Style:** top 3 styles from the profile.
+  - **Trends:** only when you click **Research trends**. Claude Sonnet 5 searches the web (up to 5 searches), then returns trends with a longevity rating (lasting / 2–5 years / short-lived) and regional cues through a strict tool. Sources are taken from the search results, not from the model's text. Results are cached for 90 days per country + main style. Limited to 5 research runs per user per hour.
+- **Caching:** geocoding and climate are cached for 365 days in `ContextCache`; **Re-check location** clears them.
+- **LLM logging:** every Claude call writes an `LlmCall` row (tokens, cache tokens, web searches, estimated EUR cost, duration, error). Prompts live in `src/prompts/*.v1.md` and each log row records the prompt id and version.
+- **Overview:** "3. Context" is **Done** once climate and trends are cached.
+- Migration `20260921000000_phase3_context` adds `ContextCache`, `LlmCall` and `RateLimitHit` (RLS enabled).
+
+Cost estimates use list prices (Sonnet 5 $2/$10, Opus 5 $5/$25 per million tokens, web search assumed $10 per 1000) and a fixed USD→EUR rate of 0.92. They are for tracking, not billing.
+
 ## Sample data for manual testing
 
 In development builds, every form has a dashed **"Fill sample data"** button. Clicking it repeatedly cycles through the presets defined in `src/lib/dev/samples.ts`: 2 apartments, 4 rooms (living room, bedroom, office, kitchen) and 3 style profiles (family with a dog, WFH couple with cats, student on a small budget). Profile presets adapt to the apartment's actual rooms. A test in `samples.test.ts` checks every preset against the real Zod schemas. The button does not appear in production builds.
 
-## Verifying phases 1 and 2
+## Verifying phases 1–3
 
-1. Run `npm test`. There are 72 unit tests (geometry, room checks, opening helpers, profile schema, quiz scoring, profile status, sample data), and all pass.
+1. Run `npm test`. There are 104 unit tests (geometry, room checks, profile, quiz, climate, daylight, renter rules, cost, prompt rendering, Open-Meteo clients and trend research with mocked `fetch` / Claude responses), and all pass. No test calls a real API.
 2. Run `npm run typecheck && npm run lint`. Both are clean.
 3. `npm run build` passes (checked with placeholder env vars).
-4. With `npm run dev` running, run `npm run test:e2e`. It runs 6 scenarios on desktop and mobile:
+4. With `npm run dev` running, run `npm run test:e2e`. It runs 7 scenarios on desktop and mobile:
    - create an apartment, add a room by dimensions with a door and a window, reload, and check the data persisted
    - check that overlapping openings block saving
    - draw a room by dragging on the canvas (desktop only)
    - fill a sample profile, save, reload, and check the overview shows "Done"
    - answer the quiz by tapping cards, then redo it
    - move a colour from liked to disliked
+   - open the context page: Berlin location, climate, daylight row, German renter rules (uses the real Open-Meteo API; trend research is not clicked because it costs money)
 
-   Run `npm run db:deploy` first so the phase 2 table exists.
+   Run `npm run db:deploy` first so the new tables exist.

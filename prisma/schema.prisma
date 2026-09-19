@@ -81,3 +81,50 @@ model UserProfile {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
+
+/// Dated cache for external data (geocoding, climate, trends)
+model ContextCache {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  /// "geocode" | "climate" | "trends"
+  kind      String
+  payload   Json
+  fetchedAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@index([kind])
+}
+
+/// One row per Claude API call, for token and cost tracking
+model LlmCall {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @db.Uuid
+  apartmentId       String?  @db.Uuid
+  purpose           String
+  model             String
+  promptId          String
+  promptVersion     String
+  inputTokens       Int      @default(0)
+  outputTokens      Int      @default(0)
+  cacheReadTokens   Int      @default(0)
+  cacheWriteTokens  Int      @default(0)
+  webSearchRequests Int      @default(0)
+  costEstimateEur   Float    @default(0)
+  durationMs        Int
+  /// "ok" | "error"
+  status            String
+  error             String?
+  createdAt         DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+/// Fixed-window rate limiting (one row per counted action)
+model RateLimitHit {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  bucket    String
+  createdAt DateTime @default(now())
+
+  @@index([userId, bucket, createdAt])
+}

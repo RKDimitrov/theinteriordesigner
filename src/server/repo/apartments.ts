@@ -44,8 +44,18 @@ export async function createApartment(userId: string, input: ApartmentInput): Pr
 }
 
 export async function updateApartment(userId: string, id: string, input: ApartmentInput): Promise<Apartment | null> {
-  const { count } = await db.apartment.updateMany({ where: { id, userId }, data: input });
-  return count === 0 ? null : getApartment(userId, id);
+  const before = await getApartment(userId, id);
+  if (!before) return null;
+  // A new city means the stored coordinates (and the climate derived from them) are stale.
+  const moved = before.city.trim().toLowerCase() !== input.city.trim().toLowerCase() || before.country !== input.country;
+  await db.apartment.updateMany({ where: { id, userId }, data: moved ? { ...input, lat: null, lng: null } : input });
+  return getApartment(userId, id);
+}
+
+/** Store (or clear) geocoded coordinates. */
+export async function setApartmentLocation(userId: string, id: string, loc: { lat: number; lng: number } | null): Promise<void> {
+  if (!isUuid(id)) return;
+  await db.apartment.updateMany({ where: { id, userId }, data: { lat: loc?.lat ?? null, lng: loc?.lng ?? null } });
 }
 
 export async function deleteApartment(userId: string, id: string): Promise<boolean> {

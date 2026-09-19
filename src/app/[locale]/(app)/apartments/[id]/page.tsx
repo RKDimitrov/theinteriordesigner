@@ -11,6 +11,7 @@ import { m2 } from "@/domain/geometry/units";
 import { Link } from "@/i18n/navigation";
 import { requireUserId } from "@/server/auth";
 import { getApartment } from "@/server/repo/apartments";
+import { contextStatus } from "@/server/context/status";
 import { getProfile } from "@/server/repo/profiles";
 import { listRooms } from "@/server/repo/rooms";
 
@@ -19,9 +20,10 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
   const userId = await requireUserId();
   const apartment = await getApartment(userId, id);
   if (!apartment) notFound();
-  const [rooms, profile, t, tc, tt, tf] = await Promise.all([
+  const [rooms, profile, ctxDone, t, tc, tt, tf] = await Promise.all([
     listRooms(userId, id),
     getProfile(userId, id),
+    contextStatus(userId, id),
     getTranslations("Overview"),
     getTranslations("Common"),
     getTranslations("RoomType"),
@@ -32,7 +34,7 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
   const steps: { label: string; href: string | null; done: boolean }[] = [
     { label: t("stepRooms"), href: `/apartments/${id}#rooms`, done: rooms.length > 0 },
     { label: t("stepProfile"), href: `/apartments/${id}/profile`, done: profileState.done },
-    { label: t("stepContext"), href: null, done: false },
+    { label: t("stepContext"), href: `/apartments/${id}/context`, done: ctxDone },
     { label: t("stepDesign"), href: null, done: false },
   ];
 
