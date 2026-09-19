@@ -3,11 +3,16 @@ import Anthropic from "@anthropic-ai/sdk";
 import { serverEnv } from "../env";
 
 export const MODELS = {
-  /** Design generation and repair. */
-  design: "claude-opus-5",
   /** Cheaper calls: trend research, later chat edits. */
   light: "claude-sonnet-5",
 } as const;
+
+/** Design models and thinking depth, overridable in .env (see src/server/env.ts). */
+export const designModels = () => ({
+  base: serverEnv.DESIGN_MODEL,
+  escalate: serverEnv.DESIGN_ESCALATE_MODEL,
+  effort: serverEnv.DESIGN_EFFORT,
+});
 
 export class LlmConfigError extends Error {}
 

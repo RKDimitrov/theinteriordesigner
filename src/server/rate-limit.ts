@@ -33,4 +33,8 @@ export async function hitRateLimit(userId: string, bucket: string, windows: read
 
 export const LIMITS = {
   trends: [{ seconds: 3600, max: 5 }],
+  design: [
+    { seconds: 3600, max: 5 },
+    { seconds: 86_400, max: 10 },
+  ],
 } as const satisfies Record<string, readonly Window[]>;

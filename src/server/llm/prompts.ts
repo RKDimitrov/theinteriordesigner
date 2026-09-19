@@ -6,7 +6,8 @@ import { type PromptDef, USER_SEPARATOR } from "@/prompts";
 
 const cache = new Map<string, { system: string; user: string }>();
 
-async function loadPrompt(def: PromptDef): Promise<{ system: string; user: string }> {
+/** Raw system text and user template of a prompt file (cached). */
+export async function loadPrompt(def: PromptDef): Promise<{ system: string; user: string }> {
   const hit = cache.get(def.file);
   if (hit) return hit;
   const raw = await readFile(path.join(process.cwd(), "src", "prompts", def.file), "utf8");

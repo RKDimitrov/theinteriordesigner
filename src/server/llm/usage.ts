@@ -14,10 +14,10 @@ export interface LlmCallLog {
   error?: string;
 }
 
-/** Persist one call's tokens and estimated cost. Never throws: logging must not break the feature. */
-export async function logLlmCall(c: LlmCallLog): Promise<void> {
+/** Persist one call's tokens and estimated cost. Returns the row id. Never throws: logging must not break the feature. */
+export async function logLlmCall(c: LlmCallLog): Promise<string | null> {
   try {
-    await db.llmCall.create({
+    const row = await db.llmCall.create({
       data: {
         userId: c.userId,
         apartmentId: c.apartmentId,
@@ -31,8 +31,11 @@ export async function logLlmCall(c: LlmCallLog): Promise<void> {
         status: c.error ? "error" : "ok",
         error: c.error?.slice(0, 1000) ?? null,
       },
+      select: { id: true },
     });
+    return row.id;
   } catch (e) {
     console.error("Failed to log LLM call", e);
+    return null;
   }
 }

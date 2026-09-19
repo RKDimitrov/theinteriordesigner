@@ -11,9 +11,9 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | 0 | Scaffold: Next.js 16, Supabase, Prisma 7, Zod 4, next-intl, Vitest, Playwright | done |
 | 1 | Apartment input wizard: rooms by dimensions or click-to-draw, openings, compass | done |
 | 2 | Style profile: household, budgets, style quiz, colours, must-keep furniture | done |
-| 3 | Context builder: location, climate, daylight per room, renter rules, trends | done, awaiting your E2E run |
-| 4 | Design generation (Claude) | – |
-| 5 | Validator and repair loop | – |
+| 3 | Context builder: location, climate, daylight per room, renter rules, trends | done |
+| 4 | Design generation with Claude Opus 5 | done, awaiting your E2E run |
+| 5 | Validator and repair loop | done, awaiting your E2E run |
 
 ## Stack
 
@@ -24,6 +24,7 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
   - The client is generated into `src/generated/prisma`, which is gitignored and rebuilt on `npm install`.
   - `prisma.config.ts` holds the migration datasource.
 - **Zod 4** at every boundary: form input, server actions, and JSON columns read back from the database.
+- **Claude**: `claude-sonnet-5` for trend research and design generation, escalating to `claude-opus-5` for a last repair. All model ids are env-configurable (see `.env.example`).
 - **next-intl**: English only for now. All strings live in `src/messages/en.json`, and the URLs have no locale prefix.
 
 ## Setup
@@ -79,10 +80,14 @@ src/
     room/               room checks (RoomInput), factory, opening helpers
     profile/            quiz pairs + scoring, profile status, colour swatches
     context/            climate summary, daylight model, renter rules, context assembly
+    design/             room facts and brief sent to the model
+    validator/          one file per rule + clearances.ts (all the numbers)
+    geometry/obb,zones,grid  footprints + SAT, keep-clear areas, walkway raster
     llm/, prompts/      cost estimate, prompt template rendering
   prompts/              versioned LLM prompt files (*.v1.md) + registry
   server/               server-only: Prisma client, Supabase, auth, repos, actions,
-                        context (Open-Meteo, cache, trends), llm (client, usage log), rate limit
+                        context (Open-Meteo, cache, trends), design (generate, repair loop),
+                        llm (client, usage log), rate limit
   i18n/, messages/      next-intl routing and messages
 tests/e2e/              Playwright
 ```
@@ -161,16 +166,43 @@ tests/e2e/              Playwright
 
 Cost estimates use list prices (Sonnet 5 $2/$10, Opus 5 $5/$25 per million tokens, web search assumed $10 per 1000) and a fixed USD→EUR rate of 0.92. They are for tracking, not billing.
 
+## Phases 4 and 5: what was built
+
+**Generation** (`/apartments/:id/design/:roomId`)
+
+- One Claude call per room with a forced `submit_design` tool whose schema is generated from the Zod `DesignContent` schema, streaming, prompt caching, and the server-side refusal fallback enabled.
+- **Model and cost:** `DESIGN_MODEL` (default `claude-sonnet-5`) designs and repairs; if the design is still invalid going into the last repair, that attempt runs on `DESIGN_ESCALATE_MODEL` (default `claude-opus-5`). `DESIGN_EFFORT` (default `low`) sets thinking depth. A typical run costs about €0.15; set `DESIGN_MODEL="claude-opus-5"` for the best layouts at roughly 2.5× the cost.
+- Caching keeps repairs cheap: the rules block, the tool schema and the conversation so far are all marked cacheable, so a repair turn re-reads them at about a tenth of the input price.
+- The prompt gets hard facts, not prose: room polygon, every wall with the rotation that puts an item's back against it, opening segments, and precomputed keep-clear areas (door swings, the 80 cm path inside each door, window and radiator zones, fixed elements). The brief adds household, budget, top styles, liked and disliked colours, must-keep pieces, daylight, climate hints, renter rules and the researched trends split by longevity.
+- `POST /api/design/generate` streams progress over SSE: context → designing → writing (character count) → checking → repairing *n* of 3 → done. It is rate limited to 5 designs per hour and 10 per day per user. The design is saved even if you close the tab.
+- Prompts live in `src/prompts/design-generate.v1.md` and `design-repair.v1.md`; every call is logged in `LlmCall` with tokens, cost and the resulting `designId`.
+
+**Validator** (`src/domain/validator`, pure TypeScript, no model involved)
+
+- Geometry: oriented footprints with SAT overlap (any rotation), room containment, keep-clear zones, and a 5 cm occupancy grid with a distance transform plus flood fill for walkways.
+- Rules: references and duplicate ids, room bounds, item overlap (chairs may tuck under tables), door swing and door path, windows (tall items in front, wall items across the opening), radiators (over 30 % coverage is an error), fixed elements, wall items (back on a wall, not across a door), 80 cm walkways from the door to everything that needs access, 60 cm beside beds and at the foot, 75 cm behind dining chairs, budget, trend risk on anchors and on floors and walls, renter rules, must-keep pieces, and the 60/30/10 palette split.
+- Every problem carries a concrete hint such as "move sofa at least 12 cm toward −x (left)". All numbers live in `clearances.ts`.
+
+**Repair loop**
+
+- Generate → validate → send the problems back as an error `tool_result` → up to 3 repairs. The best attempt (fewest errors, then warnings) is kept. A design that is still invalid is saved and shown with a red banner; it is never presented as valid.
+
+**Design page**
+
+- Plan with furniture footprints in their real colours, front-edge marks, zones, openings and wall dimensions. Tap an item in the plan or the list to highlight it; items with errors are outlined red.
+- Problem list with hints, palette with shares and paint references, furniture list (size, price range, tier, trend risk, renter flags, search phrase, reasoning), lighting by layer, surfaces, textiles, longevity note, cost against the room budget, and what the generation cost and took.
+- Version history per room (`?v=`), room tabs, and a dev-only **"Insert sample design"** button that saves a hand-made design (first click valid, second click deliberately broken) through the real validator, so the whole page can be tested without spending API credit.
+
 ## Sample data for manual testing
 
 In development builds, every form has a dashed **"Fill sample data"** button. Clicking it repeatedly cycles through the presets defined in `src/lib/dev/samples.ts`: 2 apartments, 4 rooms (living room, bedroom, office, kitchen) and 3 style profiles (family with a dog, WFH couple with cats, student on a small budget). Profile presets adapt to the apartment's actual rooms. A test in `samples.test.ts` checks every preset against the real Zod schemas. The button does not appear in production builds.
 
-## Verifying phases 1–3
+## Verifying phases 1–5
 
-1. Run `npm test`. There are 104 unit tests (geometry, room checks, profile, quiz, climate, daylight, renter rules, cost, prompt rendering, Open-Meteo clients and trend research with mocked `fetch` / Claude responses), and all pass. No test calls a real API.
+1. Run `npm test`. There are 154 unit tests (geometry, room checks, profile, quiz, climate, daylight, renter rules, cost, prompt rendering, Open-Meteo clients, trend research, footprints and SAT, the walkway grid, every validator rule, the sample design, room facts, the design brief and the repair loop with mocked Claude responses), and all pass. No test calls a real API.
 2. Run `npm run typecheck && npm run lint`. Both are clean.
 3. `npm run build` passes (checked with placeholder env vars).
-4. With `npm run dev` running, run `npm run test:e2e`. It runs 7 scenarios on desktop and mobile:
+4. With `npm run dev` running, run `npm run test:e2e`. It runs 8 scenarios on desktop and mobile:
    - create an apartment, add a room by dimensions with a door and a window, reload, and check the data persisted
    - check that overlapping openings block saving
    - draw a room by dragging on the canvas (desktop only)
@@ -178,5 +210,7 @@ In development builds, every form has a dashed **"Fill sample data"** button. Cl
    - answer the quiz by tapping cards, then redo it
    - move a colour from liked to disliked
    - open the context page: Berlin location, climate, daylight row, German renter rules (uses the real Open-Meteo API; trend research is not clicked because it costs money)
+   - insert the sample design, check it validates, highlight an item, then insert the broken one and check it is rejected
+   - generate a real design with Claude (only with `E2E_RUN_LLM=1`, which spends API credit)
 
    Run `npm run db:deploy` first so the new tables exist.

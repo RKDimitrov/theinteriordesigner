@@ -12,6 +12,7 @@ import { Link } from "@/i18n/navigation";
 import { requireUserId } from "@/server/auth";
 import { getApartment } from "@/server/repo/apartments";
 import { contextStatus } from "@/server/context/status";
+import { latestStatusByRoom } from "@/server/repo/designs";
 import { getProfile } from "@/server/repo/profiles";
 import { listRooms } from "@/server/repo/rooms";
 
@@ -20,10 +21,11 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
   const userId = await requireUserId();
   const apartment = await getApartment(userId, id);
   if (!apartment) notFound();
-  const [rooms, profile, ctxDone, t, tc, tt, tf] = await Promise.all([
+  const [rooms, profile, ctxDone, designStatus, t, tc, tt, tf] = await Promise.all([
     listRooms(userId, id),
     getProfile(userId, id),
     contextStatus(userId, id),
+    latestStatusByRoom(userId, id),
     getTranslations("Overview"),
     getTranslations("Common"),
     getTranslations("RoomType"),
@@ -35,7 +37,11 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
     { label: t("stepRooms"), href: `/apartments/${id}#rooms`, done: rooms.length > 0 },
     { label: t("stepProfile"), href: `/apartments/${id}/profile`, done: profileState.done },
     { label: t("stepContext"), href: `/apartments/${id}/context`, done: ctxDone },
-    { label: t("stepDesign"), href: null, done: false },
+    {
+      label: t("stepDesign"),
+      href: rooms[0] ? `/apartments/${id}/design/${rooms[0].id}` : null,
+      done: rooms.length > 0 && rooms.every((r) => (designStatus.get(r.id) ?? "invalid") !== "invalid"),
+    },
   ];
 
   return (
@@ -96,6 +102,7 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
                         <CardTitle>{r.name}</CardTitle>
                         <CardDescription>
                           {tt(r.type)} · {m2(area(r.polygon)).toFixed(1)} {tc("m2")} · {t("openings", { doors, windows })}
+                          {designStatus.has(r.id) ? ` · ${t("designLink")}` : ""}
                         </CardDescription>
                       </CardHeader>
                       <CardContent>

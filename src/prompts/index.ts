@@ -6,6 +6,9 @@
  */
 export const PROMPTS = {
   trendsResearch: { id: "trends-research", version: "v1", file: "trends-research.v1.md" },
+  designGenerate: { id: "design-generate", version: "v1", file: "design-generate.v1.md" },
+  /** User-only template (empty system part), sent as the error tool_result. */
+  designRepair: { id: "design-repair", version: "v1", file: "design-repair.v1.md" },
 } as const;
 
 export type PromptDef = (typeof PROMPTS)[keyof typeof PROMPTS];

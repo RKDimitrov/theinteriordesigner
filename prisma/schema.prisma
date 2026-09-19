@@ -55,6 +55,7 @@ model Room {
   sortOrder                Int       @default(0)
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
+  designs                  Design[]
 
   @@index([apartmentId])
 }
@@ -114,9 +115,12 @@ model LlmCall {
   /// "ok" | "error"
   status            String
   error             String?
+  /// Set after the design produced by this call is saved
+  designId          String?  @db.Uuid
   createdAt         DateTime @default(now())
 
   @@index([userId, createdAt])
+  @@index([designId])
 }
 
 /// Fixed-window rate limiting (one row per counted action)
@@ -127,4 +131,26 @@ model RateLimitHit {
   createdAt DateTime @default(now())
 
   @@index([userId, bucket, createdAt])
+}
+
+/// One row per design version of a room (see src/domain/schemas/design.ts)
+model Design {
+  id              String   @id @default(uuid()) @db.Uuid
+  roomId          String   @db.Uuid
+  room            Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  version         Int
+  parentVersion   Int?
+  /// DesignContent
+  content         Json
+  /// { status, issues, repairAttempts }
+  validation      Json
+  /// "valid" | "valid_with_warnings" | "invalid"
+  status          String
+  /// { model, promptId, promptVersion }
+  source          Json
+  costEstimateEur Float    @default(0)
+  durationMs      Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@unique([roomId, version])
 }
