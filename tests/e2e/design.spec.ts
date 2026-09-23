@@ -33,6 +33,25 @@ test("sample design renders, validates and highlights items", async ({ page }) =
   await deleteApartment(page, aptUrl);
 });
 
+// The solver runs without the API, so re-solving a design is free to test.
+test("re-solves the layout of an existing design", async ({ page }) => {
+  const aptUrl = await createApartment(page, `E2E re-solve ${Date.now()}`);
+  await addSampleRoom(page, aptUrl);
+
+  await page.goto(aptUrl);
+  await page.getByTestId("step-4").click();
+  await page.getByRole("button", { name: "Insert sample design" }).click();
+  await expect(page.getByTestId("design-status")).toContainText("Valid");
+
+  await page.getByTestId("resolve-layout").click();
+  await expect(page.getByText("Version 2")).toBeVisible();
+  await expect(page.getByTestId("design-status")).toBeVisible();
+  await expect(page.getByTestId("plan-item-sofa")).toBeVisible();
+  await expect(page.getByTestId("item-sideboard")).toContainText("existing");
+
+  await deleteApartment(page, aptUrl);
+});
+
 test("generates a real design with Claude", async ({ page }) => {
   test.skip(process.env["E2E_RUN_LLM"] !== "1", "Set E2E_RUN_LLM=1 to spend API credit");
   test.setTimeout(10 * 60 * 1000);

@@ -14,6 +14,7 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | 3 | Context builder: location, climate, daylight per room, renter rules, trends | done |
 | 4 | Design generation with Claude Opus 5 | done, awaiting your E2E run |
 | 5 | Validator and repair loop | done, awaiting your E2E run |
+| 6 | Deterministic layout solver, one model call per room | done, awaiting your E2E run |
 
 ## Stack
 
@@ -80,13 +81,14 @@ src/
     room/               room checks (RoomInput), factory, opening helpers
     profile/            quiz pairs + scoring, profile status, colour swatches
     context/            climate summary, daylight model, renter rules, context assembly
-    design/             room facts and brief sent to the model
+    design/             catalogue, plan mapper, layout solver, autofix, pipeline,
+                        room facts and brief sent to the model
     validator/          one file per rule + clearances.ts (all the numbers)
     geometry/obb,zones,grid  footprints + SAT, keep-clear areas, walkway raster
     llm/, prompts/      cost estimate, prompt template rendering
-  prompts/              versioned LLM prompt files (*.v1.md) + registry
+  prompts/              versioned LLM prompt files (*.vN.md) + registry
   server/               server-only: Prisma client, Supabase, auth, repos, actions,
-                        context (Open-Meteo, cache, trends), design (generate, repair loop),
+                        context (Open-Meteo, cache, trends), design (generate, plan loop),
                         llm (client, usage log), rate limit
   i18n/, messages/      next-intl routing and messages
 tests/e2e/              Playwright
@@ -193,16 +195,53 @@ Cost estimates use list prices (Sonnet 5 $2/$10, Opus 5 $5/$25 per million token
 - Problem list with hints, palette with shares and paint references, furniture list (size, price range, tier, trend risk, renter flags, search phrase, reasoning), lighting by layer, surfaces, textiles, longevity note, cost against the room budget, and what the generation cost and took.
 - Version history per room (`?v=`), room tabs, and a dev-only **"Insert sample design"** button that saves a hand-made design (first click valid, second click deliberately broken) through the real validator, so the whole page can be tested without spending API credit.
 
+## Phase 6: what was built
+
+The model no longer writes coordinates. It picks the pieces and the taste; deterministic TypeScript decides where everything stands.
+
+**Catalogue** (`src/domain/design/catalogue.ts`)
+
+- Realistic width, depth and height per category and size class (small, medium, large), with ergonomic heights (desk 74, dining table 75, sofa back 85).
+- Per category: where a piece wants to go (wall, corner, free, or relative to another piece), its default priority, and the free run and depth it needs including clearance.
+- `maxItems(area, roomType)` caps how many pieces a room gets: under 6 m² four, 6–12 m² eight, then one more per 4 m² up to fourteen; hallways and baths get their own low caps.
+
+**The model's output is intent, not geometry** (`DesignPlanInput` in `src/domain/schemas/design.ts`)
+
+- Each piece has a category, a size class, taste fields, a `priority` (1 = must have, 3 = drop first) and an `intent`: `wall` (optionally a preferred wall), `corner`, `free`, or `beside` / `front_of` / `under` another piece.
+- The server fills in dimensions from the catalogue, coordinates from the solver, and the retailer search phrase from a deterministic builder. Must-keep pieces keep their real dimensions, and a must-keep piece the model forgot is added as priority 1.
+- `DesignContent` stays the stored and validated format, so the validator, the design page and every earlier test are unchanged.
+
+**Layout solver** (`src/domain/design/solver/`, pure and seeded, so the same input always gives the same layout)
+
+- `wallSlots` computes the free run of every wall for a given piece depth and height (windows only block pieces taller than the sill), with the depth that still leaves an 80 cm walkway. `freeFloorRect` finds the largest open floor rectangle. Both also go into the prompt.
+- Placement: cap the list by priority, then place anchors first and each dependent right after its anchor; for every piece the best few candidate spots are scored with the real validator.
+- A local search then nudges, re-seats and rotates pieces, pushes them out of overlaps, and retries pieces that did not fit; leaving a piece out costs more than a validator error, so it only happens when nothing else works.
+- If errors remain, the lowest-priority piece is dropped and the room is solved again. Existing pieces are never dropped. Every drop is recorded with a reason.
+
+**Autofix** (`src/domain/design/autofix.ts`) runs after the solver and after any model repair: it snaps pieces onto their wall, pulls them back inside the room, and slides them out of overlaps and keep-clear zones by the shortest move that works, re-validating after each pass. As a last resort it removes the lowest-priority offender.
+
+**One model call per room** (`src/server/design/plan-loop.ts`)
+
+- Prompt → plan → catalogue → solver → autofix → validator. If there are no errors, that is the whole run: one call.
+- Only if errors remain does the model get a compact repair request (the problems, what was left out, where its pieces ended up) and answer with a **patch**: move, resize, remove or add a piece. The patch is applied to the plan and the room is solved again. `DESIGN_MAX_REPAIRS` (default 1) caps this; the patch round runs on `DESIGN_ESCALATE_MODEL`.
+- Prompts are `design-generate.v2.md` and `design-repair.v2.md`; v1 stays on disk. The catalogue is rendered into the system prompt, which is cached along with the tool schemas.
+- Progress is now context → designing → placing → checking → fixing → done. Solver statistics (duration, iterations, pieces dropped, autofix log) are stored with the design, so no migration was needed.
+
+**Design page**
+
+- Shows what did not fit ("Two pieces did not fit and were left out: side table, planter"), why, and a hint when a small room simply cannot hold the requested furniture.
+- A dev-only **"Re-solve layout"** button runs the catalogue, solver and autofix again on the current design and saves the result as a new version, with no API call.
+
 ## Sample data for manual testing
 
 In development builds, every form has a dashed **"Fill sample data"** button. Clicking it repeatedly cycles through the presets defined in `src/lib/dev/samples.ts`: 2 apartments, 4 rooms (living room, bedroom, office, kitchen) and 3 style profiles (family with a dog, WFH couple with cats, student on a small budget). Profile presets adapt to the apartment's actual rooms. A test in `samples.test.ts` checks every preset against the real Zod schemas. The button does not appear in production builds.
 
-## Verifying phases 1–5
+## Verifying phases 1–6
 
-1. Run `npm test`. There are 154 unit tests (geometry, room checks, profile, quiz, climate, daylight, renter rules, cost, prompt rendering, Open-Meteo clients, trend research, footprints and SAT, the walkway grid, every validator rule, the sample design, room facts, the design brief and the repair loop with mocked Claude responses), and all pass. No test calls a real API.
+1. Run `npm test`. There are 209 unit tests (geometry, room checks, profile, quiz, climate, daylight, renter rules, cost, prompt rendering, Open-Meteo clients, trend research, footprints and SAT, the walkway grid, every validator rule, the sample design, room facts, the design brief, the furniture catalogue, wall slots, the layout solver on five fixture rooms, autofix, the plan mapper and patches, the token budget of one generation, and both model loops with mocked Claude responses), and all pass. No test calls a real API.
 2. Run `npm run typecheck && npm run lint`. Both are clean.
 3. `npm run build` passes (checked with placeholder env vars).
-4. With `npm run dev` running, run `npm run test:e2e`. It runs 8 scenarios on desktop and mobile:
+4. With `npm run dev` running, run `npm run test:e2e`. It runs 9 scenarios on desktop and mobile:
    - create an apartment, add a room by dimensions with a door and a window, reload, and check the data persisted
    - check that overlapping openings block saving
    - draw a room by dragging on the canvas (desktop only)
@@ -211,6 +250,7 @@ In development builds, every form has a dashed **"Fill sample data"** button. Cl
    - move a colour from liked to disliked
    - open the context page: Berlin location, climate, daylight row, German renter rules (uses the real Open-Meteo API; trend research is not clicked because it costs money)
    - insert the sample design, check it validates, highlight an item, then insert the broken one and check it is rejected
+   - re-solve the layout of an existing design and check the new version
    - generate a real design with Claude (only with `E2E_RUN_LLM=1`, which spends API credit)
 
    Run `npm run db:deploy` first so the new tables exist.

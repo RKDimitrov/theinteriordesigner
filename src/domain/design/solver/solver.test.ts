@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { distance } from "../../geometry/vec";
 import { DesignContent } from "../../schemas/design";
 import { summarizeIssues } from "../../validator";
+import { SAMPLE_DESIGN } from "@/lib/dev/sample-design";
 import { runPipeline } from "../pipeline";
-import { resolvePlan } from "../plan";
+import { fromDesignContent, resolvePlan } from "../plan";
 import { BEDROOM, BEDROOM_PLAN, FIXTURES, HALLWAY, HALLWAY_PLAN, KITCHEN, KITCHEN_PLAN, LIVING, LIVING_KEEP, LIVING_PLAN } from "./fixtures";
 import { solveLayout } from "./index";
 
@@ -62,6 +63,15 @@ describe("solver on fixture rooms", () => {
       expect(n.rotation).toBe(bed.rotation);
       expect(distance(n, bed)).toBeLessThan(bed.w / 2 + n.w + 40 + bed.d / 2);
     }
+  });
+
+  it("re-solves a stored design, keeping its pieces and their dimensions", () => {
+    const { plan, dims } = fromDesignContent(SAMPLE_DESIGN, LIVING);
+    const r = runPipeline({ plan, room: LIVING, dims, mustKeep: LIVING_KEEP, budgetEur: null, renter: null });
+    expect(r.issues.filter((i) => i.severity === "error")).toEqual([]);
+    expect(r.content.furniture.map((f) => f.id).sort()).toEqual(SAMPLE_DESIGN.furniture.map((f) => f.id).sort());
+    expect(r.content.furniture.find((f) => f.id === "sofa")).toMatchObject({ w: 220, d: 95, h: 85 });
+    expect(r.content.furniture.find((f) => f.id === "art")!.placement).toBe("wall");
   });
 
   it("seats dining chairs around the table in the kitchen", () => {

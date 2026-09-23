@@ -17,6 +17,8 @@ export interface PipelineInput {
   mustKeep: readonly MustKeepItem[];
   budgetEur: number | null;
   renter: RenterRules | null;
+  /** Dimensions to keep instead of the catalogue's (re-solving a stored design). */
+  dims?: ReadonlyMap<string, { w: number; d: number; h: number }>;
 }
 
 export interface PipelineResult {
@@ -33,7 +35,7 @@ export interface PipelineResult {
 export function runPipeline(input: PipelineInput): PipelineResult {
   const started = performance.now();
   const { room, mustKeep } = input;
-  const planned = resolvePlan(input.plan, { mustKeep, ceilingHeight: room.ceilingHeight });
+  const planned = resolvePlan(input.plan, { mustKeep, ceilingHeight: room.ceilingHeight, dims: input.dims });
   const cap = maxItems(area(room.polygon) / 10_000, room.type);
   const solved = solveLayout({ room, items: planned.items, cap });
   const content = toDesignContent(planned, solved.poses, { room: bbox(room.polygon), fallback: freeFloorRect(room) });

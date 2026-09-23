@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { runPipeline } from "@/domain/design/pipeline";
+import { fromDesignContent } from "@/domain/design/plan";
 import { summarizeIssues, validateDesign } from "@/domain/validator";
 import { type ActionResult, fail, ok } from "@/lib/action-result";
 import { samplePreset } from "@/lib/dev/samples";
@@ -14,6 +16,7 @@ import { getProfile } from "../repo/profiles";
 import { getRoom } from "../repo/rooms";
 
 const Input = z.object({ apartmentId: z.uuid(), roomId: z.uuid(), preset: z.number().int().min(0) });
+const ResolveInput = z.object({ apartmentId: z.uuid(), roomId: z.uuid() });
 
 /**
  * Dev only: save a hand-made sample design through the real validator, so the
@@ -53,4 +56,47 @@ export async function insertSampleDesignAction(input: unknown): Promise<ActionRe
   if (!saved) return fail("Room not found");
   revalidatePath(`/apartments/${apartmentId}`, "layout");
   return ok({ version: saved.version });
+}
+
+/**
+ * Dev only: run the catalogue, solver and autofix again on the current
+ * design's pieces and save the result as a new version. No API call, so the
+ * solver can be tested against real rooms for free.
+ */
+export async function resolveLayoutAction(input: unknown): Promise<ActionResult<{ version: number; dropped: number }>> {
+  if (process.env.NODE_ENV === "production") return fail("Not available");
+  const userId = await requireUserId();
+  const parsed = ResolveInput.safeParse(input);
+  if (!parsed.success) return fail("Invalid request");
+  const { apartmentId, roomId } = parsed.data;
+  const [apartment, room, profile, ctx] = await Promise.all([
+    getApartment(userId, apartmentId),
+    getRoom(userId, roomId),
+    getProfile(userId, apartmentId),
+    buildDesignContext(userId, apartmentId),
+  ]);
+  if (!apartment || !room || !ctx || room.apartmentId !== apartment.id) return fail("Room not found");
+  const previous = await getDesign(userId, roomId);
+  if (!previous) return fail("No design to re-solve yet");
+
+  const { plan, dims } = fromDesignContent(previous.content, room);
+  const result = runPipeline({
+    plan,
+    room,
+    dims,
+    mustKeep: (profile?.mustKeep ?? []).filter((m) => m.roomId === room.id),
+    budgetEur: profile?.budgetPerRoom[room.id] ?? null,
+    renter: ctx.renter,
+  });
+  const saved = await createDesign(userId, roomId, {
+    content: result.content,
+    validation: { status: result.status, issues: result.issues, repairAttempts: 0, solver: result.stats },
+    source: { model: "solver", promptId: "re-solve", promptVersion: "v1" },
+    costEstimateEur: 0,
+    durationMs: result.stats.durationMs,
+    parentVersion: previous.version,
+  });
+  if (!saved) return fail("Room not found");
+  revalidatePath(`/apartments/${apartmentId}`, "layout");
+  return ok({ version: saved.version, dropped: result.stats.dropped.length });
 }

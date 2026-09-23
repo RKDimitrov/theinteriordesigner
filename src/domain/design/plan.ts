@@ -1,7 +1,9 @@
 import { itemFootprint } from "../geometry/obb";
+import { nearestWall, wallsOf } from "../geometry/walls";
 import { bbox, type Rect } from "../geometry/polygon";
 import type { DesignContent, DesignPatch, DesignPlanInput, FurnitureItem, Intent, PlanItem } from "../schemas/design";
 import type { MustKeepItem } from "../schemas/profile";
+import type { RoomShape } from "../schemas/room";
 import { CATALOGUE, catalogueSize, defaultIntent, nearestSizeClass, wallElevation } from "./catalogue";
 
 /** Position chosen by the solver. */
@@ -96,9 +98,13 @@ function cleanIntents(items: PlanItem[]): PlanItem[] {
  * must-keep dimensions (matched by category); must-keep pieces the model
  * forgot are added as priority 1.
  */
-export function resolvePlan(plan: DesignPlanInput, opts: { mustKeep: readonly MustKeepItem[]; ceilingHeight: number }): PlannedDesign {
+export function resolvePlan(
+  plan: DesignPlanInput,
+  opts: { mustKeep: readonly MustKeepItem[]; ceilingHeight: number; dims?: ReadonlyMap<string, { w: number; d: number; h: number }> },
+): PlannedDesign {
   const unused = [...opts.mustKeep];
-  const dims = new Map<string, { w: number; d: number; h: number }>();
+  // Explicit dimensions win over the catalogue: re-solving an existing design keeps its pieces.
+  const dims = new Map<string, { w: number; d: number; h: number }>(opts.dims ?? []);
   for (const item of plan.items) {
     if (!item.existing) continue;
     const k = unused.findIndex((m) => m.category === item.category);
@@ -244,4 +250,63 @@ export function applyPatch(plan: DesignPlanInput, patch: DesignPatch): DesignPla
     ids.add(a.id);
   }
   return { ...plan, items };
+}
+
+const short = (s: string, max = 160) => (s.length <= max ? s : `${s.slice(0, max - 1).trimEnd()}…`);
+
+/**
+ * Turn a stored design back into a plan, so the solver can lay it out again.
+ * Intents come from the design when it was made by the v2 pipeline, otherwise
+ * from the catalogue plus the wall each piece stands against.
+ */
+export function fromDesignContent(content: DesignContent, room: Pick<RoomShape, "polygon">): { plan: DesignPlanInput; dims: Map<string, { w: number; d: number; h: number }> } {
+  const walls = wallsOf(room.polygon);
+  const dims = new Map(content.furniture.map((f) => [f.id, { w: f.w, d: f.d, h: f.h }]));
+  const inferIntent = (f: FurnitureItem): Intent => {
+    if (f.intent) return f.intent;
+    const wants = CATALOGUE[f.category].wants;
+    const zoneId = f.zoneId;
+    if ("of" in wants) {
+      const target = content.furniture.find((o) => o.id !== f.id && wants.of.includes(o.category));
+      if (target) return { anchor: wants.anchor, relativeTo: target.id, ...(zoneId !== undefined ? { zoneId } : {}) };
+      return { anchor: "free", ...(zoneId !== undefined ? { zoneId } : {}) };
+    }
+    const back = itemFootprint(f).slice(0, 2);
+    const mid = { x: (back[0]!.x + back[1]!.x) / 2, y: (back[0]!.y + back[1]!.y) / 2 };
+    const hit = nearestWall(walls, mid, 20);
+    return { anchor: wants.anchor, ...(hit ? { wallIndex: hit.wall.index } : {}), ...(zoneId !== undefined ? { zoneId } : {}) };
+  };
+  const plan: DesignPlanInput = {
+    concept: { title: short(content.concept.title, 80), summary: short(content.concept.summary, 400) },
+    zones: content.zones.map((z) => ({ id: z.id, name: z.name, purpose: z.purpose, rationale: short(z.rationale) })),
+    items: content.furniture.map((f) => ({
+      id: f.id,
+      category: f.category,
+      sizeClass: f.sizeClass ?? nearestSizeClass(f.category, f.w, f.d),
+      name: short(f.name, 80),
+      material: short(f.material, 80),
+      colorHex: f.colorHex,
+      paletteRole: f.paletteRole,
+      placement: f.placement,
+      intent: inferIntent(f),
+      priority: f.priority ?? CATALOGUE[f.category].priority,
+      price: f.price,
+      trendRisk: f.trendRisk,
+      investmentTier: f.investmentTier,
+      renterFriendly: f.renterFriendly,
+      requiresDrilling: f.requiresDrilling,
+      existing: f.existing,
+      rationale: short(f.rationale),
+    })),
+    palette: { ...content.palette, rationale: short(content.palette.rationale) },
+    surfaces: content.surfaces.map((s) => ({ ...s, rationale: short(s.rationale) })),
+    lighting: content.lighting.map((l) => {
+      const light = { ...l, rationale: short(l.rationale) };
+      delete light.position;
+      return light;
+    }),
+    textiles: content.textiles.map((t) => ({ ...t, rationale: short(t.rationale) })),
+    longevity: { summary: short(content.longevity.summary), trendItems: content.longevity.trendItems },
+  };
+  return { plan, dims };
 }

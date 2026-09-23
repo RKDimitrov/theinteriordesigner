@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { designCost } from "@/domain/validator";
-import type { DesignContent } from "@/domain/schemas/design";
+import type { DesignContent, SolverStats } from "@/domain/schemas/design";
 import type { RoomShape } from "@/domain/schemas/room";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
 import { cn } from "@/lib/utils";
@@ -19,16 +19,24 @@ export interface DesignViewProps {
   issues: ValidationIssue[];
   status: "valid" | "valid_with_warnings" | "invalid";
   budgetEur: number | null;
+  /** Placement statistics of this version, including the pieces that were left out. */
+  solver?: SolverStats;
+  areaM2: number;
 }
 
 const eur = (n: number) => new Intl.NumberFormat("en", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
-export function DesignView({ room, northAngleDeg, design, issues, status, budgetEur }: DesignViewProps) {
+/** A room this small (m²) rarely fits everything the model asked for. */
+const SMALL_ROOM_M2 = 6;
+
+export function DesignView({ room, northAngleDeg, design, issues, status, budgetEur, solver, areaM2 }: DesignViewProps) {
   const t = useTranslations("Design");
   const tc = useTranslations("FurnitureCategory");
   const [selected, setSelected] = useState<string | null>(null);
   const errorIds = new Set(issues.filter((i) => i.severity === "error").flatMap((i) => i.itemIds));
   const cost = designCost(design);
+  const dropped = solver?.dropped ?? [];
+  const tooSmall = status === "invalid" && (areaM2 < SMALL_ROOM_M2 || dropped.length > 0);
 
   return (
     <div className="flex flex-col gap-4">
@@ -36,6 +44,17 @@ export function DesignView({ room, northAngleDeg, design, issues, status, budget
         <AlertTitle>{t(`status_${status}`)}</AlertTitle>
         <AlertDescription>{t(`banner_${status}`)}</AlertDescription>
       </Alert>
+
+      {(dropped.length > 0 || tooSmall) && (
+        <Alert data-testid="design-dropped">
+          <AlertTitle>{t("droppedTitle")}</AlertTitle>
+          <AlertDescription className="flex flex-col gap-1">
+            {dropped.length > 0 && <span>{t("dropped", { count: dropped.length, items: dropped.map((d) => tc(d.category)).join(", ") })}</span>}
+            {dropped.some((d) => d.reason === "over_item_cap") && <span>{t("droppedCap")}</span>}
+            {tooSmall && <span>{t("tooSmall")}</span>}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <Card>

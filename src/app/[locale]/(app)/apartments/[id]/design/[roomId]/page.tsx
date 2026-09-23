@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { DesignView } from "@/components/design/design-view";
+import { area } from "@/domain/geometry/polygon";
 import { GenerateButton } from "@/components/design/generate-button";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -89,6 +90,8 @@ export default async function DesignPage({ params, searchParams }: PageProps<"/[
             issues={design.validation.issues}
             status={design.validation.status}
             budgetEur={budgetEur}
+            solver={design.validation.solver}
+            areaM2={Math.round(area(room.polygon) / 1000) / 10}
           />
           <p className="text-xs text-muted-foreground">
             {t("generation", {

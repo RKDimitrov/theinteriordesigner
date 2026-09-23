@@ -3,11 +3,11 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { FillSampleButton } from "@/components/dev/fill-sample-button";
+import { DEV_TOOLS, FillSampleButton } from "@/components/dev/fill-sample-button";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { type DesignEvent, parseEvents } from "@/lib/design-events";
-import { insertSampleDesignAction } from "@/server/actions/design";
+import { insertSampleDesignAction, resolveLayoutAction } from "@/server/actions/design";
 
 type Progress = Extract<DesignEvent, { type: "progress" }>;
 
@@ -101,6 +101,25 @@ export function GenerateButton({ apartmentId, roomId, hasDesign }: { apartmentId
             })
           }
         />
+        {DEV_TOOLS && hasDesign && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="border-dashed"
+            disabled={running || pending}
+            data-testid="resolve-layout"
+            onClick={() =>
+              startTransition(async () => {
+                const r = await resolveLayoutAction({ apartmentId, roomId });
+                if (!r.ok) return void toast.error(r.error);
+                finish(r.data.version);
+              })
+            }
+          >
+            {t("resolveLayout")}
+          </Button>
+        )}
       </div>
       {running && (
         <p className="text-sm text-muted-foreground" role="status" aria-live="polite" data-testid="generate-progress">
