@@ -65,6 +65,14 @@ export function GenerateButton({ apartmentId, roomId, hasDesign }: { apartmentId
     switch (p.stage) {
       case "context":
         return t("stage_context");
+      case "designing":
+        return p.chars === undefined ? t("stage_designing") : t("stage_writing", { chars: p.chars });
+      case "placing":
+        return t("stage_placing");
+      case "checking":
+        return p.errors === undefined ? t("stage_validating") : t("stage_validated", { errors: p.errors, warnings: p.warnings ?? 0 });
+      case "fixing":
+        return t("stage_fixing", { attempt: p.attempt, max: (p.maxAttempts ?? 2) - 1 });
       case "generating":
         return t("stage_generating");
       case "writing":

@@ -12,6 +12,7 @@ export const designModels = () => ({
   base: serverEnv.DESIGN_MODEL,
   escalate: serverEnv.DESIGN_ESCALATE_MODEL,
   effort: serverEnv.DESIGN_EFFORT,
+  maxRepairs: serverEnv.DESIGN_MAX_REPAIRS,
 });
 
 export class LlmConfigError extends Error {}

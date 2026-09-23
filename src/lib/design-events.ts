@@ -4,7 +4,8 @@ import { z } from "zod";
 export const DesignEvent = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("progress"),
-    stage: z.enum(["context", "generating", "writing", "validating", "repairing"]),
+    /** context → designing → placing → checking → fixing (patch round) → done. The v1 stage names are kept for old clients. */
+    stage: z.enum(["context", "designing", "placing", "checking", "fixing", "generating", "writing", "validating", "repairing"]),
     attempt: z.number().int(),
     maxAttempts: z.number().int().optional(),
     chars: z.number().int().optional(),

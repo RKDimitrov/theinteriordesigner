@@ -21,6 +21,22 @@ export const CLEARANCE = {
   mustKeepTolerance: 2,
 } as const;
 
+/** Ergonomic distances the layout solver uses between related pieces (cm). */
+export const PLACEMENT_GAP = {
+  /** Coffee table front edge to sofa front edge. */
+  frontOf: 45,
+  /** Side gap between a piece and the one it stands beside. */
+  beside: 5,
+  /** How far a chair seat reaches under its table or desk. */
+  chairTuck: 15,
+  /** Items whose back is this close to a wall get snapped onto it. */
+  wallSnap: 15,
+  /** Eye height that wall items are centred on. */
+  wallItemCentre: 150,
+  /** Lowest bottom edge for wall items. */
+  wallItemMinElevation: 10,
+} as const;
+
 export const RADIATOR_COVER = { warning: 0, error: 0.3 } as const;
 export const BUDGET_WARNING_FACTOR = 1.1;
 export const MAX_ANCHOR_TREND_RISK = 0.3;
@@ -48,6 +64,9 @@ export const ALLOWED_OVERLAPS: readonly (readonly [FurnitureCategory, FurnitureC
   ["dining_chair", "dining_table"],
   ["office_chair", "desk"],
 ];
+
+export const overlapAllowed = (a: FurnitureCategory, b: FurnitureCategory): boolean =>
+  ALLOWED_OVERLAPS.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
 
 /** Beds at least this wide need access on both long sides. */
 export const DOUBLE_BED_MIN_WIDTH = 120;

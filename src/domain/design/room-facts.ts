@@ -1,10 +1,11 @@
 import { openingSpan } from "../geometry/openings";
-import { bbox } from "../geometry/polygon";
-import { normDeg } from "../geometry/units";
+import { area, bbox } from "../geometry/polygon";
 import type { Vec } from "../geometry/vec";
-import { planAngle, wallOrientations, wallsOf } from "../geometry/walls";
+import { backAgainstRotation, wallOrientations, wallsOf } from "../geometry/walls";
 import { keepClearZones } from "../geometry/zones";
 import type { RoomShape } from "../schemas/room";
+import { maxItems } from "./catalogue";
+import { freeFloorRect, wallSlots } from "./solver/slots";
 
 interface OpeningFact {
   id: string;
@@ -32,12 +33,17 @@ export function roomFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
   const walls = wallsOf(room.polygon);
   const dirs = wallOrientations(room.polygon, northAngleDeg, room.wallOrientationOverrides);
   const b = bbox(room.polygon);
+  const areaM2 = Math.round(area(room.polygon) / 1000) / 10;
+  const floor = freeFloorRect(room);
   return {
     roomId: room.id,
     name: room.name,
     type: room.type,
     widthCm: r1(b.w),
     lengthCm: r1(b.d),
+    areaM2,
+    /** Most pieces of furniture (rugs and wall pieces included) this room should get. */
+    itemCap: maxItems(areaM2, room.type),
     ceilingHeightCm: room.ceilingHeight,
     polygon: room.polygon.map(pt),
     walls: walls.map((w) => ({
@@ -48,7 +54,7 @@ export function roomFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
       facing: dirs[w.index],
       inwardNormal: pt(w.inward),
       /** Rotation that puts an item's back against this wall with its front facing into the room. */
-      backAgainstRotation: Math.round(normDeg(planAngle(w.inward) - 180)),
+      backAgainstRotation: backAgainstRotation(w),
     })),
     openings: room.openings.flatMap((o): OpeningFact[] => {
       const span = openingSpan(walls, o);
@@ -65,6 +71,10 @@ export function roomFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
           return [{ ...base, heightCm: o.height, socketType: o.socketType }];
       }
     }),
+    /** Free wall runs for pieces up to 60 cm deep and taller than window sills; usableDepth leaves an 80 cm walkway. */
+    wallSlots: wallSlots(room).map(({ wallIndex, from, to, length, usableDepth }) => ({ wallIndex, from, to, length, usableDepth })),
+    /** Largest open floor rectangle, clear of doors, radiators and fixed elements. */
+    freeFloorRect: { x: r1(floor.x), y: r1(floor.y), w: r1(floor.w), d: r1(floor.d) },
     fixedElements: room.fixedElements.map((f) => ({ id: f.id, label: f.label, kind: f.kind, rect: f.rect, heightCm: f.height })),
     keepClear: keepClearZones(room).map((z) => ({
       kind: z.kind,
@@ -80,3 +90,38 @@ export function roomFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
 }
 
 export type RoomFacts = ReturnType<typeof roomFacts>;
+
+/**
+ * Facts for design-generate v2, where the model picks pieces and intents but
+ * never coordinates: walls by index and length, openings by wall, free wall
+ * runs, the open floor and the item cap. Coordinates stay only where they
+ * explain a constraint (keep-clear areas, fixed elements).
+ */
+export function planFacts(room: RoomShape & { id: string }, northAngleDeg: number) {
+  const f = roomFacts(room, northAngleDeg);
+  return {
+    roomId: f.roomId,
+    name: f.name,
+    type: f.type,
+    widthCm: f.widthCm,
+    lengthCm: f.lengthCm,
+    areaM2: f.areaM2,
+    itemCap: f.itemCap,
+    ceilingHeightCm: f.ceilingHeightCm,
+    walls: f.walls.map((w) => ({ index: w.index, lengthCm: w.lengthCm, facing: w.facing })),
+    openings: room.openings.map((o) => ({
+      id: o.id,
+      kind: o.kind,
+      wallIndex: o.wallIndex,
+      offsetCm: o.offset,
+      widthCm: o.width,
+      ...(o.kind === "window" ? { sillHeightCm: o.sillHeight } : {}),
+      ...(o.kind === "door" ? { swing: o.swing } : {}),
+      ...(o.kind === "socket" ? { socketType: o.socketType } : {}),
+    })),
+    fixedElements: f.fixedElements,
+    wallSlots: f.wallSlots,
+    freeFloorRect: f.freeFloorRect,
+    keepClear: f.keepClear,
+  };
+}

@@ -40,6 +40,9 @@ export function planAngle(v: Vec): number {
   return normDeg((Math.atan2(v.x, -v.y) * 180) / Math.PI);
 }
 
+/** Item rotation that puts its back against `wall` with its front facing into the room. */
+export const backAgainstRotation = (wall: Pick<Wall, "inward">): number => Math.round(normDeg(planAngle(wall.inward) - 180)) % 360;
+
 /**
  * Compass bearing (0 = N, 90 = E) that a wall faces, i.e. its outward normal.
  * `northAngleDeg` is the plan angle at which north points.

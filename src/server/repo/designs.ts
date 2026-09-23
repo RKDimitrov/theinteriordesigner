@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import type { Design as DesignRow } from "@/generated/prisma/client";
-import { DesignContent } from "@/domain/schemas/design";
+import { DesignContent, SolverStats } from "@/domain/schemas/design";
 import { ValidationIssue } from "@/domain/schemas/validation-issue";
 import { db } from "../db";
 import { isUuid } from "./ids";
@@ -10,7 +10,13 @@ import { toJson } from "./json";
 export const DesignStatus = z.enum(["valid", "valid_with_warnings", "invalid"]);
 export type DesignStatus = z.infer<typeof DesignStatus>;
 
-const Validation = z.object({ status: DesignStatus, issues: z.array(ValidationIssue), repairAttempts: z.number().int().min(0) });
+const Validation = z.object({
+  status: DesignStatus,
+  issues: z.array(ValidationIssue),
+  repairAttempts: z.number().int().min(0),
+  /** What the placement pipeline did (since design-generate v2). */
+  solver: SolverStats.optional(),
+});
 const Source = z.object({ model: z.string(), promptId: z.string(), promptVersion: z.string() });
 
 export interface StoredDesign {

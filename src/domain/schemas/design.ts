@@ -61,6 +61,9 @@ export const FurnitureCategory = z.enum([
   "mirror",
   "wall_shelf",
   "art",
+  "bench",
+  "shoe_cabinet",
+  "coat_rack",
   "other",
 ]);
 export type FurnitureCategory = z.infer<typeof FurnitureCategory>;
@@ -79,6 +82,29 @@ export const InvestmentTier = z.enum(["anchor", "mid", "swappable"]);
 export type InvestmentTier = z.infer<typeof InvestmentTier>;
 
 export const PaletteRole = z.enum(["base", "secondary", "accent", "neutral"]);
+
+/** Catalogue size class; the server turns it into real dimensions. */
+export const SizeClass = z.enum(["small", "medium", "large"]);
+export type SizeClass = z.infer<typeof SizeClass>;
+
+/**
+ * Where a piece should go, not where it is. The solver turns this into coordinates.
+ * wall/corner: back against a wall; free: in the open floor;
+ * beside/front_of/under: relative to the item `relativeTo`.
+ */
+export const Intent = z.object({
+  anchor: z.enum(["wall", "corner", "free", "beside", "front_of", "under"]),
+  /** Preferred wall, from the room facts. */
+  wallIndex: z.number().int().nonnegative().optional(),
+  /** Id of another item, for beside/front_of/under. */
+  relativeTo: z.string().optional(),
+  zoneId: z.string().optional(),
+});
+export type Intent = z.infer<typeof Intent>;
+
+/** 1 = must have, 3 = drop first when the room is too small. */
+export const Priority = z.literal([1, 2, 3]);
+export type Priority = z.infer<typeof Priority>;
 
 export const FurnitureItem = z.object({
   id: z.string().regex(/^[a-z0-9_-]{2,32}$/),
@@ -110,6 +136,10 @@ export const FurnitureItem = z.object({
   /** The user's must-keep piece. */
   existing: z.boolean().default(false),
   rationale: Rationale,
+  /** Set by the solver pipeline so a stored design can be re-solved and repaired in priority order. */
+  sizeClass: SizeClass.optional(),
+  intent: Intent.optional(),
+  priority: Priority.optional(),
 });
 export type FurnitureItem = z.infer<typeof FurnitureItem>;
 
@@ -163,7 +193,7 @@ export const Textile = z.object({
   rationale: Rationale,
 });
 
-/** What the model returns (tool input). */
+/** The stored and validated design. Since v2 the server builds it from a DesignPlanInput; v1 had the model write it directly. */
 export const DesignContent = z.object({
   concept: z.object({ title: z.string(), summary: z.string().max(800) }),
   zones: z.array(Zone),
@@ -180,6 +210,89 @@ export const DesignContent = z.object({
 });
 export type DesignContent = z.infer<typeof DesignContent>;
 
+const ShortRationale = z.string().min(1).max(160);
+
+/**
+ * One piece as the model chooses it: taste and intent, no geometry.
+ * Dimensions come from the catalogue, coordinates from the solver.
+ */
+export const PlanItem = z.object({
+  id: FurnitureItem.shape.id,
+  category: FurnitureCategory,
+  sizeClass: SizeClass,
+  name: z.string().max(80),
+  material: z.string().max(80),
+  colorHex: Hex,
+  paletteRole: PaletteRole,
+  placement: Placement,
+  intent: Intent,
+  priority: Priority,
+  price: PriceRange,
+  trendRisk: Risk,
+  investmentTier: InvestmentTier,
+  renterFriendly: z.boolean(),
+  requiresDrilling: z.boolean(),
+  existing: z.boolean().default(false),
+  rationale: ShortRationale,
+});
+export type PlanItem = z.infer<typeof PlanItem>;
+
+export const PlanZone = Zone.omit({ rect: true }).extend({ rationale: ShortRationale });
+export type PlanZone = z.infer<typeof PlanZone>;
+
+/** What the model returns (tool input) since design-generate v2. */
+export const DesignPlanInput = z.object({
+  concept: z.object({ title: z.string().max(80), summary: z.string().max(400) }),
+  zones: z.array(PlanZone).max(6),
+  items: z.array(PlanItem).max(20),
+  palette: Palette.extend({ rationale: ShortRationale }),
+  surfaces: z.array(Surface.extend({ rationale: ShortRationale })).max(6),
+  lighting: z.array(Light.omit({ position: true }).extend({ rationale: ShortRationale })).max(8),
+  textiles: z.array(Textile.extend({ rationale: ShortRationale })).max(8),
+  longevity: z.object({ summary: ShortRationale, trendItems: z.array(z.string()) }),
+});
+export type DesignPlanInput = z.infer<typeof DesignPlanInput>;
+
+/** Repair answer since design-repair v2: small edits to the plan instead of a whole new design. */
+export const DesignPatch = z.object({
+  /** New intent for existing items: another wall, or another piece to stand beside/in front of. */
+  move: z
+    .array(
+      z.object({
+        id: z.string(),
+        anchor: Intent.shape.anchor.optional(),
+        wallIndex: z.number().int().nonnegative().optional(),
+        relativeTo: z.string().optional(),
+      }),
+    )
+    .max(20)
+    .default([]),
+  resize: z.array(z.object({ id: z.string(), sizeClass: SizeClass })).max(20).default([]),
+  remove: z.array(z.string()).max(20).default([]),
+  add: z.array(PlanItem).max(6).default([]),
+});
+export type DesignPatch = z.infer<typeof DesignPatch>;
+
+/** A piece the solver or autofix had to leave out, and why. */
+export const DroppedItem = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: FurnitureCategory,
+  reason: z.enum(["over_item_cap", "no_space", "anchor_dropped"]),
+});
+export type DroppedItem = z.infer<typeof DroppedItem>;
+
+/** What the placement pipeline did, stored with the design. */
+export const SolverStats = z.object({
+  durationMs: z.number().nonnegative(),
+  iterations: z.number().int().nonnegative(),
+  evaluations: z.number().int().nonnegative(),
+  autofixPasses: z.number().int().nonnegative(),
+  dropped: z.array(DroppedItem),
+  autofixLog: z.array(z.string()),
+});
+export type SolverStats = z.infer<typeof SolverStats>;
+
 /** What we store. The server adds everything except `content`. */
 export const Design = z.object({
   schemaVersion: z.literal(1),
@@ -191,6 +304,7 @@ export const Design = z.object({
     status: z.enum(["valid", "valid_with_warnings", "invalid"]),
     issues: z.array(ValidationIssue),
     repairAttempts: z.number().int().min(0).max(3),
+    solver: SolverStats.optional(),
   }),
   source: z.object({ model: z.string(), promptId: z.string(), promptVersion: z.string() }),
   createdAt: z.iso.datetime(),

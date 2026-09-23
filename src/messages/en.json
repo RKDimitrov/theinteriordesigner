@@ -260,6 +260,9 @@
     "mirror": "Mirror",
     "wall_shelf": "Wall shelf",
     "art": "Art",
+    "bench": "Bench",
+    "shoe_cabinet": "Shoe cabinet",
+    "coat_rack": "Coat hooks",
     "other": "Other"
   },
   "Context": {
@@ -349,6 +352,9 @@
     "costNote": "Uses Claude (Sonnet 5 by default, Opus 5 for the last repair): about a minute per room and roughly 15 cents. Every result is checked by the validator, with up to 3 automatic repair rounds.",
     "stage_context": "Gathering context…",
     "stage_generating": "Designing the room…",
+    "stage_designing": "Choosing pieces, colours and materials…",
+    "stage_placing": "Placing furniture…",
+    "stage_fixing": "Asking for a small fix (round {attempt} of {max})…",
     "stage_writing": "Writing the design… ({chars} characters)",
     "stage_validating": "Checking geometry and rules…",
     "stage_validated": "Check: {errors} errors, {warnings} warnings",
