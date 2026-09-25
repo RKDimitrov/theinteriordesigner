@@ -1,7 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useEffect, useId, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { fieldLabelClass } from "@/components/ui/label";
+import { Segmented } from "@/components/ui/segmented";
 import type { Cardinal, Opening } from "@/domain/schemas/room";
 import type { Wall } from "@/domain/geometry/walls";
 import { cn } from "@/lib/utils";
@@ -26,6 +30,13 @@ export function OpeningForm({ index, opening, walls, dirs, selected, errors, onS
   const err = (field: string) => errors[`openings.${index}.${field}`];
   const num = (v: number | null) => Math.max(0, Math.round(v ?? 0));
   const cm = useTranslations("Common")("cm");
+  const swingLabel = useId();
+  const ref = useRef<HTMLFieldSetElement>(null);
+
+  // Selecting on the canvas brings the matching fieldset into view.
+  useEffect(() => {
+    if (selected && !ref.current?.contains(document.activeElement)) ref.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [selected]);
 
   const wallOptions = walls.map((w) => ({
     value: String(w.index),
@@ -34,12 +45,18 @@ export function OpeningForm({ index, opening, walls, dirs, selected, errors, onS
 
   return (
     <fieldset
+      ref={ref}
       data-testid={`opening-${opening.id}`}
+      data-selected={selected || undefined}
       onFocusCapture={onSelect}
-      className={cn("rounded-lg border p-3", selected && "border-blue-600 ring-2 ring-blue-600/20")}
+      onClick={onSelect}
+      className={cn(
+        "scroll-mt-4 border border-dashed border-rule px-3.5 pt-3 pb-3.5 transition-colors",
+        selected && "border-[1.5px] border-solid border-primary bg-sticky"
+      )}
     >
-      <legend className="px-1 text-sm font-medium">
-        {tk(opening.kind)} <span className="text-muted-foreground">({opening.id})</span>
+      <legend className="px-1.5 font-mono text-[11px] font-medium tracking-[0.1em] uppercase">
+        {tk(opening.kind)} · {opening.id}
       </legend>
       <div className="grid grid-cols-2 gap-3">
         <SelectField
@@ -62,16 +79,21 @@ export function OpeningForm({ index, opening, walls, dirs, selected, errors, onS
         {opening.kind === "door" && (
           <>
             <NumberField label={t("openingHeight")} value={opening.height} suffix={cm} error={err("height")} onChange={(v) => onChange({ ...opening, height: Math.max(1, num(v)) })} />
-            <SelectField
-              label={t("swing")}
-              value={opening.swing}
-              options={[
-                { value: "in", label: t("swingIn") },
-                { value: "out", label: t("swingOut") },
-                { value: "sliding", label: t("swingSliding") },
-              ]}
-              onChange={(v) => onChange({ ...opening, swing: v })}
-            />
+            <div className="col-span-2 flex flex-col gap-1.5">
+              <span id={swingLabel} className={fieldLabelClass}>
+                {t("swing")}
+              </span>
+              <Segmented
+                aria-labelledby={swingLabel}
+                value={opening.swing}
+                options={[
+                  { value: "in", label: t("swingInShort") },
+                  { value: "out", label: t("swingOutShort") },
+                  { value: "sliding", label: t("swingSliding") },
+                ]}
+                onChange={(v) => onChange({ ...opening, swing: v })}
+              />
+            </div>
             <SelectField
               label={t("hinge")}
               value={opening.hinge}
@@ -87,8 +109,8 @@ export function OpeningForm({ index, opening, walls, dirs, selected, errors, onS
           <>
             <NumberField label={t("openingHeight")} value={opening.height} suffix={cm} error={err("height")} onChange={(v) => onChange({ ...opening, height: Math.max(1, num(v)) })} />
             <NumberField label={t("sillHeight")} value={opening.sillHeight} suffix={cm} error={err("sillHeight")} onChange={(v) => onChange({ ...opening, sillHeight: num(v) })} />
-            <label className="col-span-2 flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={opening.openable} onChange={(e) => onChange({ ...opening, openable: e.target.checked })} />
+            <label className="col-span-2 flex items-center gap-2.5 text-sm">
+              <Checkbox checked={opening.openable} onCheckedChange={(checked) => onChange({ ...opening, openable: checked })} />
               {t("openable")}
             </label>
           </>
@@ -112,7 +134,15 @@ export function OpeningForm({ index, opening, walls, dirs, selected, errors, onS
         )}
       </div>
       <div className="mt-3 flex justify-end">
-        <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
+        <Button
+          type="button"
+          variant="ghost-destructive"
+          size="xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+        >
           {t("remove")}
         </Button>
       </div>

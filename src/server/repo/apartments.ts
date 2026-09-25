@@ -62,3 +62,16 @@ export async function deleteApartment(userId: string, id: string): Promise<boole
   const { count } = await db.apartment.deleteMany({ where: { id, userId } });
   return count > 0;
 }
+
+/** Last change to the apartment, its rooms or their designs. */
+export async function apartmentRevisedAt(userId: string, id: string): Promise<Date | null> {
+  if (!isUuid(id)) return null;
+  const [apt, room, design] = await Promise.all([
+    db.apartment.findFirst({ where: { id, userId }, select: { updatedAt: true } }),
+    db.room.aggregate({ where: { apartmentId: id, apartment: { userId } }, _max: { updatedAt: true } }),
+    db.design.aggregate({ where: { room: { apartmentId: id, apartment: { userId } } }, _max: { createdAt: true } }),
+  ]);
+  if (!apt) return null;
+  const dates = [apt.updatedAt, room._max.updatedAt, design._max.createdAt].filter((d): d is Date => d != null);
+  return new Date(Math.max(...dates.map((d) => d.getTime())));
+}

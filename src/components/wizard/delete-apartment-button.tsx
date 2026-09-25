@@ -14,8 +14,7 @@ export function DeleteApartmentButton({ id }: { id: string }) {
   const [pending, startTransition] = useTransition();
   return (
     <Button
-      variant="destructive"
-      size="sm"
+      variant="ghost-destructive"
       disabled={pending}
       onClick={() => {
         if (!window.confirm(t("deleteConfirm"))) return;

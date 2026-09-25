@@ -2,17 +2,60 @@ import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+// The ink box: border, sheet fill, clay offset on focus, red border when invalid.
+const inputBox =
+  "border-[1.5px] border-input bg-card shadow-[inset_0_-2px_0_rgba(43,38,34,.06)] transition-shadow"
+
+const inputField =
+  "w-full min-w-0 px-3 py-2.5 text-[15px] leading-5 outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:font-mono file:text-xs file:text-foreground file:uppercase placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 [&[type=number]]:font-mono [&[type=number]]:tabular-nums"
+
+function Input({
+  className,
+  type,
+  unit,
+  ...props
+}: React.ComponentProps<"input"> & {
+  /** Short unit shown inside the box on the right, e.g. "cm". */
+  unit?: React.ReactNode
+}) {
+  if (unit == null) {
+    return (
+      <InputPrimitive
+        type={type}
+        data-slot="input"
+        className={cn(
+          inputBox,
+          inputField,
+          "focus-visible:shadow-offset-clay aria-invalid:border-destructive",
+          className
+        )}
+        {...props}
+      />
+    )
+  }
+
   return (
-    <InputPrimitive
-      type={type}
-      data-slot="input"
+    <div
+      data-slot="input-group"
       className={cn(
-        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        inputBox,
+        "flex w-full min-w-0 items-center focus-within:shadow-offset-clay has-aria-invalid:border-destructive",
         className
       )}
-      {...props}
-    />
+    >
+      <InputPrimitive
+        type={type}
+        data-slot="input"
+        className={cn(inputField, "bg-transparent")}
+        {...props}
+      />
+      <span
+        data-slot="input-unit"
+        className="pr-3 font-mono text-xs text-muted-foreground select-none"
+      >
+        {unit}
+      </span>
+    </div>
   )
 }
 

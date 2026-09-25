@@ -3,10 +3,10 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { PageHeader, SplitTitle } from "@/components/atelier/page-header";
 import { FillSampleButton } from "@/components/dev/fill-sample-button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CardAction } from "@/components/ui/card";
 import { effectiveAnswers, QUIZ_PAIRS } from "@/domain/profile/quiz";
 import { profileStatus } from "@/domain/profile/status";
 import { type StyleProfile, StyleProfileInput } from "@/domain/schemas/profile";
@@ -42,13 +42,15 @@ function toInput(p: StyleProfile): StyleProfileInput {
 
 interface Props {
   apartmentId: string;
+  apartmentName: string;
   rooms: readonly RoomRef[];
   profile: StyleProfile | null;
 }
 
-export function ProfileForm({ apartmentId, rooms, profile }: Props) {
+export function ProfileForm({ apartmentId, apartmentName, rooms, profile }: Props) {
   const t = useTranslations("Profile");
   const tc = useTranslations("Common");
+  const tn = useTranslations("Nav");
   const router = useRouter();
   const [draft, setDraft] = useState<StyleProfileInput>(() => (profile ? toInput(profile) : EMPTY));
   // Bumped when answers are replaced from outside (sample fill) so the quiz re-reads its position.
@@ -84,52 +86,46 @@ export function ProfileForm({ apartmentId, rooms, profile }: Props) {
     });
 
   return (
-    <div className="flex flex-col gap-4 pb-24">
-      <div>
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("intro")}</p>
-      </div>
-
-      <HouseholdSection
-        value={draft.household}
-        errors={errors}
-        onChange={(v) => set("household", v)}
-        action={
-          <CardAction>
-            <FillSampleButton onFill={fill} />
-          </CardAction>
-        }
+    <div className="stagger">
+      <PageHeader
+        crumbs={[{ label: tn("apartments"), href: "/apartments" }, { label: apartmentName, href: `/apartments/${apartmentId}` }, { label: t("title") }]}
+        title={<SplitTitle text={t("title")} />}
+        meta={[t("intro")]}
       />
-      <BudgetSection apartmentId={apartmentId} rooms={rooms} value={draft.budgetPerRoom} onChange={(v) => set("budgetPerRoom", v)} />
-      <StyleQuiz key={quizKey} value={draft.quizAnswers} onChange={(v) => set("quizAnswers", v)} />
+
+      <HouseholdSection number="01" value={draft.household} errors={errors} onChange={(v) => set("household", v)} action={<FillSampleButton onFill={fill} />} />
+      <BudgetSection number="02" apartmentId={apartmentId} rooms={rooms} value={draft.budgetPerRoom} onChange={(v) => set("budgetPerRoom", v)} />
+      <StyleQuiz number="03" key={quizKey} value={draft.quizAnswers} onChange={(v) => set("quizAnswers", v)} />
       <PalettePicker
+        number="04"
         liked={draft.colorsLiked}
         disliked={draft.colorsDisliked}
         onChange={({ liked, disliked }) => setDraft((d) => ({ ...d, colorsLiked: liked, colorsDisliked: disliked }))}
       />
-      <MustKeepSection rooms={rooms} value={draft.mustKeep} errors={errors} onChange={(v) => set("mustKeep", v)} />
+      <MustKeepSection number="05" rooms={rooms} value={draft.mustKeep} errors={errors} onChange={(v) => set("mustKeep", v)} />
 
       {!parsed.success && (
-        <Alert variant="destructive" data-testid="profile-issues">
-          <AlertTitle>{t("problems")}</AlertTitle>
-          <AlertDescription>
-            <ul className="list-disc pl-4">
-              {Object.entries(clientErrors).map(([path, msg]) => (
-                <li key={path}>
-                  {path}: {msg}
-                </li>
-              ))}
-            </ul>
-          </AlertDescription>
-        </Alert>
+        <section data-testid="profile-issues" role="alert" className="border-t-[1.5px] border-foreground pt-3.5">
+          <h2 className="mb-1 font-mono text-[11px] font-medium tracking-[0.14em] uppercase">{t("problems")}</h2>
+          <ul>
+            {Object.entries(clientErrors).map(([path, msg]) => (
+              <li key={path} className="grid grid-cols-[auto_1fr] gap-2.5 border-b border-dotted border-rule py-2.5 text-[13.5px]">
+                <Badge variant="destructive" className="self-start">
+                  {path}
+                </Badge>
+                {msg}
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
-      {/* Sticky on small screens so saving is always one tap away. */}
-      <div className="sticky bottom-0 -mx-4 flex flex-wrap items-center justify-between gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur">
-        <p className="text-sm text-muted-foreground" data-testid="profile-summary">
+      {/* Sticky so saving is always one tap away. */}
+      <div className="sticky bottom-0 z-10 -mx-[clamp(20px,4vw,48px)] mt-6 flex flex-wrap items-center justify-between gap-3 border-t-[1.5px] border-foreground bg-card/95 px-[clamp(20px,4vw,48px)] py-3 backdrop-blur-sm">
+        <p className="font-mono text-[13px]" data-testid="profile-summary">
           {t("summary", { answered, total: QUIZ_PAIRS.length, missing: status.missingBudgetRoomIds.length })}
         </p>
-        <Button type="button" size="lg" disabled={pending || !parsed.success} onClick={save}>
+        <Button type="button" disabled={pending || !parsed.success} onClick={save}>
           {pending ? tc("saving") : t("save")}
         </Button>
       </div>
