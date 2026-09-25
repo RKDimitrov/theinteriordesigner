@@ -1,0 +1,44 @@
+{
+  "projectId": "8fb35ee1-eb5a-49e4-a5f8-0329dbad9355",
+  "shape": "package",
+  "pkg": "raumplan-ui",
+  "globalName": "RaumplanUI",
+  "buildCmd": "node .design-sync/build-ds.mjs",
+  "entry": ".ds-sync/pkg/dist/index.js",
+  "srcDir": "../../src/components/ui",
+  "cssEntry": "dist/styles.css",
+  "extraFonts": [
+    "../../.design-sync/fonts.css"
+  ],
+  "extraEntries": [
+    "../../.design-sync/toast-entry.ts"
+  ],
+  "overrides": {
+    "Dialog": {
+      "cardMode": "single",
+      "viewport": "720x420"
+    },
+    "Alert": {
+      "cardMode": "column"
+    },
+    "Card": {
+      "cardMode": "column"
+    },
+    "Tabs": {
+      "cardMode": "column"
+    },
+    "Select": {
+      "cardMode": "single",
+      "primaryStory": "Open"
+    },
+    "Toaster": {
+      "cardMode": "single",
+      "primaryStory": "Default"
+    },
+    "Tooltip": {
+      "cardMode": "single",
+      "primaryStory": "Open"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}

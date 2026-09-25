@@ -1,0 +1,34 @@
+/*
+ * Tailwind entry for the claude.ai/design sync. Compiled by build-ds.mjs into
+ * .ds-sync/pkg/dist/styles.css. Reuses the app's real theme (globals.css) and
+ * adds what next/font normally injects at runtime (the Geist font variables).
+ */
+@import "../src/app/globals.css";
+
+@source "../src/components";
+@source "./previews";
+
+/* Layout/typography utilities the design agent can use for its own glue code,
+   even when no repo file happens to use them yet. */
+@source inline("{flex,inline-flex,grid,block,inline-block,hidden,flex-col,flex-row,flex-wrap,flex-1,grow,shrink-0,w-full,h-full,min-h-screen,min-w-0,mx-auto,truncate,relative,absolute,sticky,inset-0,top-0,overflow-hidden,overflow-auto,border,border-t,border-b,tracking-tight,leading-tight,leading-relaxed,uppercase,text-center,text-left,text-right,antialiased,aspect-square,aspect-video,object-cover}");
+@source inline("{items-start,items-center,items-end,items-stretch,justify-start,justify-center,justify-end,justify-between,self-start,self-center,self-end}");
+@source inline("max-w-{xs,sm,md,lg,xl,2xl,3xl,4xl,5xl,6xl,7xl,prose}");
+@source inline("rounded-{sm,md,lg,xl,2xl,full}");
+@source inline("shadow-{xs,sm,md,lg}");
+@source inline("font-{normal,medium,semibold,bold,mono}");
+@source inline("text-{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl}");
+@source inline("text-{foreground,muted-foreground,primary,primary-foreground,secondary-foreground,accent-foreground,card-foreground,destructive}");
+@source inline("bg-{background,foreground,card,popover,muted,primary,secondary,accent,destructive}");
+@source inline("border-{border,input,primary,destructive}");
+@source inline("grid-cols-{1,2,3,4,5,6,12}");
+@source inline("col-span-{1,2,3,4,6,12}");
+@source inline("sm:{grid-cols-1,grid-cols-2,grid-cols-3,grid-cols-4,flex,hidden,block,flex-row,col-span-2}");
+@source inline("md:{grid-cols-1,grid-cols-2,grid-cols-3,grid-cols-4,flex,hidden,block,flex-row,col-span-2}");
+@source inline("lg:{grid-cols-1,grid-cols-2,grid-cols-3,grid-cols-4,flex,hidden,block,flex-row,col-span-2}");
+@source inline("{p,px,py,pt,pb,pl,pr,m,mx,my,mt,mb,gap,gap-x,gap-y,space-y,space-x}-{0,0.5,1,1.5,2,3,4,5,6,8,10,12,16,20,24}");
+@source inline("{w,h,size}-{4,5,6,8,10,12,16,20,24,32,48,64}");
+
+:root {
+  --font-geist-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, monospace;
+}

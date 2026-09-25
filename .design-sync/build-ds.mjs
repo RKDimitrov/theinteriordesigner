@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+// Builds src/components/ui into a publishable-shaped mini package at
+// .ds-sync/pkg/ so the design-sync converter has a dist entry, .d.ts types and
+// a compiled stylesheet to work from. The app itself has no library build.
+//
+// Requires the converter deps in .ds-sync/node_modules (esbuild,
+// @tailwindcss/cli, geist) - see .design-sync/NOTES.md.
+//
+// Usage (from repo root): node .design-sync/build-ds.mjs
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { join, resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const OUT = join(ROOT, '.ds-sync', 'pkg');
+const UI = join(ROOT, 'src', 'components', 'ui');
+const require = createRequire(join(ROOT, '.ds-sync', 'package.json'));
+const esbuild = require('esbuild');
+
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(join(OUT, 'dist'), { recursive: true });
+
+// 1. Barrel over every ui primitive.
+const files = readdirSync(UI).filter((f) => f.endsWith('.tsx')).sort();
+writeFileSync(
+  join(OUT, 'index.ts'),
+  files.map((f) => `export * from "../../src/components/ui/${f.replace(/\.tsx$/, '')}";`).join('\n') + '\n',
+);
+
+// 2. ESM bundle of the primitives; third-party deps stay external and resolve
+//    from the repo's node_modules when the converter re-bundles.
+await esbuild.build({
+  entryPoints: [join(OUT, 'index.ts')],
+  outfile: join(OUT, 'dist', 'index.js'),
+  bundle: true,
+  format: 'esm',
+  packages: 'external',
+  jsx: 'automatic',
+  tsconfig: join(ROOT, 'tsconfig.json'),
+  logLevel: 'error',
+});
+
+// 3. Declarations.
+writeFileSync(
+  join(OUT, 'tsconfig.json'),
+  JSON.stringify({
+    extends: '../../tsconfig.json',
+    compilerOptions: {
+      noEmit: false,
+      declaration: true,
+      emitDeclarationOnly: true,
+      incremental: false,
+      rootDir: '../..',
+      outDir: 'types',
+      plugins: [],
+      // .ds-sync/node_modules carries its own @types/react for the converter;
+      // resolve only the repo's copy or tsc sees two incompatible Reacts.
+      typeRoots: ['../../node_modules/@types'],
+      paths: {
+        '@/*': ['../../src/*'],
+        react: ['../../node_modules/@types/react'],
+        'react/*': ['../../node_modules/@types/react/*'],
+      },
+    },
+    include: ['index.ts', '../../src/global.d.ts'],
+    exclude: [],
+  }, null, 2),
+);
+execFileSync(process.execPath, [join(ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '-p', join(OUT, 'tsconfig.json')], {
+  stdio: 'inherit',
+});
+
+// 4. Compiled Tailwind stylesheet (theme tokens + every utility the components use).
+execFileSync(
+  process.execPath,
+  [
+    join(ROOT, '.ds-sync', 'node_modules', '@tailwindcss', 'cli', 'dist', 'index.mjs'),
+    '-i', join(ROOT, '.design-sync', 'ds.css'),
+    '-o', join(OUT, 'dist', 'styles.css'),
+  ],
+  { cwd: ROOT, stdio: 'inherit' },
+);
+
+const version = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
+writeFileSync(
+  join(OUT, 'package.json'),
+  JSON.stringify({
+    name: 'raumplan-ui',
+    version,
+    type: 'module',
+    module: 'dist/index.js',
+    types: 'types/.ds-sync/pkg/index.d.ts',
+    style: 'dist/styles.css',
+  }, null, 2),
+);
+console.error(`built ${files.length} ui primitives -> ${OUT}`);
