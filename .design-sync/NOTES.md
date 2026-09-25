@@ -15,6 +15,12 @@
 - Fonts: the app loads Geist through `next/font/google`, which exists only at Next runtime. `.design-sync/fonts.css` ships Geist and Geist Mono variable woff2 files from the `geist` npm package, and `ds.css` defines `--font-geist-sans` / `--font-geist-mono`.
 - `toast` is exposed through `cfg.extraEntries` (`.design-sync/toast-entry.ts`) so previews and designs share the bundled sonner instance. A `toast` imported directly from `sonner` in a preview would be a separate instance, and no toasts would appear.
 
+## Design tokens
+- Claude Design builds its token panel (`_ds_manifest.json` → `tokens`) from the CSS it is given. With no `tokens/` file, it scraped `_ds_bundle.css` and listed about 60 Tailwind `--tw-*` utility internals (e.g. `--tw-shadow` scoped to `.shadow-md`), while missing the whole `:root` theme (`--background`, `--primary`, `--radius`, the Geist font vars). Geist then showed as "unreferenced".
+- `build-ds.mjs` step 5 now writes `.ds-sync/pkg/tokens/raumplan.css` from the compiled `:root` / `:root, :host` / `.dark` blocks. **User rule:** skip every `--tw-*` variable, and append `/* @kind other */` to any token the name/value heuristics can't classify as color/font/radius/shadow/spacing (currently `--animate-spin`, `--aspect-video`, `--default-transition-duration`, `--default-transition-timing-function`, `--shimmer-angle`).
+- It's wired with `tokensPkg: "../.ds-sync/pkg"` (joined onto `--node-modules`, so it resolves to the mini package) and `tokensGlob: "tokens/*.css"`; `styles.css` imports it first.
+- Not yet confirmed: whether the app's scraper still also lists `--tw-*` from `_ds_bundle.css` now that `tokens/` exists. Check `_ds_manifest.json` after the project is next opened.
+
 ## Render check on this machine (Windows)
 - The Playwright cache has `chromium-1234`, but playwright@1.63 pins 1243. Point validate/capture at the cached build instead of downloading: `DS_CHROMIUM_PATH=$(cygpath -w ~/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe)`.
 - Avoid `python` in Git Bash here: it resolves to the Windows Store stub and hangs.

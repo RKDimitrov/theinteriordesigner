@@ -7,6 +7,8 @@
   "entry": ".ds-sync/pkg/dist/index.js",
   "srcDir": "../../src/components/ui",
   "cssEntry": "dist/styles.css",
+  "tokensPkg": "../.ds-sync/pkg",
+  "tokensGlob": "tokens/*.css",
   "extraFonts": [
     "../../.design-sync/fonts.css"
   ],
