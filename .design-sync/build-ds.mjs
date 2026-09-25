@@ -124,6 +124,68 @@ mkdirSync(join(OUT, 'tokens'), { recursive: true });
 writeFileSync(join(OUT, 'tokens', 'raumplan.css'), tokenCss.join('\n') + '\n');
 console.error(`tokens: ${tokenCount} custom properties (${otherCount} tagged @kind other) -> tokens/raumplan.css`);
 
+// 6. The compiled stylesheet ships as _ds_bundle.css and the design-system
+//    check scans it too. Tag the same unclassified theme tokens there, plus
+//    every --tw-* declaration (Tailwind utility internals) in a plain
+//    top-level layer rule, with `/* @kind other */`. Walks declarations with a rule stack so nested
+//    blocks, comments and `url(data:...;...)` values don't confuse it.
+function tagBundleCss(css) {
+  const TAG = ' /* @kind other */';
+  const stack = [];
+  let out = '', segStart = 0, depth = 0, tagged = 0;
+  for (let i = 0; i < css.length; i++) {
+    const ch = css[i];
+    if (ch === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      i = end < 0 ? css.length - 1 : end + 1;
+      out += css.slice(segStart, i + 1);
+      segStart = i + 1;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      const end = css.indexOf(ch, i + 1);
+      i = end < 0 ? css.length - 1 : end;
+      continue;
+    }
+    if (ch === '(') depth++;
+    else if (ch === ')') depth--;
+    else if (ch === '{' && depth === 0) {
+      stack.push(css.slice(segStart, i).trim());
+      out += css.slice(segStart, i + 1);
+      segStart = i + 1;
+    } else if (ch === '}' && depth === 0) {
+      stack.pop();
+      out += css.slice(segStart, i + 1);
+      segStart = i + 1;
+    } else if (ch === ';' && depth === 0) {
+      const seg = css.slice(segStart, i + 1);
+      out += seg;
+      segStart = i + 1;
+      const decl = /^\s*(--[\w-]+)\s*:\s*([\s\S]*);$/.exec(seg);
+      if (!decl || css.startsWith(TAG, i + 1)) continue;
+      const [, name, value] = decl;
+      const selector = stack.at(-1) ?? '';
+      const inTheme = [':root, :host', ':root', '.dark'].includes(selector) &&
+        stack.slice(0, -1).every((s) => s.startsWith('@layer'));
+      // The check only reads --tw-* tags from a plain selector sitting
+      // directly in an @layer - not under @supports/@media or nested rules,
+      // and not in combinator selectors (>, :is(, :where().
+      const plainLayerRule =
+        stack.length === 2 && stack[0].startsWith('@layer') &&
+        !selector.startsWith('@') && !/>|:is\(|:where\(/.test(selector);
+      const unlabelled =
+        (name.startsWith('--tw-') && plainLayerRule) ||
+        (inTheme && tokenKind(name, value.trim()) === null);
+      if (unlabelled) { out += TAG; tagged++; }
+    }
+  }
+  return { css: out + css.slice(segStart), tagged };
+}
+const stylesPath = join(OUT, 'dist', 'styles.css');
+const bundleCss = tagBundleCss(readFileSync(stylesPath, 'utf8'));
+writeFileSync(stylesPath, bundleCss.css);
+console.error(`dist/styles.css: tagged ${bundleCss.tagged} declarations @kind other`);
+
 const version = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version;
 writeFileSync(
   join(OUT, 'package.json'),
