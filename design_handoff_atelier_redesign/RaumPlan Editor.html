@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RaumPlan — Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="atelier/atelier.css">
+<link rel="stylesheet" href="atelier/editor.css">
+</head>
+<body class="ed quiet">
+<header class="top">
+<a class="ib" href="RaumPlan Atelier.html#overview" data-i="back" title="Back to apartment"></a>
+<a class="logo" href="RaumPlan Atelier.html#apartments">RaumPlan</a>
+<div class="proj"><b>NovApartament</b><small class="adv"><i></i>saved 21:40 · F0</small></div>
+<div class="tg" id="scope"><button data-scope="all" data-i="layers">Whole apartment</button><button data-scope="hol">Hol</button><button data-scope="living">Living room</button></div>
+<div class="sp"></div>
+<div class="tg" id="mode"><button class="on" data-m="2">2D plan</button><button data-m="3" data-i="cube">3D</button></div>
+<div class="tg"><button data-i="undo" title="Undo"></button><button data-i="redo" title="Redo"></button></div>
+<div class="tg v2 adv"><button id="zo" title="Zoom out">−</button><span id="zv">100%</span><button id="zi" title="Zoom in">+</button><button id="zf" data-i="fit" title="Fit room"></button></div>
+<div class="tg v2 units adv" data-group><button class="on">cm</button><button>in</button></div>
+<div class="tg v2 adv"><button class="on" id="snap" data-i="magnet">Snap 5</button></div>
+<div class="sp"></div>
+<button class="btn p sm" id="gen" data-i="spark">Designer</button>
+<button class="btn sm" data-i="export">Export</button>
+</header>
+<div class="ws">
+<aside class="rail v2">
+<div class="mode"><div class="tg" id="modeTools"><button class="on" data-tool="select" data-i="select">Select <kbd>V</kbd></button><button data-tool="pan" data-i="pan">Pan <kbd>H</kbd></button></div></div>
+<div class="scroll" id="tools">
+<div class="grp"><h6><span>01</span>Draw the room</h6>
+<button class="tool" data-tool="wall" data-i="wall">Wall<em>straight</em><kbd>W</kbd></button>
+<button class="tool" data-tool="room" data-i="room">Room<em>rectangle</em><kbd>R</kbd></button></div>
+<div class="grp"><h6><span>02</span>Openings</h6>
+<button class="tool" data-tool="door" data-i="door">Door<em></em><kbd>D</kbd></button>
+<button class="tool" data-tool="window" data-i="window">Window<em></em><kbd>N</kbd></button>
+<button class="tool adv-t" data-tool="pass" data-i="pass">Pass-through<em></em><kbd>P</kbd></button>
+<button class="tool adv-t" data-tool="rad" data-i="rad">Radiator<em></em><kbd>J</kbd></button>
+<button class="tool adv-t" data-tool="socket" data-i="socket">Socket<em></em><kbd>K</kbd></button></div>
+<div class="grp"><h6><span>03</span>Furnish</h6>
+<button class="btn p catbtn" id="catbtn">Catalogue<span>→</span></button>
+<div class="chiprow adv" data-group><button class="label f">Living</button><button class="label">Bedroom</button><button class="label">Kitchen</button><button class="label">Bath</button><button class="label">Plants</button></div></div>
+<div class="grp adv-t"><h6><span>04</span>Measure &amp; note</h6>
+<button class="tool" data-tool="measure" data-i="measure">Measure<em></em><kbd>M</kbd></button>
+<button class="tool" data-tool="dim" data-i="dim">Dimension<em></em><kbd>I</kbd></button>
+<button class="tool" data-tool="label" data-i="label">Room label<em></em><kbd>L</kbd></button>
+<button class="tool" data-tool="note" data-i="note">Margin note<em></em><kbd>T</kbd></button></div>
+<button class="tool calm-only" id="moreT" style="color:var(--mute);margin-top:10px">More tools<em></em><span>+</span></button></div>
+<div class="foot"><button class="btn" data-go="3" data-i="cube">View in 3D</button></div>
+</aside>
+<aside class="rail v3 cam">
+<h3 data-i="camera">Camera</h3>
+<div class="scroll">
+<div class="grp"><h6><span>—</span>Rooms in view</h6></div><div id="rvis" class="rvis"></div>
+<svg class="camdia grid-bg adv-c" id="camdia" viewBox="0 0 240 110"></svg>
+<div class="stp adv-c"><label>Eye height</label><div class="tg"><button data-c="h" data-d="-10">−</button><span id="c-h"></span><button data-c="h" data-d="10">+</button></div><div class="chiprow"><button class="label" data-set="h:120">120</button><button class="label" data-set="h:165">165</button><button class="label" data-set="h:250">250</button><button class="label" data-set="h:400">400</button></div></div>
+<div class="stp adv-c"><label>Rotation</label><div class="tg"><button data-c="rot" data-d="-15">−</button><span id="c-rot"></span><button data-c="rot" data-d="15">+</button></div><div class="chiprow"><button class="label" data-set="rot:0">0°</button><button class="label" data-set="rot:-90">90°</button><button class="label" data-set="rot:-180">180°</button><button class="label" data-set="rot:-270">270°</button></div></div>
+<div class="stp adv-c"><label>Tilt</label><div class="tg"><button data-c="tilt" data-d="-5">−</button><span id="c-tilt"></span><button data-c="tilt" data-d="5">+</button></div><div class="chiprow"><button class="label" data-set="tilt:0">Plan</button><button class="label" data-set="tilt:55">Angled</button><button class="label" data-set="tilt:80">Level</button></div></div>
+<div class="stp adv-c"><label>Lens</label><div class="tg"><span id="c-lens"></span></div><div class="chiprow"><button class="label" data-set="lens:wide">Wide</button><button class="label" data-set="lens:normal">Normal</button><button class="label" data-set="lens:tele">Tele</button></div></div>
+<div class="stp adv-c"><label>Distance</label><div class="tg"><button data-c="dist" data-d="-.1">−</button><span id="c-dist"></span><button data-c="dist" data-d=".1">+</button></div><div class="chiprow"><button class="label" data-set="dist:1.45">Near</button><button class="label" data-set="dist:1">Room</button><button class="label" data-set="dist:.7">Far</button></div></div>
+<div class="grp"><h6><span>—</span>Views</h6></div>
+<div class="presets" id="presets"><button class="pre" data-pre="eye"><b>Eye level</b><small>standing · wide</small></button><button class="pre on" data-pre="arch"><b>Architect</b><small>corner · 58°</small></button><button class="pre" data-pre="bird"><b>Bird's eye</b><small>high · far</small></button><button class="pre" data-pre="plan"><b>Plan view</b><small>straight down</small></button></div>
+<div class="grp"><h6><span>—</span>Saved views</h6></div>
+<div class="saved"><button data-pre="read"><span class="ph"></span><div><b>Reading corner</b><small>eye · 120 cm · NE</small></div></button><button data-pre="door"><span class="ph"></span><div><b>From the door</b><small>eye · 165 cm · W</small></div></button>
+<button class="btn sm g" data-i="bookmark" style="justify-content:center">Save this view</button></div>
+<button class="tool calm-only" id="fineC" style="color:var(--mute)">Fine-tune camera<em></em><span>+</span></button><p class="hint adv" style="padding:0 14px 10px">Drag the room to orbit and scroll to move closer. This panel follows the view.</p>
+</div></aside>
+<aside class="drawer v2">
+<header><div><h3>Catalogue</h3><small>212 pieces · drawn to scale</small></div><button class="ib" id="catx" data-i="x" title="Close"></button></header>
+<div class="inp search" data-i="search"><input placeholder="Search: sofa, bed, plant…"></div>
+<div class="cats" data-group><button class="label f">Living</button><button class="label">Bedroom</button><button class="label">Dining</button><button class="label">Office</button><button class="label adv">Storage</button><button class="label adv">Lighting</button><button class="label adv">Textiles</button><button class="label">Plants</button><button class="label">Mine</button></div>
+<div class="pieces" id="pieces"></div>
+<footer id="catfoot">Pick a piece, then click the plan to place it</footer>
+</aside>
+<main class="stage" id="stage" style="max-width:none;margin:0;padding:0">
+<div class="plan2 v2">
+<div class="corner">cm</div><div class="rx" id="rx"></div><div class="ry" id="ry"></div>
+<div class="paper" id="paper"><svg id="plan" width="1104" height="720" viewBox="-420 -100 920 600"></svg></div>
+<svg class="compass" viewBox="-30 -30 60 60"><circle r="26" fill="#fbf6ec" stroke="#2b2622" stroke-width="1.2"></circle><circle r="21" fill="none" stroke="#b8a58a" stroke-dasharray="2 3"></circle><g transform="rotate(12)"><path d="M0 -20L6 4 0 0-6 4Z" fill="#c8794a" stroke="#2b2622" stroke-width="1"></path><path d="M0 20L4 4 0 0-4 4Z" fill="#fbf6ec" stroke="#2b2622" stroke-width="1"></path></g><text y="-8" x="11" font-family="IBM Plex Mono" font-size="8" font-weight="600">N</text></svg>
+<div class="titleblock tb adv"><div><small>Project</small><b>NOV-001</b></div><div><small>Sheet</small><b id="tb-s">Living room</b></div><div><small>Scale</small><b>1 : 50</b></div><div><small>Area</small><b id="tb-a">16.00 m²</b></div></div>
+<div class="ftb" id="ftb"><span id="ftbDim" class="adv"></span><button data-act="rot" data-i="rot" title="Rotate 45°"></button><button class="adv" data-act="dup" data-i="dup" title="Duplicate"></button><button class="ai" data-act="swap" data-i="spark">Swap</button><button data-act="del" data-i="trash" title="Remove"></button></div>
+<div class="tg zfl calm-only v2"><button data-z="1.2" title="Zoom in">+</button><button data-z="0.833" title="Zoom out">−</button><button data-z="fit" data-i="fit" title="Fit"></button></div>
+<div class="sbar"><span id="cur" class="adv">x 0 · y 0 cm</span><span class="adv">Snap <b>5 cm</b></span><span class="adv">Walls <b>12 cm</b></span><span id="hint" style="margin-left:auto">Drag a piece to move it · scroll to zoom · drag the paper to pan</span></div>
+</div>
+<div class="scene3" id="scene"><div class="world" id="world"></div>
+<div class="cam-bar"><button class="btn sm" data-i="camera" id="shot">Screenshot</button><button class="btn sm" data-i="walk" id="walk">Walkthrough</button></div>
+<svg class="compass" id="c3" viewBox="-30 -30 60 60"><circle r="26" fill="#fbf6ec" stroke="#2b2622" stroke-width="1.2"></circle><g id="c3n"><path d="M0 -20L6 4 0 0-6 4Z" fill="#c8794a" stroke="#2b2622" stroke-width="1"></path><path d="M0 20L4 4 0 0-4 4Z" fill="#fbf6ec" stroke="#2b2622" stroke-width="1"></path><text y="-22" x="-3" font-family="IBM Plex Mono" font-size="8" font-weight="600">N</text></g></svg>
+<div class="sbar orbit-only"><span>Drag to orbit · scroll to zoom · click a piece or a door</span><span style="margin-left:auto">Walls facing you fold away</span></div>
+<div class="walkui"><div class="wtop"><span class="wchip" id="wloc"></span><button class="btn sm" id="wexit" data-i="x">Exit walkthrough</button></div><i class="cross"></i><div class="whint"><span class="lk-on">Move the mouse to look · W A S D to walk · click or E to open a door · Esc to leave</span><span class="lk-off">Click the view to take control · W A S D to walk · Esc to leave</span></div><div class="wpad" id="wpad"><span></span><button data-k="w">▲</button><span></span><button data-k="a">◀</button><button data-k="s">▼</button><button data-k="d">▶</button></div><button class="btn sm wdoor" id="wdoor" data-i="door">Open / close door</button></div>
+</div>
+<div class="toast" id="toast"></div>
+</main>
+<aside class="insp">
+<div class="tabs2 v2" data-tabs><button class="on" data-p="plan" data-i="layers">Plan</button><button data-p="ai" data-i="spark">Designer</button></div>
+<div class="tabs2 v3" data-tabs><button data-p="sel3">Selection</button><button class="on" data-p="fin">Finishes</button><button data-p="scn" class="adv">Scene</button></div>
+<div class="pane" data-pane="plan"><div class="blk sel" id="sel2"></div><div class="blk" style="border:0;padding-bottom:4px"><h5><span>Layers</span><span id="lycount"></span></h5></div><div id="layers" style="padding-bottom:14px"></div></div>
+<div class="pane" data-pane="ai">
+<div class="blk adv"><h5><span>Designer</span><span>v2 · valid ~</span></h5><p class="note" style="font-size:21px;margin:0">“The armchair wants a small table for a cup, and the sofa corner needs a warm light.”</p></div>
+<div class="blk" id="sugs"><h5><span>On the plan</span><span id="sugn">2 suggestions</span></h5>
+<div class="sug" data-sug="side"><b>Side table, Ø 45</b><p>Next to the armchair, 30 cm from the window</p><div class="acts"><button class="btn sm p" data-accept="side">Accept</button><button class="btn sm g" data-dismiss="side">Skip</button></div></div>
+<div class="sug" data-sug="pend"><b>Paper pendant</b><p>Over the coffee table, 2700 K, needs a ceiling point</p><div class="acts"><button class="btn sm p" data-accept="pend">Accept</button><button class="btn sm g" data-dismiss="pend">Skip</button></div></div></div>
+<div class="blk"><h5><span>Ask for a change</span></h5><textarea class="ta" placeholder="e.g. Make room for a desk by the window"></textarea>
+<div class="chiprow adv" style="padding:0" data-group><button class="label">Fill empty space</button><button class="label">Wider walkways</button><button class="label">Renter-friendly</button></div>
+<div class="toggle adv"><span style="font-size:13.5px">Keep pieces I placed</span><div class="sw-t on"></div></div>
+<button class="btn p" id="redo" data-i="spark" style="justify-content:center">Redesign this room</button><p class="hint">About a minute · ~€ 0.15</p></div>
+<div class="blk"><h5><span>Checks</span><span>2</span></h5>
+<div class="issue"><span class="label c">Warn</span><span>Walkway from the door to the armchair narrows to 76 cm (80 recommended).</span></div>
+<div class="issue" style="border:0"><span class="label c">Warn</span><span>Floor lamp has no socket within 150 cm.</span></div></div>
+</div>
+<div class="pane" data-pane="sel3"><div class="blk sel" id="sel3"></div></div>
+<div class="pane" data-pane="fin">
+<div class="blk"><h5><span>Floor</span><span id="fl-n">Oiled oak</span></h5><div class="sws" id="sw-floor"></div></div>
+<div class="blk"><h5><span>Walls</span><span id="wl-n">Lime wash</span></h5><div class="sws" id="sw-wall"></div></div>
+<div class="blk"><h5><span>Textiles</span><span>from palette</span></h5><div class="palette" style="height:44px"><i style="background:#efe3cf;flex:40"></i><i style="background:#b9a58a;flex:25"></i><i style="background:#a57a52;flex:15"></i><i style="background:#c8794a;flex:12"></i><i style="background:#5d6b3c;flex:8"></i></div><p class="hint">Sofa, rug and armchair follow the room palette from the Designer.</p></div>
+</div>
+<div class="pane" data-pane="scn">
+<div class="blk"><h5><span>Time of day</span><span id="tod-v">16:00</span></h5><input type="range" id="tod" min="7" max="21" step="1" value="16" style="accent-color:#c8794a"><p class="hint">North windows: soft, even light most of the day.</p></div>
+<div class="blk"><div class="toggle"><span>Ceiling lights on</span><div class="sw-t"></div></div><div class="toggle"><span>Show piece labels</span><div class="sw-t"></div></div><div class="toggle"><span>Fold away near walls</span><div class="sw-t on"></div></div></div>
+</div>
+</aside>
+</div>
+<script src="atelier/editor.js"></script>
+</body></html>

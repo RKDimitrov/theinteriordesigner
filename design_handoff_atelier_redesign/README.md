@@ -8,7 +8,7 @@ Repo: `RKDimitrov/theinteriordesigner` (branch `main`).
 ## About the design files
 `RaumPlan Atelier.html` + `atelier/atelier.css` + `atelier/atelier.js` are **design references built in HTML**, not production code. Recreate them in the existing app: same routes, server actions, Zod schemas, `data-testid`s, next-intl strings and domain logic. Only the presentation layer changes. Do not copy the vanilla JS router or the mock data.
 
-Open the HTML file in a browser; navigate with the top menu or `#apartments`, `#overview`, `#newroom`, `#editor`, `#design`, `#library`, `#moodboard`, `#settings`.
+Open the HTML file in a browser; navigate with the top menu or `#apartments`, `#overview`, `#newroom`, `#design`, `#library`, `#moodboard`, `#settings`.
 
 ## Fidelity
 **High fidelity.** Colors, type, borders, shadows and spacing are final. Match them closely. Copy in the mock that is not in `src/messages/en.json` must be added there (never hard-code strings).
@@ -23,7 +23,8 @@ Open the HTML file in a browser; navigate with the top menu or `#apartments`, `#
 ## Suggested order (stop for review after each)
 1. **Tokens, fonts, primitives**: `globals.css`, `layout.tsx` fonts, restyle `src/components/ui/*` (button, badge, card, input, select, tabs, slider, checkbox, dialog).
 2. **Shell + lists**: `(app)/layout.tsx` header, apartments list, apartment overview (stepper + room cards + history).
-3. **Room flow**: new room, room editor (`plan-editor/*`), plan rendering (`plan-view/shapes.tsx`, `room-plan.tsx`).
+3. **Room flow**: new room, plan rendering (`plan-view/shapes.tsx`, `room-plan.tsx`).
+3b. **Planner** (replaces `plan-editor/*`): see `PLANNER.md`. It has its own order of work.
 4. **Design page**: `design/design-view.tsx`, `design-plan.tsx`, `generate-button.tsx`.
 5. **Profile, context, settings**: restyle existing profile/context pages with the same parts; add the Settings page.
 6. **New screens** (Library, Moodboard): these need new data. Build the UI with the data the app already has (design items, palette, trends, must-keep furniture). Ask the product owner before adding new tables.
@@ -162,7 +163,8 @@ Page padding `30px clamp(20px,4vw,48px) 72px`, max width 1280px. Main + sidebar 
 - Left column:
   - "Rooms · N sheets" with "+ Add room" on the right.
   - Room taped cards with the plan (the designed room shows furniture footprints) and chips: design status ("Designed · v2", or a clay "No design yet") and orientation plus light temperature.
-  - Links: Edit → room editor, Open → / Generate → design page.
+  - Links: "Edit plan" → planner scoped to that room (`?room=<id>`), Open → / Generate → design page.
+- Header buttons: Delete (ghost destructive), Edit details (ghost), **Open planner →** (primary, whole apartment). The "Step 01 · Rooms" stepper cell also opens the planner (whole apartment).
   - "History": a ledger of every design version per room, showing version, repairs, seconds, cost and a validity chip. This data is already stored on the generation record.
 - Right sidebar:
   - A margin note: the first climate tip from context.
@@ -180,23 +182,10 @@ The right sidebar is sticky:
 - "Live sketch · 1:50": the room drawn as a rectangle that updates on input.
 - "Area": the area in 64px serif, plus a hint.
 
-Actions: Cancel (ghost) and "Save & add openings →" (primary), which goes to the editor.
+Actions: Cancel (ghost) and "Save & open planner →" (primary), which saves the room and opens the planner with the whole apartment in view.
 
-### 5. Room editor (`plan-editor/*`)
-- Toolbar: Select / Door / Window / Radiator / Socket. Buttons are mono uppercase with a 1.5px ink border and a tiny glyph; the active tool is ink-filled with a clay offset shadow. A mono hint "Click a wall to place" sits on the right.
-- Canvas (`plan-canvas`):
-  - 1.5px ink border on the blueprint grid, min height 520px.
-  - The plan is drawn in ink (5px walls, round joins) with a faint 1px offset pencil stroke.
-  - Dimension lines and labels in `#5A6E82` mono.
-  - A compass top-right.
-  - Selected opening: clay dashed outline and clay end handles (5px circles).
-  - Zoom stack (+ / − / FIT) bottom-right; scale bar "100 cm" bottom-left.
-- Right panel (380px):
-  - "Room" panel: name, type, width and length inputs, with "Fill sample" as a ghost button in the header.
-  - "Openings" panel: one fieldset per opening with a dashed border and a mono legend "DOOR · DOOR-1". The selected fieldset has a 1.5px clay border and a `#FFF8EC` background. Clicking a fieldset selects the opening on the canvas, and the reverse also works.
-  - Door options include "Opens" as a segmented control (Into room / Out / Sliding).
-  - Validation problems show as a list of red label chips + text above Save.
-- Page actions: Delete room (ghost destructive) and Save room (primary).
+### 5. Planner (replaces the old room editor)
+The inline room editor screen was **removed**. All plan editing, for one room or the whole apartment, now happens in the full-screen planner. Its full spec is in **`PLANNER.md`**, with the reference in `RaumPlan Editor.html`.
 
 ### 6. Design result (`design/[roomId]/page.tsx`, `design-view.tsx`)
 - Header: breadcrumb, h1 "Living room · design", meta (m², light, style), a version switcher (a segmented strip of `vN` buttons, latest marked) and "Generate new version ✦" (primary, `generate-design`).
@@ -288,3 +277,4 @@ No images. Every striped box (`.ph`) is a placeholder for a real photo (room ren
 - `atelier/atelier.css`: every style, with tokens as CSS variables at the top.
 - `atelier/atelier.js`: the plan SVG renderer, sample furniture, and the interactions (router, plan/list linking, generate progress, editor selection).
 - `Redesign Directions.html`: the original direction exploration (1b Atelier was chosen).
+- `RaumPlan Editor.html` + `atelier/editor.css` + `atelier/editor.js`: the full-screen planner (2D and 3D). Spec: `PLANNER.md`.
