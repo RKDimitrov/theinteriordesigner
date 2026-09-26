@@ -2,14 +2,17 @@
 
 import { useTranslations } from "next-intl";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { bbox, isAxisAlignedRect } from "@/domain/geometry/polygon";
 import { snap } from "@/domain/geometry/units";
 import type { Vec } from "@/domain/geometry/vec";
 import { nearestWall, wallOrientations, wallsOf, type Wall } from "@/domain/geometry/walls";
 import type { OpeningKind, RoomShape } from "@/domain/schemas/room";
 import { FixedElementShape, OpeningShape, RoomOutline, WallDimension } from "../plan-view/shapes";
+import { cn } from "@/lib/utils";
 import { CompassBadge } from "./compass";
+
+const zoomBtn =
+  "size-[34px] border-b border-foreground text-[15px] font-medium outline-none hover:bg-secondary focus-visible:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring";
 
 export type Tool = "select" | OpeningKind;
 
@@ -55,6 +58,7 @@ export function PlanCanvas(props: PlanCanvasProps) {
   const [view, setView] = useState<View>(() => fitView(room));
   const [drag, setDrag] = useState<Drag | null>(null);
   const [hover, setHover] = useState<{ wall: Wall; offset: number } | null>(null);
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
 
   const walls = room ? wallsOf(room.polygon) : [];
   const dirs = room ? wallOrientations(room.polygon, northAngleDeg, room.wallOrientationOverrides) : [];
@@ -181,21 +185,29 @@ export function PlanCanvas(props: PlanCanvasProps) {
     if (!svg) return;
     const listener = (e: WheelEvent) => onWheel(e);
     svg.addEventListener("wheel", listener, { passive: false });
-    return () => svg.removeEventListener("wheel", listener);
+    // Track the rendered size for the scale bar.
+    const ro = new ResizeObserver(([entry]) => entry && setBox({ w: entry.contentRect.width, h: entry.contentRect.height }));
+    ro.observe(svg);
+    return () => {
+      svg.removeEventListener("wheel", listener);
+      ro.disconnect();
+    };
   }, []);
+
+  // Pixels per cm with preserveAspectRatio="meet"; the scale bar shows 100 cm.
+  const pxPerCm = box ? Math.min(box.w / view.w, box.h / view.h) : 0;
 
   const draft = drag?.type === "draw" ? drag : null;
   const handle = unit * 1.6;
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="relative overflow-hidden rounded-lg border bg-muted/20">
+    <div className="relative overflow-hidden border-[1.5px] border-foreground bg-card">
         <svg
           ref={svgRef}
           data-testid="plan-canvas"
           viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
           preserveAspectRatio="xMidYMid meet"
-          className="aspect-[4/3] w-full touch-none select-none"
+          className="block aspect-[4/3] w-full touch-none select-none min-[900px]:aspect-auto min-[900px]:h-[520px]"
           style={{ cursor: !room ? "crosshair" : tool !== "select" ? "copy" : drag?.type === "pan" ? "grabbing" : "grab" }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -205,11 +217,11 @@ export function PlanCanvas(props: PlanCanvasProps) {
         >
           <defs>
             <pattern id="grid-minor" width={50} height={50} patternUnits="userSpaceOnUse">
-              <path d="M 50 0 L 0 0 0 50" className="fill-none stroke-border" strokeWidth={0.5} />
+              <path d="M 50 0 L 0 0 0 50" className="fill-none stroke-grid" strokeWidth={1} vectorEffect="non-scaling-stroke" />
             </pattern>
             <pattern id="grid-major" width={100} height={100} patternUnits="userSpaceOnUse">
               <rect width={100} height={100} fill="url(#grid-minor)" />
-              <path d="M 100 0 L 0 0 0 100" className="fill-none stroke-border" strokeWidth={1.2} />
+              <path d="M 100 0 L 0 0 0 100" className="fill-none stroke-dim/25" strokeWidth={1} vectorEffect="non-scaling-stroke" />
             </pattern>
           </defs>
           <rect x={view.x - view.w} y={view.y - view.h} width={view.w * 3} height={view.h * 3} fill="url(#grid-major)" />
@@ -238,13 +250,13 @@ export function PlanCanvas(props: PlanCanvasProps) {
                   y1={hover.wall.a.y}
                   x2={hover.wall.b.x}
                   y2={hover.wall.b.y}
-                  className="stroke-blue-500/60"
+                  className="stroke-primary/50"
                   strokeWidth={unit * 1.5}
                   pointerEvents="none"
                 />
               )}
               {tool === "select" && isRect && b && (
-                <g className="fill-blue-600 stroke-background" strokeWidth={unit * 0.3}>
+                <g className="fill-primary stroke-card" strokeWidth={unit * 0.3}>
                   <rect
                     data-testid="handle-right"
                     x={b.x + b.w - handle / 2}
@@ -287,29 +299,32 @@ export function PlanCanvas(props: PlanCanvasProps) {
                 y={Math.min(draft.start.y, draft.current.y)}
                 width={Math.abs(draft.current.x - draft.start.x)}
                 height={Math.abs(draft.current.y - draft.start.y)}
-                className="fill-blue-500/10 stroke-blue-600"
+                className="fill-primary/10 stroke-primary"
                 strokeWidth={unit * 0.4}
               />
-              <text x={draft.current.x + unit * 2} y={draft.current.y + unit * 4} fontSize={unit * 3} className="fill-blue-700">
+              <text x={draft.current.x + unit * 2} y={draft.current.y + unit * 4} fontSize={unit * 3} className="fill-clay-dark font-mono">
                 {Math.abs(draft.current.x - draft.start.x)} × {Math.abs(draft.current.y - draft.start.y)} cm
               </text>
             </g>
           )}
         </svg>
-        {!room && (
-          <p className="pointer-events-none absolute inset-x-0 top-3 text-center text-sm text-muted-foreground">{t("drawHint")}</p>
-        )}
-      </div>
-      <div className="flex gap-2">
-        <Button type="button" size="sm" variant="outline" aria-label={t("zoomIn")} onClick={() => zoom(1 / 1.25)}>
+      {!room && <p className="eyebrow pointer-events-none absolute inset-x-0 top-3 px-4 text-center">{t("drawHint")}</p>}
+      {pxPerCm > 0 && (
+        <div aria-hidden className="pointer-events-none absolute bottom-3 left-3.5 flex items-center gap-2 font-mono text-[11px]">
+          <span className="block h-1.5 border border-t-0 border-foreground" style={{ width: 100 * pxPerCm }} />
+          {t("scale")}
+        </div>
+      )}
+      <div className="absolute right-3 bottom-3 flex flex-col border-[1.5px] border-foreground bg-card font-mono">
+        <button type="button" aria-label={t("zoomIn")} onClick={() => zoom(1 / 1.25)} className={zoomBtn}>
           +
-        </Button>
-        <Button type="button" size="sm" variant="outline" aria-label={t("zoomOut")} onClick={() => zoom(1.25)}>
+        </button>
+        <button type="button" aria-label={t("zoomOut")} onClick={() => zoom(1.25)} className={zoomBtn}>
           −
-        </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => setView(fitView(room))}>
+        </button>
+        <button type="button" onClick={() => setView(fitView(room))} className={cn(zoomBtn, "border-b-0 text-[10px] uppercase")}>
           {t("fit")}
-        </Button>
+        </button>
       </div>
     </div>
   );

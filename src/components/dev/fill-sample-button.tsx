@@ -18,9 +18,8 @@ export function FillSampleButton({ onFill, label, disabled }: { onFill: (counter
   return (
     <Button
       type="button"
-      variant="outline"
-      size="sm"
-      className="border-dashed"
+      variant="ghost"
+      size="xs"
       disabled={disabled}
       onClick={() => {
         onFill(counter);

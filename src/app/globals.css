@@ -7,9 +7,35 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-heading: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --color-paper: var(--paper);
+  --color-sheet: var(--sheet);
+  --color-ink: var(--ink);
+  --color-clay: var(--clay);
+  --color-clay-dark: var(--clay-dark);
+  --color-walnut: var(--walnut);
+  --color-olive: var(--olive);
+  --color-warn: var(--warn);
+  --color-rule: var(--rule);
+  --color-line: var(--line);
+  --color-grid: var(--grid);
+  --color-dim: var(--dim);
+  --color-glass: var(--glass);
+  --color-tape: var(--tape);
+  --color-sticky: var(--sticky);
+  --color-highlight: var(--highlight);
+  --shadow-offset: 3px 3px 0 var(--ink);
+  --shadow-offset-lg: 4px 4px 0 var(--ink);
+  --shadow-offset-sm: 1px 1px 0 var(--ink);
+  --shadow-offset-clay: 3px 3px 0 var(--clay);
+  --shadow-card: 0 1px 0 #e6d9c4, 0 14px 24px -12px rgba(60, 40, 20, 0.28);
+  --shadow-card-hover: 0 1px 0 #e6d9c4, 0 22px 30px -14px rgba(60, 40, 20, 0.34);
+  --shadow-panel: 0 14px 24px -14px rgba(60, 40, 20, 0.28);
+  --ease-paper: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --animate-rise: rise 450ms var(--ease-paper) both;
+  --animate-pop: pop 350ms ease-out both;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,38 +75,56 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Atelier palette */
+  --paper: #f4ecdc;
+  --sheet: #fbf6ec;
+  --ink: #2b2622;
+  --clay: #c8794a;
+  --clay-dark: #8e4f2f;
+  --walnut: #6b4a32;
+  --olive: #5d6b3c;
+  --warn: #a6782a;
+  --rule: #b8a58a;
+  --line: #e3d6c1;
+  --grid: rgba(80, 110, 140, 0.1);
+  --dim: #5a6e82;
+  --glass: #dbe6ee;
+  --tape: rgba(214, 196, 160, 0.75);
+  --sticky: #fff8ec;
+  --highlight: #fff3e0;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--sheet);
+  --card-foreground: var(--ink);
+  --popover: var(--sheet);
+  --popover-foreground: var(--ink);
+  --primary: var(--clay);
+  --primary-foreground: #fff8ee;
+  --secondary: #efe4d0;
+  --secondary-foreground: var(--ink);
+  --muted: #efe4d0;
+  --muted-foreground: #6f6152;
+  --accent: var(--highlight);
+  --accent-foreground: var(--ink);
+  --destructive: #9a3b2a;
+  --border: #cbb9a0;
+  --input: var(--ink);
+  --ring: var(--clay);
+  --chart-1: #efe3cf;
+  --chart-2: #b9a58a;
+  --chart-3: #a57a52;
+  --chart-4: var(--clay);
+  --chart-5: var(--olive);
+  --radius: 0rem;
+  --sidebar: var(--sheet);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--clay);
+  --sidebar-primary-foreground: #fff8ee;
+  --sidebar-accent: var(--highlight);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: #cbb9a0;
+  --sidebar-ring: var(--clay);
 }
 
 .dark {
@@ -121,10 +165,206 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
+    @apply bg-background font-sans;
+  }
+  body {
+    @apply bg-background text-[15px] leading-[1.55] text-foreground;
+    /* paper grain */
+    background-image: radial-gradient(rgba(80, 55, 30, 0.07) 0.8px, transparent 1px);
+    background-size: 5px 5px;
+  }
+}
+
+/* Blueprint grid behind floor plans. */
+@utility bg-blueprint {
+  background-color: var(--sheet);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+
+/* Mono uppercase eyebrow / label. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Strip of tape across the top edge of a pinned sheet. */
+@utility tape {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -10px;
+    z-index: 1;
+    width: 86px;
+    height: 22px;
+    margin-left: -43px;
+    background: var(--tape);
+    border-inline: 1px dashed rgba(0, 0, 0, 0.08);
+    transform: rotate(-3deg);
+  }
+}
+
+/* Atelier layout parts that are awkward as utilities. */
+@layer components {
+  /* Header double rule: a second hairline 5px below the border. */
+  .double-rule {
+    position: relative;
+    border-bottom: 1px solid var(--ink);
+    &::after {
+      content: "";
+      position: absolute;
+      inset-inline: 0;
+      bottom: -5px;
+      border-bottom: 1px solid var(--ink);
+    }
+  }
+
+  .sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+    gap: 28px;
+  }
+  .sheet-grid > .taped {
+    transition:
+      rotate 250ms var(--ease-paper),
+      translate 250ms var(--ease-paper),
+      box-shadow 250ms;
+  }
+  .sheet-grid > .taped:nth-child(odd) {
+    rotate: -0.4deg;
+  }
+  .sheet-grid > .taped:nth-child(even) {
+    rotate: 0.5deg;
+  }
+  .sheet-grid > .taped:hover,
+  .sheet-grid > .taped:focus-within {
+    rotate: 0deg;
+    translate: 0 -3px;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  /* Ink chevron for native selects. */
+  .select-chevron {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' fill='none' stroke='%232b2622' stroke-width='1.5'/></svg>");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 12px 8px;
+  }
+
+  /* Plan walls draw in; furniture pops in after them. */
+  .plan-wall {
+    stroke-dasharray: 1;
+    animation: draw 1s ease-out 150ms both;
+  }
+  .plan-item {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: var(--animate-pop);
+    animation-delay: calc(600ms + var(--i, 0) * 60ms);
+  }
+
+  /* Corkboard: pins flow in a column on small screens, and are placed on wide ones. */
+  .board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    padding: 36px 20px;
+    border: 1.5px solid var(--ink);
+    background-color: #d9c7a6;
+    background-image: radial-gradient(rgba(60, 40, 20, 0.12) 1px, transparent 1.2px);
+    background-size: 7px 7px;
+    overflow: hidden;
+  }
+  .board > .pin {
+    position: relative;
+    width: min(100%, var(--w));
+    rotate: var(--r);
+    transition: rotate 250ms var(--ease-paper);
+  }
+  .board > .pin:hover,
+  .board > .pin:focus-within {
+    rotate: 0deg;
+    z-index: 5;
+  }
+  @media (min-width: 900px) {
+    .board {
+      display: block;
+      position: relative;
+      min-height: max(900px, var(--h));
+      padding: 0;
+    }
+    .board > .pin {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+    }
+  }
+
+  /* Page sections rise in, 50ms apart. */
+  .stagger > * {
+    animation: var(--animate-rise);
+  }
+  .stagger > :nth-child(2) {
+    animation-delay: 50ms;
+  }
+  .stagger > :nth-child(3) {
+    animation-delay: 100ms;
+  }
+  .stagger > :nth-child(4) {
+    animation-delay: 150ms;
+  }
+  .stagger > :nth-child(n + 5) {
+    animation-delay: 200ms;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RaumPlan — Atelier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="atelier/atelier.css">
+<script src="atelier/atelier.js"></script>
+</head>
+<body>
+<header class="nav"><a class="logo" href="#apartments">RaumPlan<sup>ATELIER</sup></a><nav><a data-nav="apartments" href="#apartments">Apartments</a><a data-nav="library" href="#library">Library</a><a data-nav="moodboard" href="#moodboard">Moodboards</a><a data-nav="settings" href="#settings">Settings</a></nav><div class="me"><span>R. Dimitrov</span><a class="av" href="#settings">RD</a></div></header>
+<div class="tip"></div>
+<main>
+
+<!-- 1 · APARTMENTS -->
+<section class="screen" data-id="apartments" data-screen-label="01 Apartments">
+<div class="sheet-head"><div><div class="k">Index · your apartment files</div><h1>Apartments</h1><div class="meta"><span>1 apartment</span><span>2 rooms</span><span>1 design</span></div></div>
+<div class="btns"><a class="btn p" href="#overview">+ New apartment</a></div></div>
+<div class="two">
+<div class="cards">
+<a class="card tape" href="#overview"><div class="ch"><h3>NovApartament</h3><span>59 m²</span></div>
+<div class="plan grid-bg" data-plan="living" data-opt='{"dims":false,"H":220}'></div>
+<div class="cf"><span class="label f">Step 4 of 4</span><span class="label">Sofia, BG</span><span class="label">Renting</span><span class="go">Open →</span></div></a>
+<a class="dash" href="#overview"><div><big>+</big>Start a new<br>apartment file</div></a>
+</div>
+<aside class="side">
+<section><h5><span>Recent entries</span><span>Log</span></h5>
+<div class="ledger">
+<div><time>25 Sep</time><p><b>Hol</b> design v2 saved</p><span class="label o">Valid</span></div>
+<div><time>24 Sep</time><p>Trends researched for Scandinavian</p><span></span></div>
+<div><time>19 Sep</time><p>Climate fetched for Sofia</p><span></span></div>
+<div><time>18 Sep</time><p><b>Living room</b> added</p><span></span></div>
+</div></section>
+<section><h5><span>Margin note</span></h5><p class="note">“Tiny rooms get two to four pieces. Leaving space is part of the design.”</p></section>
+</aside></div>
+</section>
+
+<!-- 2 · OVERVIEW / HISTORY -->
+<section class="screen" data-id="overview" data-screen-label="02 Apartment overview">
+<div class="sheet-head"><div><div class="crumb"><a href="#apartments">Apartments</a><span>/</span><span>Sheet 01</span></div><h1>Nov<em>Apartament</em></h1><div class="meta"><span>ul.26 Number 3, Sofia</span><span>59 m²</span><span>Floor 0</span><span>Renting</span></div></div>
+<div><div class="titleblock"><div><small>Project</small><b>NOV-001</b></div><div><small>North</small><b>12° off top</b></div><div><small>Rooms</small><b>02</b></div><div><small>Revised</small><b>25 Sep 2026</b></div></div><div class="btns"><button class="btn g dz">Delete</button><button class="btn g">Edit details</button><a class="btn p" href="RaumPlan Editor.html?room=all">Open planner →</a></div></div></div>
+<div class="ticket">
+<a href="RaumPlan Editor.html?room=all"><div class="k">Step 01</div><h4>Rooms</h4><p>2 rooms, 2 doors, 3 windows</p><div class="stamp">DONE<br>✓</div></a>
+<a href="#settings"><div class="k">Step 02</div><h4>Style profile</h4><p>Quiz 12/12, budgets set</p><div class="stamp">DONE<br>✓</div></a>
+<a href="#moodboard"><div class="k">Step 03</div><h4>Context</h4><p>Climate, daylight, trends</p><div class="stamp">DONE<br>✓</div></a>
+<a href="#design" class="now"><div class="k">Step 04 · now</div><h4>Design</h4><p>1 of 2 rooms drawn up</p><div class="stamp o">IN<br>PROG.</div></a>
+</div>
+<div class="two">
+<div><h2>Rooms <small>2 sheets</small><a class="btn p sm" href="#newroom">+ Add room</a></h2>
+<div class="cards">
+<div class="card tape"><div class="ch"><h3>Hol</h3><span>4.80 m²</span></div><div class="plan grid-bg" data-plan="hol" data-fur="hol"></div><div class="cf"><span class="label f">Designed · v2</span><span class="label">S · warm</span><a class="go" href="RaumPlan Editor.html?room=hol">Edit plan</a><a class="go" href="#design" style="margin-left:0">Open →</a></div></div>
+<div class="card tape"><div class="ch"><h3>Living room</h3><span>16.00 m²</span></div><div class="plan grid-bg" data-plan="living"></div><div class="cf"><span class="label c">No design yet</span><span class="label">N · cool</span><a class="go" href="RaumPlan Editor.html?room=living">Edit plan</a><a class="go" href="#design" style="color:var(--clay);margin-left:0">Generate →</a></div></div>
+</div>
+<h2 style="margin-top:44px">History <small>all versions</small></h2>
+<div class="ledger">
+<div><time>25 Sep 21:40</time><p><b>Hol · v2</b> generated, 1 repair round, 58 s, € 0.14</p><span class="label o">Valid</span></div>
+<div><time>25 Sep 21:12</time><p><b>Hol · v1</b> generated, 3 repair rounds, 94 s, € 0.19</p><span class="label c">Not valid</span></div>
+<div><time>24 Sep 18:03</time><p>Trends researched: 6 trends, 4 sources</p><span class="label">Context</span></div>
+<div><time>19 Sep 10:27</time><p>Style quiz finished: Scandinavian, Japandi</p><span class="label">Profile</span></div>
+</div></div>
+<aside class="side">
+<section><h5><span>Margin note</span><span>Context</span></h5><p class="note">“Moderate heating season: rugs and throws for winter, light textiles in summer.”</p></section>
+<section><h5><span>Climate · Sofia</span><a href="#">Re-check</a></h5><div class="rows"><div>Heating degree days<b>2670</b></div><div>Mean temperature<b>11.7 °C</b></div><div>Mean humidity<b>67.9 %</b></div><div>Winter daylight<b>9.7 h/day</b></div><div>Winter sunshine<b>6.7 h/day</b></div></div></section>
+<section><h5><span>Swatch card</span><span>Scandi · Japandi</span></h5><div class="chips"><div><i style="background:#efe3cf"></i><small>Linen</small></div><div><i style="background:#c8794a"></i><small>Clay</small></div><div><i style="background:#6b4a32"></i><small>Walnut</small></div><div><i style="background:#2f2620"></i><small>Ink</small></div></div></section>
+</aside></div>
+</section>
+
+<!-- 3 · NEW ROOM -->
+<section class="screen" data-id="newroom" data-screen-label="03 New room">
+<div class="sheet-head"><div><div class="crumb"><a href="#apartments">Apartments</a><span>/</span><a href="#overview">NovApartament</a><span>/</span><span>New sheet</span></div><h1>A new <em>room</em></h1><div class="meta"><span>Type its size, then pick a mood</span></div></div>
+<div class="btns"><a class="btn g" href="#overview">Cancel</a><a class="btn p" href="RaumPlan Editor.html?room=all">Save &amp; open planner →</a></div></div>
+<div class="two" id="nr-form">
+<div style="display:flex;flex-direction:column;gap:34px">
+<div><h2><small>01</small> Name &amp; type</h2>
+<div class="field" style="max-width:420px;margin-bottom:16px"><label>Room name</label><div class="inp"><input value="Bedroom"></div></div>
+<div class="flabel" style="margin-bottom:8px">Room type</div>
+<div class="types" data-group><button>Living room</button><button class="on">Bedroom</button><button>Kitchen</button><button>Bathroom</button><button>Office</button><button>Hallway</button><button>Dining room</button><button>Kids' room</button><button>Storage</button><button>Other</button></div></div>
+<div><h2><small>02</small> Size</h2>
+<div class="fg3"><div class="field"><label>Width</label><div class="inp"><input id="nr-w" type="number" value="340"><span>cm</span></div></div><div class="field"><label>Length</label><div class="inp"><input id="nr-l" type="number" value="290"><span>cm</span></div></div><div class="field"><label>Ceiling height</label><div class="inp"><input type="number" value="250"><span>cm</span></div></div></div>
+<p class="hint" style="margin-top:8px">Measure wall to wall at floor level. You can refine the shape and add doors and windows in the editor.</p></div>
+<div><h2><small>03</small> Mood for this room</h2>
+<p class="hint" style="margin:-8px 0 14px">Defaults to your apartment's style profile. Pick another to steer this room.</p>
+<div class="styles" data-group>
+<button class="on"><div class="ph">scandinavian</div><b>Scandinavian</b></button><button><div class="ph">japandi</div><b>Japandi</b></button><button><div class="ph">mid-century</div><b>Mid-century</b></button><button><div class="ph">industrial</div><b>Industrial</b></button>
+<button><div class="ph">modern classic</div><b>Modern classic</b></button><button><div class="ph">boho</div><b>Boho</b></button><button><div class="ph">minimal</div><b>Minimal</b></button><button><div class="ph">mediterranean</div><b>Mediterranean</b></button></div></div>
+<div><h2><small>04</small> Budget</h2>
+<div class="row" style="gap:20px"><input id="nr-budget" type="range" min="300" max="8000" step="100" value="1800" style="flex:1;accent-color:#c8794a"><b id="nr-bv" class="mono" style="font-size:22px;min-width:110px;text-align:right">€ 1,800</b></div>
+<p class="hint" style="margin-top:6px">Furniture, lighting and textiles for this room.</p></div>
+</div>
+<aside class="side" style="position:sticky;top:20px">
+<section><h5><span>Live sketch</span><span>1 : 50</span></h5><div class="card"><div class="plan grid-bg"><div id="nr-plan"></div></div></div></section>
+<section><h5><span>Area</span></h5><div class="big-area" id="nr-area">9,86 m²</div><p class="hint">A comfortable bedroom fits a 160 cm bed with 60 cm on both sides.</p></section>
+</aside></div>
+</section>
+
+<!-- 5 · DESIGN RESULT -->
+<section class="screen" data-id="design" data-screen-label="05 Design result">
+<div class="sheet-head"><div><div class="crumb"><a href="#apartments">Apartments</a><span>/</span><a href="#overview">NovApartament</a><span>/</span><span>Living room</span></div><h1>Living room <em>· design</em></h1><div class="meta"><span>16.00 m²</span><span>North windows · cool light</span><span>Scandinavian</span></div></div>
+<div><div class="versions" style="margin-left:auto"><button class="on">v1 · latest</button></div><div class="btns"><a class="btn" href="RaumPlan Editor.html?room=living">Edit in planner</a><button class="btn p" id="gen-btn">Generate new version ✦</button></div></div></div>
+<div class="progress" style="margin-bottom:24px"><div class="row" style="justify-content:space-between"><b class="mono" style="font-size:12px;text-transform:uppercase;letter-spacing:.1em">Drawing up a new version</b><span class="k">about a minute · ~€ 0.15</span></div><div class="bar"><i style="width:0"></i></div>
+<ol><li>Gathering context…</li><li>Choosing pieces, colours and materials…</li><li>Placing furniture…</li><li>Checking geometry and rules…</li></ol></div>
+<div class="two" style="grid-template-columns:minmax(0,1fr) 360px">
+<div>
+<div class="card"><div class="plan grid-bg" id="design-plan" data-plan="living" data-fur="living" data-opt='{"W":640,"H":540,"P":60,"fs":12}'></div>
+<div class="legend"><span><i style="background:#b9a58a"></i>Seating</span><span><i style="background:#6b4a32"></i>Storage</span><span><i style="background:#e2cfae;border-style:dashed"></i>Rug</span><span><i style="background:#5d6b3c;border-radius:50%"></i>Plant</span><span style="margin-left:auto;color:var(--mute)">Hover a piece for details</span></div></div>
+<h2 style="margin-top:40px">Furniture <small>8 pieces · € 2,270</small></h2>
+<div class="items">
+<div class="hd"><span class="n">#</span><span></span><span>Piece</span><span class="dm">Size</span><span class="tier">Tier</span><span class="pr">Price</span></div>
+<div data-item="1"><span class="n">01</span><i class="sw" style="background:#b9a58a"></i><div><b>Sofa, 3-seat linen</b><small>Search: linen sofa 210 cm</small></div><small class="dm">210 × 90 × 82</small><span class="tier"><span class="label">anchor</span></span><span class="pr">€ 890</span></div>
+<div data-item="2"><span class="n">02</span><i class="sw" style="background:#e2cfae"></i><div><b>Wool rug, flatweave</b><small>Search: flatweave wool rug 200×230</small></div><small class="dm">200 × 230</small><span class="tier"><span class="label">mid</span></span><span class="pr">€ 240</span></div>
+<div data-item="3"><span class="n">03</span><i class="sw" style="background:#a57a52"></i><div><b>Coffee table, oak</b><small>existing piece</small></div><small class="dm">100 × 60 × 40</small><span class="tier"><span class="label">mid</span></span><span class="pr">€ 180</span></div>
+<div data-item="4"><span class="n">04</span><i class="sw" style="background:#6b4a32"></i><div><b>TV unit, walnut</b><small>wall-standing, no drilling</small></div><small class="dm">160 × 45 × 50</small><span class="tier"><span class="label">anchor</span></span><span class="pr">€ 320</span></div>
+<div data-item="5"><span class="n">05</span><i class="sw" style="background:#c8794a"></i><div><b>Armchair, clay bouclé</b><small>reading corner by the window</small></div><small class="dm">80 × 80 × 78</small><span class="tier"><span class="label">mid</span></span><span class="pr">€ 290</span></div>
+<div data-item="6"><span class="n">06</span><i class="sw" style="background:#efe3cf"></i><div><b>Floor lamp, paper shade</b><small>2700 K · ambient</small></div><small class="dm">40 × 40 × 150</small><span class="tier"><span class="label">swappable</span></span><span class="pr">€ 95</span></div>
+<div data-item="7"><span class="n">07</span><i class="sw" style="background:#8a6a4a"></i><div><b>Low bookshelf</b><small>Search: low oak bookcase 180</small></div><small class="dm">180 × 35 × 80</small><span class="tier"><span class="label">anchor</span></span><span class="pr">€ 210</span></div>
+<div data-item="8"><span class="n">08</span><i class="sw" style="background:#5d6b3c"></i><div><b>Fiddle-leaf fig</b><small>likes the bright north corner</small></div><small class="dm">Ø 40 × 160</small><span class="tier"><span class="label">swappable</span></span><span class="pr">€ 45</span></div>
+</div></div>
+<aside class="side" style="position:sticky;top:20px">
+<div class="status warn"><div class="stamp">VALID<br>~</div><div><h4>Valid with warnings</h4><p>No errors. 2 recommendations are not met.</p></div></div>
+<section style="margin-top:22px"><h5><span>Problems</span><span>2</span></h5>
+<div class="issue"><span class="label c">Warn</span><span>Walkway from the door to the armchair narrows to 76 cm (80 recommended).</span></div>
+<div class="issue"><span class="label c">Warn</span><span>Floor lamp has no socket within 150 cm.</span></div></section>
+<section><h5><span>Concept</span></h5><p class="note">“A reading room that faces north: warm clay and oak against cool daylight.”</p></section>
+<section><h5><span>Palette</span><span>shares</span></h5><div class="palette"><i style="background:#efe3cf;flex:40"><span>40%</span></i><i style="background:#b9a58a;flex:25"><span>25%</span></i><i style="background:#a57a52;flex:15"><span>15</span></i><i style="background:#c8794a;flex:12"><span>12</span></i><i style="background:#5d6b3c;flex:8"></i></div></section>
+<section><h5><span>Budget</span><span>€ 2,400</span></h5><div class="rows"><div>Estimated cost<b>€ 1,950–2,400</b></div><div>Generated by<b>Sonnet 5 · 61 s</b></div><div>Repairs<b>none</b></div></div></section>
+</aside></div>
+</section>
+
+<!-- 6 · LIBRARY -->
+<section class="screen" data-id="library" data-screen-label="06 Library">
+<div class="sheet-head"><div><div class="k">Catalogue · pieces &amp; materials</div><h1>Library</h1><div class="meta"><span>Pieces the designer can use</span><span>Your own pieces marked</span></div></div>
+<div class="btns"><button class="btn">+ Add my own piece</button></div></div>
+<div class="tabs"><button class="on" data-tab="fur">Furniture</button><button data-tab="mat">Materials</button></div>
+<div data-pane="fur">
+<div class="filters" data-multi><span class="k" style="margin-right:6px">Filter</span><button class="label f">All</button><button class="label">Seating</button><button class="label">Tables</button><button class="label">Storage</button><button class="label">Lighting</button><button class="label">Textiles</button><button class="label">Mine</button><button class="label">Renter-friendly</button></div>
+<div class="cards">
+<div class="card tape icard"><div class="ph">photo · linen sofa</div><div class="bd"><h4>Sofa, 3-seat linen</h4><div class="dims">210 × 90 × 82 cm · anchor</div><div class="ft"><span class="price">€ 890</span><button class="btn sm" data-add>+ Add</button></div></div></div>
+<div class="card icard"><div class="ph">photo · bouclé armchair</div><div class="bd"><h4>Armchair, bouclé</h4><div class="dims">80 × 80 × 78 cm · mid</div><div class="ft"><span class="price">€ 290</span><button class="btn sm on" data-add>Added ✓</button></div></div></div>
+<div class="card icard"><div class="ph">photo · oak coffee table</div><div class="bd"><h4>Coffee table, oak</h4><div class="dims">100 × 60 × 40 cm · <span style="color:var(--olive)">yours</span></div><div class="ft"><span class="price">owned</span><span class="label o">Mine</span></div></div></div>
+<div class="card tape icard"><div class="ph">photo · walnut TV unit</div><div class="bd"><h4>TV unit, walnut</h4><div class="dims">160 × 45 × 50 cm · anchor</div><div class="ft"><span class="price">€ 320</span><button class="btn sm" data-add>+ Add</button></div></div></div>
+<div class="card icard"><div class="ph">photo · paper floor lamp</div><div class="bd"><h4>Floor lamp, paper shade</h4><div class="dims">Ø 40 × 150 cm · swappable</div><div class="ft"><span class="price">€ 95</span><button class="btn sm" data-add>+ Add</button></div></div></div>
+<div class="card icard"><div class="ph">photo · slim oak bench</div><div class="bd"><h4>Slim bench, oak</h4><div class="dims">110 × 35 × 45 cm · mid</div><div class="ft"><span class="price">€ 160</span><button class="btn sm" data-add>+ Add</button></div></div></div>
+</div></div>
+<div data-pane="mat" style="display:none">
+<div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+<div class="card mat"><div class="sw" style="background:#efe3cf"><span>Textile</span></div><div class="ch"><h3 style="font-size:24px">Natural linen</h3><span>#EFE3CF</span></div></div>
+<div class="card mat"><div class="sw" style="background:#a57a52"><span>Wood</span></div><div class="ch"><h3 style="font-size:24px">Oiled oak</h3><span>#A57A52</span></div></div>
+<div class="card mat"><div class="sw" style="background:#c8794a"><span>Textile</span></div><div class="ch"><h3 style="font-size:24px">Clay bouclé</h3><span>#C8794A</span></div></div>
+<div class="card mat"><div class="sw" style="background:#6b4a32"><span>Wood</span></div><div class="ch"><h3 style="font-size:24px">Walnut veneer</h3><span>#6B4A32</span></div></div>
+<div class="card mat"><div class="sw" style="background:#d8d0c2"><span>Wall</span></div><div class="ch"><h3 style="font-size:24px">Lime wash</h3><span>#D8D0C2</span></div></div>
+<div class="card mat"><div class="sw" style="background:#5d6b3c"><span>Accent</span></div><div class="ch"><h3 style="font-size:24px">Moss wool</h3><span>#5D6B3C</span></div></div>
+</div></div>
+</section>
+
+<!-- 7 · MOODBOARD -->
+<section class="screen" data-id="moodboard" data-screen-label="07 Moodboard">
+<div class="sheet-head"><div><div class="crumb"><a href="#apartments">Apartments</a><span>/</span><a href="#overview">NovApartament</a><span>/</span><span>Board</span></div><h1>Mood<em>board</em></h1><div class="meta"><span>Pinned from your designs, trends and uploads</span></div></div>
+<div class="btns"><button class="btn g">Share</button><button class="btn p">+ Pin something</button></div></div>
+<div class="board">
+<figure class="pin tp" style="left:4%;top:40px;width:300px;height:240px;transform:rotate(-2deg)"><div class="ph" style="height:190px">photo · north light on linen</div><figcaption>Living room · reference</figcaption></figure>
+<div class="slip" style="left:36%;top:60px;transform:rotate(1.5deg)">“Warm clay and oak against cool daylight.”<small>Concept · living room v1</small></div>
+<div class="fabric" style="left:64%;top:40px;background:#c8794a;transform:rotate(6deg)"><span>Bouclé</span></div>
+<div class="fabric" style="left:76%;top:90px;background:#efe3cf;transform:rotate(-4deg)"><span>Linen</span></div>
+<figure class="pin" style="left:34%;top:250px;width:260px;height:320px;transform:rotate(-1deg)"><div class="ph" style="height:270px">photo · oak bench detail</div><figcaption>Hol · slim bench</figcaption></figure>
+<figure class="pin tp" style="left:62%;top:270px;width:320px;padding:14px;transform:rotate(1.2deg)"><div class="k" style="margin-bottom:8px">Trend · lasting</div><div style="font:28px/1.1 var(--serif)">Warm woods and limewash walls</div><figcaption style="color:var(--mute)">Scandinavian in BG · researched 24 Sep</figcaption></figure>
+<div class="pin" style="left:5%;top:330px;width:240px;padding:12px;transform:rotate(2deg)"><div class="palette" style="height:60px"><i style="background:#efe3cf;flex:4"></i><i style="background:#b9a58a;flex:3"></i><i style="background:#c8794a;flex:2"></i><i style="background:#5d6b3c;flex:1"></i></div><figcaption>Living room palette</figcaption></div>
+<div class="fabric" style="left:8%;top:560px;background:#5d6b3c;transform:rotate(-8deg)"><span>Moss wool</span></div>
+<div class="slip" style="left:22%;top:620px;transform:rotate(-2deg)">“Sheers for glare, UV-stable fabrics near south windows.”<small>Context · Hol</small></div>
+<figure class="pin tp" style="left:62%;top:500px;width:280px;height:250px;transform:rotate(-1.6deg)"><div class="ph" style="height:200px">photo · paper floor lamp</div><figcaption>Lighting · 2700 K</figcaption></figure>
+<a class="dash" href="#moodboard" style="position:absolute;left:44%;top:640px;width:180px;min-height:180px;background:rgba(251,246,236,.5)"><div><big>+</big>Pin</div></a>
+</div>
+</section>
+
+<!-- 8 · SETTINGS -->
+<section class="screen" data-id="settings" data-screen-label="08 Settings">
+<div class="sheet-head"><div><div class="k">Account · preferences</div><h1>Settings</h1><div class="meta"><span>rados@example.com</span><span>Member since Sep 2026</span></div></div>
+<div class="btns"><button class="btn g">Sign out</button><button class="btn p">Save changes</button></div></div>
+<div class="set"><div><h3>Profile</h3><p class="hint">How you appear on shared boards.</p></div><div class="bd">
+<div class="fg"><div class="field"><label>Name</label><div class="inp"><input value="Rados Dimitrov"></div></div><div class="field"><label>Email</label><div class="inp"><input value="rados@example.com"></div></div></div></div></div>
+<div class="set"><div><h3>Household</h3><p class="hint">Steers every design.</p></div><div class="bd">
+<div class="fg3"><div class="field"><label>Adults</label><div class="inp"><input type="number" value="2"></div></div><div class="field"><label>Kids</label><div class="inp"><input type="number" value="0"></div></div><div class="field"><label>WFH days / week</label><div class="inp"><input type="number" value="3"></div></div></div>
+<div class="flabel">Pets</div><div class="types" data-multi><button>Dog</button><button class="on">Cat</button><button>Small animal</button></div></div></div>
+<div class="set"><div><h3>Units &amp; language</h3></div><div class="bd">
+<div class="toggle"><span>Measurements</span><div class="seg" data-group><button class="on">cm</button><button>inches</button></div></div>
+<div class="toggle"><span>Currency</span><div class="seg" data-group><button class="on">EUR</button><button>BGN</button><button>USD</button></div></div>
+<div class="toggle"><span>Language</span><div class="seg" data-group><button class="on">English</button><button>Deutsch</button><button>Български</button></div></div></div></div>
+<div class="set"><div><h3>Planner</h3><p class="hint">How much the planner shows.</p></div><div class="bd">
+<div class="toggle"><span>Layout</span><div class="seg" id="plv"><button data-v="calm">Simple</button><button data-v="quiet" class="on">Balanced</button><button data-v="full">Detailed</button></div></div>
+<p class="hint" id="plv-h" style="margin-top:-8px">Every tool with quiet styling. Recommended.</p>
+<div class="toggle"><span>3D opens with</span><div class="seg" data-group><button class="on">Current room</button><button>All rooms</button></div></div>
+<a class="btn sm" href="RaumPlan Editor.html?room=all" style="align-self:flex-start">Open planner →</a></div></div>
+<div class="set"><div><h3>Designer</h3><p class="hint">AI generation and cost.</p></div><div class="bd">
+<div class="toggle"><span>Repair automatically, up to 3 rounds</span><div class="sw-t on"></div></div>
+<div class="toggle"><span>Research trends before each design</span><div class="sw-t"></div></div>
+<div class="toggle"><span>Renter-friendly pieces only</span><div class="sw-t on"></div></div>
+<div class="rows"><div>Spent this month<b>€ 0.48</b></div><div>Designs generated<b>3</b></div></div></div></div>
+<div class="set"><div><h3 style="color:var(--red)">Danger zone</h3></div><div class="bd"><div class="toggle"><span>Delete your account and all apartments. This can't be undone.</span><button class="btn dz">Delete account</button></div></div></div>
+</section>
+
+</main>
+<script>(()=>{const g=document.getElementById('plv'),H={calm:'Only the essentials. Extra tools sit behind “More tools”.',quiet:'Every tool with quiet styling. Recommended.',full:'Every tool and readout: title block, full camera controls, scene settings.'};const set=v=>{[...g.children].forEach(b=>b.classList.toggle('on',b.dataset.v==v));document.getElementById('plv-h').textContent=H[v]};try{set(localStorage.getItem('rp-planner-view2')||'quiet')}catch(e){}g.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;set(b.dataset.v);try{localStorage.setItem('rp-planner-view2',b.dataset.v)}catch(e){}})})()</script>
+</body></html>

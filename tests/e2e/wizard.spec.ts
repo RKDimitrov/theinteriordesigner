@@ -15,7 +15,8 @@ test("create apartment, add room by dimensions with a door and a window, reload 
   const door = page.getByTestId("opening-door-1");
   await expect(door).toBeVisible();
   await door.getByLabel("Wall").selectOption("2");
-  await door.getByLabel("Opens").selectOption("in");
+  await door.getByRole("radio", { name: "Into room" }).click();
+  await expect(door.getByRole("radio", { name: "Into room" })).toBeChecked();
 
   await page.getByRole("button", { name: "Add Window" }).click();
   const win = page.getByTestId("opening-window-1");

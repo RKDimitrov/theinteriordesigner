@@ -39,3 +39,22 @@ export async function logLlmCall(c: LlmCallLog): Promise<string | null> {
     return null;
   }
 }
+
+export interface MonthlyUsage {
+  /** Calls and estimated EUR per purpose ("design", "repair", "trends", …). */
+  byPurpose: { purpose: string; calls: number; costEur: number }[];
+  totalEur: number;
+}
+
+/** The user's Claude usage since the first of this month (UTC). */
+export async function monthlyUsage(userId: string, now = new Date()): Promise<MonthlyUsage> {
+  const since = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const rows = await db.llmCall.groupBy({
+    by: ["purpose"],
+    where: { userId, createdAt: { gte: since } },
+    _count: { _all: true },
+    _sum: { costEstimateEur: true },
+  });
+  const byPurpose = rows.map((r) => ({ purpose: r.purpose, calls: r._count._all, costEur: r._sum.costEstimateEur ?? 0 }));
+  return { byPurpose, totalEur: byPurpose.reduce((s, r) => s + r.costEur, 0) };
+}

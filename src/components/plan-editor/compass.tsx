@@ -13,9 +13,9 @@ const C = SIZE / 2;
 function Arrow({ angle, r }: { angle: number; r: number }) {
   return (
     <g transform={`rotate(${angle})`}>
-      <polygon points={`0,${-r} ${r * 0.22},0 0,${-r * 0.15} ${-r * 0.22},0`} className="fill-red-600" />
-      <polygon points={`0,${r} ${r * 0.22},0 0,${r * 0.15} ${-r * 0.22},0`} className="fill-muted-foreground/40" />
-      <text y={-r - 4} textAnchor="middle" className="fill-foreground text-[11px] font-semibold" transform={`rotate(${-angle} 0 ${-r - 8})`}>
+      <polygon points={`0,${-r} ${r * 0.22},0 0,${-r * 0.15} ${-r * 0.22},0`} className="fill-primary" />
+      <polygon points={`0,${r} ${r * 0.22},0 0,${r * 0.15} ${-r * 0.22},0`} className="fill-rule" />
+      <text y={-r - 4} textAnchor="middle" className="fill-foreground font-mono text-[11px] font-semibold" transform={`rotate(${-angle} 0 ${-r - 8})`}>
         N
       </text>
     </g>
@@ -48,7 +48,7 @@ export function CompassInput({ value, onChange }: { value: number; onChange: (de
         width={SIZE}
         height={SIZE}
         viewBox={`${-C} ${-C} ${SIZE} ${SIZE}`}
-        className="cursor-grab touch-none rounded-full border bg-muted/30 select-none"
+        className="cursor-grab touch-none rounded-full border-[1.5px] border-foreground bg-card select-none focus-visible:shadow-offset-clay focus-visible:outline-none"
         onPointerDown={(e) => {
           dragging.current = true;
           e.currentTarget.setPointerCapture(e.pointerId);
@@ -61,9 +61,9 @@ export function CompassInput({ value, onChange }: { value: number; onChange: (de
           if (e.key === "ArrowLeft" || e.key === "ArrowDown") onChange((value + 355) % 360);
         }}
       >
-        <circle r={C - 6} className="fill-none stroke-border" />
+        <circle r={C - 6} className="fill-none stroke-rule" strokeDasharray="2 3" />
         {[0, 90, 180, 270].map((a) => (
-          <line key={a} y1={-(C - 6)} y2={-(C - 14)} transform={`rotate(${a})`} className="stroke-muted-foreground" />
+          <line key={a} y1={-(C - 6)} y2={-(C - 14)} transform={`rotate(${a})`} className="stroke-foreground" />
         ))}
         <Arrow angle={value} r={C - 26} />
       </svg>
@@ -84,7 +84,7 @@ export function CompassInput({ value, onChange }: { value: number; onChange: (de
 export function CompassBadge({ angle, x, y, size = 36 }: { angle: number; x: number; y: number; size?: number }) {
   return (
     <g transform={`translate(${x} ${y})`} aria-hidden>
-      <circle r={size / 2} className="fill-background/80 stroke-border" vectorEffect="non-scaling-stroke" />
+      <circle r={size / 2} className="fill-card stroke-foreground" strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
       <Arrow angle={angle} r={size / 2 - 6} />
     </g>
   );

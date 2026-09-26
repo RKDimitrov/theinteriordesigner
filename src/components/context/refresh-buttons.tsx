@@ -30,15 +30,23 @@ export function RefreshTrendsButton({ apartmentId, disabled }: { apartmentId: st
   );
 }
 
-export function RefreshLocationButton({ apartmentId }: { apartmentId: string }) {
+export function RefreshLocationButton({
+  apartmentId,
+  label,
+  variant = "outline",
+}: {
+  apartmentId: string;
+  label?: string;
+  variant?: "outline" | "link";
+}) {
   const t = useTranslations("Context");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   return (
     <Button
       type="button"
-      size="sm"
-      variant="outline"
+      size={variant === "link" ? "xs" : "sm"}
+      variant={variant}
       disabled={pending}
       onClick={() =>
         startTransition(async () => {
@@ -48,7 +56,7 @@ export function RefreshLocationButton({ apartmentId }: { apartmentId: string }) 
         })
       }
     >
-      {t("refreshLocation")}
+      {label ?? t("refreshLocation")}
     </Button>
   );
 }

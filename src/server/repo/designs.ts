@@ -113,3 +113,40 @@ export async function linkCallsToDesign(callIds: readonly string[], designId: st
   if (callIds.length === 0) return;
   await db.llmCall.updateMany({ where: { id: { in: [...callIds] } }, data: { designId } });
 }
+
+export interface DesignHistoryEntry {
+  roomId: string;
+  roomName: string;
+  version: number;
+  status: DesignStatus;
+  repairAttempts: number;
+  durationMs: number;
+  costEstimateEur: number;
+  createdAt: Date;
+}
+
+/** Every design version of an apartment, newest first. */
+export async function designHistory(userId: string, apartmentId: string, limit = 50): Promise<DesignHistoryEntry[]> {
+  if (!isUuid(apartmentId)) return [];
+  const rows = await db.design.findMany({
+    where: { room: { apartmentId, apartment: { userId } } },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: { roomId: true, version: true, status: true, validation: true, durationMs: true, costEstimateEur: true, createdAt: true, room: { select: { name: true } } },
+  });
+  return rows.map((r) => ({
+    roomId: r.roomId,
+    roomName: r.room.name,
+    version: r.version,
+    status: DesignStatus.parse(r.status),
+    repairAttempts: Validation.safeParse(r.validation).data?.repairAttempts ?? 0,
+    durationMs: r.durationMs,
+    costEstimateEur: r.costEstimateEur,
+    createdAt: r.createdAt,
+  }));
+}
+
+/** Number of saved design versions across all of the user's apartments. */
+export async function countDesigns(userId: string): Promise<number> {
+  return db.design.count({ where: { room: { apartment: { userId } } } });
+}

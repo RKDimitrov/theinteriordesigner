@@ -3,10 +3,11 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Panel } from "@/components/atelier/panel";
 import { FillSampleButton } from "@/components/dev/fill-sample-button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { fieldLabelClass } from "@/components/ui/label";
 import { NumberField, SelectField, TextField } from "@/components/wizard/fields";
 import { area, bbox, rectPolygon } from "@/domain/geometry/polygon";
 import { m2 } from "@/domain/geometry/units";
@@ -132,22 +133,25 @@ export function RoomEditor({ apartmentId, northAngleDeg, room }: RoomEditorProps
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-      <div className="flex flex-col gap-3">
-        <div role="toolbar" aria-label={t("tools")} className="flex flex-wrap gap-2">
-          {(["select", ...KINDS] as const).map((k) => (
-            <Button
-              key={k}
-              type="button"
-              size="sm"
-              variant={tool === k ? "default" : "outline"}
-              aria-pressed={tool === k}
-              disabled={k !== "select" && !shape}
-              onClick={() => setTool(k)}
-            >
-              {k === "select" ? t("toolSelect") : tk(k)}
-            </Button>
-          ))}
+    <div className="grid items-start gap-10 min-[900px]:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="flex min-w-0 flex-col gap-3 min-[900px]:sticky min-[900px]:top-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <div role="toolbar" aria-label={t("tools")} className="flex flex-wrap gap-2">
+            {(["select", ...KINDS] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={tool === k}
+                disabled={k !== "select" && !shape}
+                onClick={() => setTool(k)}
+                className="flex items-center gap-2 border-[1.5px] border-foreground bg-card px-3.5 py-[9px] font-mono text-[11.5px] font-medium tracking-[0.08em] uppercase transition-shadow outline-none hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 aria-pressed:bg-foreground aria-pressed:text-card aria-pressed:shadow-offset-clay"
+              >
+                <ToolGlyph kind={k} />
+                {k === "select" ? t("toolSelect") : tk(k)}
+              </button>
+            ))}
+          </div>
+          <p className="eyebrow ml-auto">{!shape ? t("drawHintShort") : tool === "select" ? t("selectHint") : t("placeHint")}</p>
         </div>
         <PlanCanvas
           key={shape ? "room" : "draw"}
@@ -163,157 +167,170 @@ export function RoomEditor({ apartmentId, northAngleDeg, room }: RoomEditorProps
         />
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>{room ? t("editTitle") : t("newTitle")}</CardTitle>
-            <CardAction>
-              <FillSampleButton onFill={fillSample} />
-            </CardAction>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-3">
-            <TextField className="col-span-2" label={t("name")} value={meta.name} maxLength={60} error={fieldErrors["name"]} onChange={(v) => setMeta((m) => ({ ...m, name: v }))} />
-            <SelectField
-              className="col-span-2"
-              label={t("type")}
-              value={meta.type}
-              options={RoomType.options.map((v) => ({ value: v, label: tt(v) }))}
-              onChange={(v) => setMeta((m) => ({ ...m, type: v }))}
-            />
-            <NumberField label={t("width")} value={dims.w} min={MIN_ROOM_SIDE} step={5} suffix={tc("cm")} optional onChange={(v) => setDims((d) => ({ ...d, w: v === null ? null : Math.round(v) }))} />
-            <NumberField label={t("length")} value={dims.d} min={MIN_ROOM_SIDE} step={5} suffix={tc("cm")} optional onChange={(v) => setDims((d) => ({ ...d, d: v === null ? null : Math.round(v) }))} />
-            <NumberField
-              label={t("ceiling")}
-              value={meta.ceilingHeight}
-              min={180}
-              max={600}
-              suffix={tc("cm")}
-              error={fieldErrors["ceilingHeight"]}
-              onChange={(v) => setMeta((m) => ({ ...m, ceilingHeight: Math.round(v ?? 0) }))}
-            />
-            <div className="flex flex-col justify-end gap-1.5 text-sm">
-              <span className="font-medium">{t("area")}</span>
-              <span data-testid="room-area">{shape ? `${m2(area(shape.polygon)).toFixed(2)} ${tc("m2")}` : "—"}</span>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex min-w-0 flex-col gap-5">
+        <Panel title={t("roomPanel")} action={<FillSampleButton onFill={fillSample} />} bodyClassName="grid grid-cols-2 gap-3.5">
+          <TextField className="col-span-2" label={t("name")} value={meta.name} maxLength={60} error={fieldErrors["name"]} onChange={(v) => setMeta((m) => ({ ...m, name: v }))} />
+          <SelectField
+            className="col-span-2"
+            label={t("type")}
+            value={meta.type}
+            options={RoomType.options.map((v) => ({ value: v, label: tt(v) }))}
+            onChange={(v) => setMeta((m) => ({ ...m, type: v }))}
+          />
+          <NumberField label={t("width")} value={dims.w} min={MIN_ROOM_SIDE} step={5} suffix={tc("cm")} optional onChange={(v) => setDims((d) => ({ ...d, w: v === null ? null : Math.round(v) }))} />
+          <NumberField label={t("length")} value={dims.d} min={MIN_ROOM_SIDE} step={5} suffix={tc("cm")} optional onChange={(v) => setDims((d) => ({ ...d, d: v === null ? null : Math.round(v) }))} />
+          <NumberField
+            label={t("ceiling")}
+            value={meta.ceilingHeight}
+            min={180}
+            max={600}
+            suffix={tc("cm")}
+            error={fieldErrors["ceilingHeight"]}
+            onChange={(v) => setMeta((m) => ({ ...m, ceilingHeight: Math.round(v ?? 0) }))}
+          />
+          <div className="flex flex-col justify-end gap-1.5">
+            <span className={fieldLabelClass}>{t("area")}</span>
+            <span data-testid="room-area" className="font-heading text-[34px] leading-none tabular-nums">
+              {shape ? `${m2(area(shape.polygon)).toFixed(2)} ${tc("m2")}` : "—"}
+            </span>
+          </div>
+        </Panel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("openings")}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {meta.openings.length === 0 && <p className="text-sm text-muted-foreground">{t("noOpenings")}</p>}
-            {meta.openings.map((o, i) => (
-              <OpeningForm
-                key={o.id}
-                index={i}
-                opening={o}
-                walls={walls}
-                dirs={dirs}
-                selected={o.id === selectedId}
-                errors={fieldErrors}
-                onSelect={() => setSelectedId(o.id)}
-                onChange={(next) => setOpenings((os) => os.map((x) => (x.id === o.id ? next : x)))}
-                onRemove={() => setOpenings((os) => os.filter((x) => x.id !== o.id))}
+        <Panel title={t("openings")} action={<span className="eyebrow">{t("items", { count: meta.openings.length })}</span>}>
+          {meta.openings.length === 0 && <p className="text-[12.5px] text-muted-foreground">{t("noOpenings")}</p>}
+          {meta.openings.map((o, i) => (
+            <OpeningForm
+              key={o.id}
+              index={i}
+              opening={o}
+              walls={walls}
+              dirs={dirs}
+              selected={o.id === selectedId}
+              errors={fieldErrors}
+              onSelect={() => setSelectedId(o.id)}
+              onChange={(next) => setOpenings((os) => os.map((x) => (x.id === o.id ? next : x)))}
+              onRemove={() => setOpenings((os) => os.filter((x) => x.id !== o.id))}
+            />
+          ))}
+          <div className="flex flex-wrap gap-2">
+            {KINDS.map((k) => (
+              <Button
+                key={k}
+                type="button"
+                size="xs"
+                variant="outline"
+                disabled={!shape}
+                onClick={() => {
+                  const wall = walls[0];
+                  if (wall) addOpening(k, 0, wall.length / 2);
+                }}
+              >
+                {t("add", { kind: tk(k) })}
+              </Button>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title={t("fixedElements")}>
+          {meta.fixedElements.map((f, i) => (
+            <fieldset key={f.id} className="grid grid-cols-3 gap-2.5 border border-dashed border-rule px-3.5 pt-3 pb-3.5">
+              <legend className="px-1.5 font-mono text-[11px] font-medium tracking-[0.1em] uppercase">
+                {tf(f.kind)} · {f.id}
+              </legend>
+              <TextField
+                className="col-span-2"
+                label={t("fixedLabel")}
+                value={f.label}
+                maxLength={60}
+                error={fieldErrors[`fixedElements.${i}.rect`]}
+                onChange={(v) => setFixed((fs) => fs.map((x) => (x.id === f.id ? { ...x, label: v } : x)))}
               />
-            ))}
-            <div className="flex flex-wrap gap-2">
-              {KINDS.map((k) => (
-                <Button
-                  key={k}
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  disabled={!shape}
-                  onClick={() => {
-                    const wall = walls[0];
-                    if (wall) addOpening(k, 0, wall.length / 2);
-                  }}
-                >
-                  {t("add", { kind: tk(k) })}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("fixedElements")}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            {meta.fixedElements.map((f, i) => (
-              <fieldset key={f.id} className="grid grid-cols-3 gap-2 rounded-lg border p-3">
-                <TextField
-                  className="col-span-2"
-                  label={t("fixedLabel")}
-                  value={f.label}
-                  maxLength={60}
-                  error={fieldErrors[`fixedElements.${i}.rect`]}
-                  onChange={(v) => setFixed((fs) => fs.map((x) => (x.id === f.id ? { ...x, label: v } : x)))}
-                />
-                <SelectField
-                  label={t("fixedKind")}
-                  value={f.kind}
-                  options={(["chimney", "built_in", "column", "kitchen_run", "other"] as const).map((v) => ({ value: v, label: tf(v) }))}
-                  onChange={(v) => setFixed((fs) => fs.map((x) => (x.id === f.id ? { ...x, kind: v } : x)))}
-                />
-                {(["x", "y", "w", "d"] as const).map((k) => (
-                  <NumberField
-                    key={k}
-                    label={t(k === "x" ? "posX" : k === "y" ? "posY" : k === "w" ? "fixedW" : "fixedD")}
-                    value={f.rect[k]}
-                    step={5}
-                    onChange={(v) =>
-                      setFixed((fs) =>
-                        fs.map((x) => (x.id === f.id ? { ...x, rect: { ...x.rect, [k]: Math.max(k === "w" || k === "d" ? 1 : 0, Math.round(v ?? 0)) } } : x)),
-                      )
-                    }
-                  />
-                ))}
+              <SelectField
+                label={t("fixedKind")}
+                value={f.kind}
+                options={(["chimney", "built_in", "column", "kitchen_run", "other"] as const).map((v) => ({ value: v, label: tf(v) }))}
+                onChange={(v) => setFixed((fs) => fs.map((x) => (x.id === f.id ? { ...x, kind: v } : x)))}
+              />
+              {(["x", "y", "w", "d"] as const).map((k) => (
                 <NumberField
-                  label={t("fixedH")}
-                  value={f.height}
-                  onChange={(v) => setFixed((fs) => fs.map((x) => (x.id === f.id ? { ...x, height: Math.max(1, Math.round(v ?? 0)) } : x)))}
+                  key={k}
+                  label={t(k === "x" ? "posX" : k === "y" ? "posY" : k === "w" ? "fixedW" : "fixedD")}
+                  value={f.rect[k]}
+                  step={5}
+                  onChange={(v) =>
+                    setFixed((fs) =>
+                      fs.map((x) => (x.id === f.id ? { ...x, rect: { ...x.rect, [k]: Math.max(k === "w" || k === "d" ? 1 : 0, Math.round(v ?? 0)) } } : x)),
+                    )
+                  }
                 />
-                <div className="col-span-3 flex justify-end">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setFixed((fs) => fs.filter((x) => x.id !== f.id))}>
-                    {t("remove")}
-                  </Button>
-                </div>
-              </fieldset>
-            ))}
-            <Button type="button" size="sm" variant="outline" disabled={!shape} onClick={addFixed} className="self-start">
-              {t("addFixed")}
-            </Button>
-          </CardContent>
-        </Card>
+              ))}
+              <NumberField
+                label={t("fixedH")}
+                value={f.height}
+                onChange={(v) => setFixed((fs) => fs.map((x) => (x.id === f.id ? { ...x, height: Math.max(1, Math.round(v ?? 0)) } : x)))}
+              />
+              <div className="col-span-3 flex justify-end">
+                <Button type="button" variant="ghost-destructive" size="xs" onClick={() => setFixed((fs) => fs.filter((x) => x.id !== f.id))}>
+                  {t("remove")}
+                </Button>
+              </div>
+            </fieldset>
+          ))}
+          <Button type="button" size="xs" variant="outline" disabled={!shape} onClick={addFixed} className="self-start">
+            {t("addFixed")}
+          </Button>
+        </Panel>
 
         {issues.length > 0 && (
-          <Alert variant="destructive" data-testid="room-issues">
-            <AlertTitle>{t("problems")}</AlertTitle>
-            <AlertDescription>
-              <ul className="list-disc pl-4">
-                {issues.map((i) => (
-                  <li key={i.path}>{i.message}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
+          <section data-testid="room-issues" aria-labelledby="room-issues-title" role="alert" className="border-t-[1.5px] border-foreground pt-3.5">
+            <h2 id="room-issues-title" className="mb-1 font-mono text-[11px] font-medium tracking-[0.14em] uppercase">
+              {t("problems")}
+            </h2>
+            <ul>
+              {issues.map((i) => (
+                <li key={i.path} className="grid grid-cols-[auto_1fr] gap-2.5 border-b border-dotted border-rule py-2.5 text-[13.5px]">
+                  <Badge variant="destructive" className="self-start">
+                    {t("error")}
+                  </Badge>
+                  {i.message}
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
-        <div className={cn("flex gap-2", room ? "justify-between" : "justify-end")}>
+        <div className={cn("flex flex-wrap gap-2.5", room ? "justify-between" : "justify-end")}>
           {room && (
-            <Button type="button" variant="destructive" disabled={pending} onClick={remove}>
+            <Button type="button" variant="ghost-destructive" disabled={pending} onClick={remove}>
               {t("deleteRoom")}
             </Button>
           )}
-          <Button type="button" size="lg" disabled={pending || !shape || issues.length > 0} onClick={save}>
+          <Button type="button" disabled={pending || !shape || issues.length > 0} onClick={save}>
             {pending ? tc("saving") : t("save")}
           </Button>
         </div>
       </div>
     </div>
   );
+}
+
+/** Tiny tool glyphs drawn with borders, like the plan symbols. */
+function ToolGlyph({ kind }: { kind: Tool }) {
+  const base = "inline-block shrink-0 border-[1.5px] border-current";
+  switch (kind) {
+    case "select":
+      return (
+        <span aria-hidden className="inline-block w-2.5 text-center leading-none">
+          ↖
+        </span>
+      );
+    case "door":
+      return <span aria-hidden className={cn(base, "size-2.5 rounded-tr-full border-b-0 border-l-0")} />;
+    case "window":
+      return <span aria-hidden className={cn(base, "h-1.5 w-3 border-x-0")} />;
+    case "radiator":
+      return <span aria-hidden className={cn(base, "h-2 w-3 border-y-0")} />;
+    case "socket":
+      return <span aria-hidden className={cn(base, "size-2 rounded-full bg-current")} />;
+  }
 }

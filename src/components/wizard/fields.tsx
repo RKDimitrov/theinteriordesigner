@@ -19,8 +19,8 @@ export function Field({ label, hint, error, className, children }: FieldShellPro
     <div className={cn("flex flex-col gap-1.5", className)}>
       <Label htmlFor={id}>{label}</Label>
       {children(id)}
-      {hint && !error && <p className="text-xs text-muted-foreground">{hint}</p>}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {hint && !error && <p className="text-[12.5px] text-muted-foreground">{hint}</p>}
+      {error && <p className="text-[12.5px] text-destructive">{error}</p>}
     </div>
   );
 }
@@ -58,32 +58,27 @@ export function NumberField({ label, value, onChange, min, max, step = 1, suffix
   return (
     <Field label={label} hint={hint} error={error} className={className}>
       {(id) => (
-        <div className="relative">
-          <Input
-            id={id}
-            inputMode="decimal"
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            value={text}
-            aria-invalid={error ? true : undefined}
-            className={suffix ? "pr-10" : undefined}
-            onChange={(e) => {
-              const raw = e.target.value;
-              setText(raw);
-              if (raw.trim() === "") {
-                if (optional) onChange(null);
-                return;
-              }
-              const n = Number(raw);
-              if (Number.isFinite(n)) onChange(n);
-            }}
-          />
-          {suffix && (
-            <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-muted-foreground">{suffix}</span>
-          )}
-        </div>
+        <Input
+          id={id}
+          unit={suffix}
+          inputMode="decimal"
+          type="number"
+          min={min}
+          max={max}
+          step={step}
+          value={text}
+          aria-invalid={error ? true : undefined}
+          onChange={(e) => {
+            const raw = e.target.value;
+            setText(raw);
+            if (raw.trim() === "") {
+              if (optional) onChange(null);
+              return;
+            }
+            const n = Number(raw);
+            if (Number.isFinite(n)) onChange(n);
+          }}
+        />
       )}
     </Field>
   );
@@ -110,7 +105,8 @@ export function SelectField<T extends string>({ label, value, options, onChange,
             const next = options.find((o) => o.value === e.target.value);
             if (next) onChange(next.value);
           }}
-          className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+          aria-invalid={error ? true : undefined}
+          className="w-full appearance-none border-[1.5px] border-input bg-card select-chevron py-2.5 pr-9 pl-3 text-[15px] leading-5 shadow-[inset_0_-2px_0_rgba(43,38,34,.06)] transition-shadow outline-none focus-visible:shadow-offset-clay aria-invalid:border-destructive"
         >
           {options.map((o) => (
             <option key={o.value} value={o.value}>

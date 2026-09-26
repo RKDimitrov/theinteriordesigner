@@ -9,7 +9,7 @@ test("sample design renders, validates and highlights items", async ({ page }) =
 
   await page.goto(aptUrl);
   await page.getByTestId("step-4").click();
-  await expect(page.getByRole("heading", { name: /Design: Living room/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Living room · design/ })).toBeVisible();
   await expect(page.getByText("No design yet for this room.")).toBeVisible();
 
   await page.getByRole("button", { name: "Insert sample design" }).click();
