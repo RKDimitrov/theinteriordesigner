@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 /** Architect's drawing stamp: a 2×2 grid of mono key/value cells. */
 export function TitleBlock({ cells }: { cells: readonly { key: string; value: ReactNode }[] }) {
   return (
-    <dl className="grid min-w-[300px] grid-cols-2 border-[1.5px] border-foreground bg-[#f8f2e6] font-mono text-[11px]">
+    <dl className="grid min-w-[300px] grid-cols-2 border-[1.5px] border-foreground bg-titleblock font-mono text-[11px]">
       {cells.map((c, i) => (
         <div
           key={c.key}

@@ -12,6 +12,8 @@ export interface RoomIssue {
 
 export const MIN_ROOM_AREA_CM2 = 10_000; // 1 m²
 export const MIN_WALL_CM = 10;
+/** Smallest side of a rectangular room entered by size. */
+export const MIN_ROOM_SIDE_CM = 50;
 
 /** Structural sanity checks for a room as entered by the user. Pure, no I/O. */
 export function checkRoom(room: RoomShape): RoomIssue[] {

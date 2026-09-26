@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-ui-body), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  --font-heading: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-heading: var(--font-ui-display), ui-serif, Georgia, serif;
   --color-paper: var(--paper);
   --color-sheet: var(--sheet);
   --color-ink: var(--ink);
@@ -26,6 +26,9 @@
   --color-tape: var(--tape);
   --color-sticky: var(--sticky);
   --color-highlight: var(--highlight);
+  --color-mute: var(--mute);
+  --color-card-border: var(--card-border);
+  --color-titleblock: var(--titleblock);
   --shadow-offset: 3px 3px 0 var(--ink);
   --shadow-offset-lg: 4px 4px 0 var(--ink);
   --shadow-offset-sm: 1px 1px 0 var(--ink);
@@ -92,6 +95,15 @@
   --tape: rgba(214, 196, 160, 0.75);
   --sticky: #fff8ec;
   --highlight: #fff3e0;
+  --mute: #6f6152;
+  --card-border: #cbb9a0;
+  --titleblock: #f8f2e6;
+  /* Alias of --destructive; kept out of @theme so it can't shadow Tailwind's red scale. */
+  --red: #9a3b2a;
+
+  /* Body and display faces. Bulgarian swaps both for Cyrillic-capable fonts. */
+  --font-ui-body: var(--font-work-sans);
+  --font-ui-display: var(--font-instrument-serif);
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -104,11 +116,11 @@
   --secondary: #efe4d0;
   --secondary-foreground: var(--ink);
   --muted: #efe4d0;
-  --muted-foreground: #6f6152;
+  --muted-foreground: var(--mute);
   --accent: var(--highlight);
   --accent-foreground: var(--ink);
-  --destructive: #9a3b2a;
-  --border: #cbb9a0;
+  --destructive: var(--red);
+  --border: var(--card-border);
   --input: var(--ink);
   --ring: var(--clay);
   --chart-1: #efe3cf;
@@ -123,8 +135,13 @@
   --sidebar-primary-foreground: #fff8ee;
   --sidebar-accent: var(--highlight);
   --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: #cbb9a0;
+  --sidebar-border: var(--card-border);
   --sidebar-ring: var(--clay);
+}
+
+:root:lang(bg) {
+  --font-ui-body: var(--font-inter);
+  --font-ui-display: var(--font-pt-serif);
 }
 
 .dark {

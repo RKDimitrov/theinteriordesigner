@@ -65,6 +65,13 @@ export async function getDesign(userId: string, roomId: string, version?: number
   return row ? toDomain(row) : null;
 }
 
+/** The newest `take` versions of a room, newest first. */
+export async function recentDesigns(userId: string, roomId: string, take = 6): Promise<StoredDesign[]> {
+  if (!isUuid(roomId)) return [];
+  const rows = await db.design.findMany({ where: owned(userId, roomId), orderBy: { version: "desc" }, take });
+  return rows.map(toDomain);
+}
+
 export interface NewDesign {
   content: DesignContent;
   validation: z.infer<typeof Validation>;
@@ -94,6 +101,25 @@ export async function createDesign(userId: string, roomId: string, d: NewDesign)
     },
   });
   return toDomain(row);
+}
+
+/**
+ * Replace the content and validation of an existing version in place. Used for
+ * the planner's own version, so dragging pieces around does not add a version per move.
+ */
+export async function updateDesign(
+  userId: string,
+  designId: string,
+  d: Pick<NewDesign, "content" | "validation" | "durationMs">,
+): Promise<StoredDesign | null> {
+  if (!isUuid(designId)) return null;
+  const { count } = await db.design.updateMany({
+    where: { id: designId, room: { apartment: { userId } } },
+    data: { content: toJson(d.content), validation: toJson(d.validation), status: d.validation.status, durationMs: Math.round(d.durationMs) },
+  });
+  if (count === 0) return null;
+  const row = await db.design.findUnique({ where: { id: designId } });
+  return row ? toDomain(row) : null;
 }
 
 /** Latest status per room of an apartment. */

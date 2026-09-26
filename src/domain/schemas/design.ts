@@ -135,6 +135,8 @@ export const FurnitureItem = z.object({
   requiresDrilling: z.boolean(),
   /** The user's must-keep piece. */
   existing: z.boolean().default(false),
+  /** Placed by hand in the planner; a redesign can be asked to keep it. */
+  locked: z.boolean().optional(),
   rationale: Rationale,
   /** Set by the solver pipeline so a stored design can be re-solved and repaired in priority order. */
   sizeClass: SizeClass.optional(),

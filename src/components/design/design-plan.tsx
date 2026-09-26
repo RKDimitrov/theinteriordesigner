@@ -8,7 +8,7 @@ import { wallsOf } from "@/domain/geometry/walls";
 import type { DesignContent, FurnitureItem } from "@/domain/schemas/design";
 import type { RoomShape } from "@/domain/schemas/room";
 import { cn } from "@/lib/utils";
-import { CompassBadge } from "../plan-editor/compass";
+import { CompassBadge } from "../plan-view/compass";
 import { OpeningShape, RoomOutline, WallDimension } from "../plan-view/shapes";
 
 const pts = (ps: readonly Vec[]) => ps.map((p) => `${p.x},${p.y}`).join(" ");

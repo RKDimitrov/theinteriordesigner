@@ -17,7 +17,14 @@ export const DesignEvent = z.discriminatedUnion("type", [
 ]);
 export type DesignEvent = z.infer<typeof DesignEvent>;
 
-export const GenerateRequest = z.object({ apartmentId: z.uuid(), roomId: z.uuid() });
+export const GenerateRequest = z.object({
+  apartmentId: z.uuid(),
+  roomId: z.uuid(),
+  /** "Ask for a change" from the planner, passed to the model in the brief. */
+  note: z.string().trim().max(400).optional(),
+  /** Ask the model to keep the pieces the user placed by hand. */
+  keepPlaced: z.boolean().optional(),
+});
 
 export function encodeEvent(e: DesignEvent): string {
   return `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`;

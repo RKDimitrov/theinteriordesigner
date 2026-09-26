@@ -3,6 +3,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/atelier/page-header";
 import { DesignView } from "@/components/design/design-view";
 import { GenerateButton, GenerateProgress, GenerateProvider } from "@/components/design/generate-button";
+import { buttonVariants } from "@/components/ui/button";
 import { roomDaylight } from "@/domain/context/daylight";
 import { area } from "@/domain/geometry/polygon";
 import { topStyles } from "@/domain/profile/quiz";
@@ -80,7 +81,12 @@ export default async function DesignPage({ params, searchParams }: PageProps<"/[
                   })}
                 </nav>
               )}
-              <GenerateButton />
+              <div className="flex flex-wrap items-center justify-end gap-2.5">
+                <Link href={`/apartments/${id}/planner?room=${roomId}`} className={buttonVariants({ variant: "outline" })}>
+                  {t("editInPlanner")}
+                </Link>
+                <GenerateButton />
+              </div>
             </>
           }
         />

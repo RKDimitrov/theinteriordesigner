@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Fragment, type ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ interface PageHeaderProps {
 
 /** Breadcrumb, h1, meta row and right-aligned actions, closed by a dashed rule. */
 export function PageHeader({ eyebrow, crumbs, title, meta, aside, className }: PageHeaderProps) {
+  const t = useTranslations("Nav");
   return (
     <header
       className={cn(
@@ -30,7 +32,7 @@ export function PageHeader({ eyebrow, crumbs, title, meta, aside, className }: P
     >
       <div className="min-w-0">
         {crumbs && crumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" className="eyebrow mb-1.5 flex flex-wrap gap-2">
+          <nav aria-label={t("breadcrumb")} className="eyebrow mb-1.5 flex flex-wrap gap-2">
             {crumbs.map((c, i) => (
               <Fragment key={`${c.label}-${i}`}>
                 {i > 0 && <span aria-hidden>/</span>}

@@ -7,13 +7,14 @@ import { AddTile, TapedCard } from "@/components/atelier/sheet-card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "@/i18n/navigation";
+import { buttonVariants } from "@/components/ui/button";
+import { useEur } from "@/lib/use-eur";
 import { cn } from "@/lib/utils";
 import type { LibraryData, LibraryPiece, PieceGroup } from "@/server/library";
 
 const GROUP_FILTERS = ["seating", "tables", "storage", "lighting", "textiles"] as const satisfies readonly PieceGroup[];
 type Filter = (typeof GROUP_FILTERS)[number] | "mine" | "renter";
 
-const eur = (n: number) => new Intl.NumberFormat("en", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
 /** Striped placeholder tinted with the piece colour, until there are product photos. */
 function Placeholder({ hex, label, className }: { hex: string | null; label: string; className?: string }) {
@@ -121,6 +122,7 @@ export function LibraryView({ data }: { data: LibraryData }) {
 }
 
 function PieceCard({ piece: p }: { piece: LibraryPiece }) {
+  const eur = useEur();
   const t = useTranslations("Library");
   const tc = useTranslations("FurnitureCategory");
   const kindLabel = p.kind.type === "light" ? t("light") : p.kind.type === "furniture" ? tc(p.kind.category) : t(`textile_${p.kind.textile}`);
@@ -142,10 +144,19 @@ function PieceCard({ piece: p }: { piece: LibraryPiece }) {
           ) : (
             <span className="font-mono text-[15px] font-medium tabular-nums">{p.price ? `${eur(p.price.min)}–${eur(p.price.max)}` : "—"}</span>
           )}
-          <Link href={p.href} className="font-mono text-[11.5px] underline underline-offset-3 hover:text-primary">
-            {p.where} <span aria-hidden>→</span>
-          </Link>
+          {p.plan && (
+            <Link
+              href={p.plan.href}
+              className={buttonVariants({ size: "sm", variant: p.plan.added ? "outline" : "default" })}
+              aria-label={p.plan.added ? t("addedLabel", { name: p.name }) : t("addLabel", { name: p.name })}
+            >
+              {p.plan.added ? t("added") : t("add")}
+            </Link>
+          )}
         </div>
+        <Link href={p.href} className="mt-2 font-mono text-[11.5px] underline underline-offset-3 hover:text-primary">
+          {p.where} <span aria-hidden>→</span>
+        </Link>
       </div>
     </TapedCard>
   );

@@ -7,6 +7,7 @@ import { NumberField } from "@/components/wizard/fields";
 import { budgetTotal } from "@/domain/profile/status";
 import { MAX_BUDGET_EUR } from "@/domain/schemas/profile";
 import { Link } from "@/i18n/navigation";
+import { useEur } from "@/lib/use-eur";
 
 export interface RoomRef {
   id: string;
@@ -23,9 +24,9 @@ interface Props {
 }
 
 const SLIDER_MAX = 20_000;
-const eur = (n: number) => new Intl.NumberFormat("en", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
 export function BudgetSection({ apartmentId, rooms, value, onChange, number }: Props) {
+  const eur = useEur();
   const t = useTranslations("Profile");
   const set = (id: string, v: number) => onChange({ ...value, [id]: Math.min(MAX_BUDGET_EUR, Math.max(0, Math.round(v))) });
   const missing = rooms.filter((r) => !((value[r.id] ?? 0) > 0));

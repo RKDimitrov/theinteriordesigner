@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Door } from "../schemas/room";
-import { doorSwing, kindsConflict, openingSpan, spansOverlap } from "./openings";
-import { area, bbox, containsPoint, isAxisAlignedRect, isClockwise, isSelfIntersecting, rectPolygon, signedArea } from "./polygon";
+import { doorLeaf, doorSwing, kindsConflict, openingSpan, spansOverlap } from "./openings";
+import { area, bbox, containsPoint, isAxisAlignedRect, isClockwise, isSelfIntersecting, offsetPolygon, rectPolygon, signedArea } from "./polygon";
 import { normDeg, snap } from "./units";
 import { rotate } from "./vec";
 import { bearingToCardinal, planAngle, wallFacingBearing, wallOrientations, wallsOf } from "./walls";
@@ -155,6 +155,8 @@ describe("openings", () => {
   it("has no swing area for outward or sliding doors", () => {
     expect(doorSwing(walls, { ...door, swing: "out" })).toBeNull();
     expect(doorSwing(walls, { ...door, swing: "sliding" })).toBeNull();
+    expect(doorSwing(walls, { ...door, swing: "none" })).toBeNull();
+    expect(doorLeaf(walls, { ...door, swing: "none" })).toBeNull();
   });
 
   it("knows which opening kinds conflict", () => {
@@ -167,5 +169,33 @@ describe("openings", () => {
   it("detects span overlap (touching is fine)", () => {
     expect(spansOverlap({ offset: 0, width: 100 }, { offset: 100, width: 50 })).toBe(false);
     expect(spansOverlap({ offset: 0, width: 100 }, { offset: 99, width: 50 })).toBe(true);
+  });
+});
+
+describe("offsetPolygon", () => {
+  it("grows a clockwise rectangle outward on every side", () => {
+    const out = offsetPolygon(rectPolygon(400, 300), 12);
+    const b = bbox(out);
+    expect([b.x, b.y, b.w, b.d].map(Math.round)).toEqual([-12, -12, 424, 324]);
+  });
+
+  it("works for counter-clockwise input too", () => {
+    const out = offsetPolygon([...rectPolygon(200, 100)].reverse(), 10);
+    const b = bbox(out);
+    expect([b.x, b.y, b.w, b.d].map(Math.round)).toEqual([-10, -10, 220, 120]);
+  });
+
+  it("mitres the inside corner of an L-shaped room", () => {
+    const l = [
+      { x: 0, y: 0 },
+      { x: 300, y: 0 },
+      { x: 300, y: 100 },
+      { x: 100, y: 100 },
+      { x: 100, y: 300 },
+      { x: 0, y: 300 },
+    ];
+    const out = offsetPolygon(l, 10);
+    expect(out[3]!.x).toBeCloseTo(110);
+    expect(out[3]!.y).toBeCloseTo(110);
   });
 });

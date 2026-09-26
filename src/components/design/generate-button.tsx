@@ -19,20 +19,39 @@ interface GenerateState {
   running: boolean;
   pending: boolean;
   progress: Progress | null;
-  generate: () => Promise<void>;
+  generate: (extra?: GenerateExtra) => Promise<void>;
   runAction: (fn: () => Promise<{ ok: true; data: { version: number } } | { ok: false; error: string }>) => void;
+}
+
+/** Planner extras: a change request and whether to keep hand-placed pieces. */
+export interface GenerateExtra {
+  note?: string;
+  keepPlaced?: boolean;
 }
 
 const GenerateContext = createContext<GenerateState | null>(null);
 
-function useGenerate(): GenerateState {
+export function useGenerate(): GenerateState {
   const ctx = use(GenerateContext);
   if (!ctx) throw new Error("GenerateButton needs a GenerateProvider");
   return ctx;
 }
 
 /** Holds the generation stream so the button and the progress panel can live apart. */
-export function GenerateProvider({ apartmentId, roomId, hasDesign, children }: { apartmentId: string; roomId: string; hasDesign: boolean; children: ReactNode }) {
+export function GenerateProvider({
+  apartmentId,
+  roomId,
+  hasDesign,
+  onDone,
+  children,
+}: {
+  apartmentId: string;
+  roomId: string;
+  hasDesign: boolean;
+  /** Replaces the default "reload this page" when a version is saved. */
+  onDone?: (version: number) => void;
+  children: ReactNode;
+}) {
   const t = useTranslations("Design");
   const router = useRouter();
   const pathname = usePathname();
@@ -42,18 +61,19 @@ export function GenerateProvider({ apartmentId, roomId, hasDesign, children }: {
 
   const finish = (version: number) => {
     toast.success(t("done", { version }));
+    if (onDone) return onDone(version);
     router.replace(pathname);
     router.refresh();
   };
 
-  const generate = async () => {
+  const generate = async (extra?: GenerateExtra) => {
     setRunning(true);
     setProgress(null);
     try {
       const res = await fetch("/api/design/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ apartmentId, roomId }),
+        body: JSON.stringify({ apartmentId, roomId, ...extra }),
       });
       if (!res.ok || !res.body) {
         const body: unknown = await res.json().catch(() => null);
@@ -75,7 +95,7 @@ export function GenerateProvider({ apartmentId, roomId, hasDesign, children }: {
         }
       }
     } catch {
-      toast.error("Connection lost. If the design finished, reload the page.");
+      toast.error(t("connectionLost"));
     } finally {
       setRunning(false);
       setProgress(null);
@@ -117,7 +137,7 @@ export function GenerateButton() {
           {t("resolveLayout")}
         </Button>
       )}
-      <Button type="button" onClick={generate} disabled={running || pending} data-testid="generate-design">
+      <Button type="button" onClick={() => void generate()} disabled={running || pending} data-testid="generate-design">
         {running ? t("generating") : hasDesign ? t("regenerate") : t("generate")} <span aria-hidden>✦</span>
       </Button>
     </div>
@@ -140,11 +160,11 @@ const STAGE_OF: Record<Progress["stage"], Stage> = {
 };
 
 /** Progress panel while generating; otherwise the cost note. */
-export function GenerateProgress() {
+export function GenerateProgress({ compact = false }: { compact?: boolean } = {}) {
   const t = useTranslations("Design");
   const { running, progress } = useGenerate();
 
-  if (!running) return <p className="mb-6 max-w-prose text-[12.5px] text-muted-foreground">{t("costNote")}</p>;
+  if (!running) return compact ? null : <p className="mb-6 max-w-prose text-[12.5px] text-muted-foreground">{t("costNote")}</p>;
 
   const current = STAGE_OF[progress?.stage ?? "context"];
   const at = STAGES.indexOf(current);
@@ -173,7 +193,7 @@ export function GenerateProgress() {
   };
 
   return (
-    <section data-testid="generate-progress" role="status" aria-live="polite" className="mb-7 border-[1.5px] border-foreground bg-card px-4 py-3.5">
+    <section data-testid="generate-progress" role="status" aria-live="polite" className={cn("border-[1.5px] border-foreground bg-card px-4 py-3.5", compact ? "" : "mb-7")}>
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <h2 className="font-heading text-[26px] leading-none font-normal">{t("progressTitle")}</h2>
         <span className="eyebrow">{t("progressCost")}</span>

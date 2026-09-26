@@ -4,7 +4,7 @@ import { wallOrientations, wallsOf } from "@/domain/geometry/walls";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { RoomShape } from "@/domain/schemas/room";
 import { cn } from "@/lib/utils";
-import { CompassBadge } from "../plan-editor/compass";
+import { CompassBadge } from "./compass";
 import { FixedElementShape, OpeningShape, RoomOutline, WallDimension } from "./shapes";
 
 interface RoomPlanProps {

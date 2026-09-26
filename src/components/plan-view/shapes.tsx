@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export const WALL_CM = 12;
 
-const pts = (ps: readonly Vec[]) => ps.map((p) => `${p.x},${p.y}`).join(" ");
+export const pts = (ps: readonly Vec[]) => ps.map((p) => `${p.x},${p.y}`).join(" ");
 
 /** Floor fill, ink walls with round joins and a faint offset pencil line. */
 export function RoomOutline({ polygon, className }: { polygon: readonly Vec[]; className?: string }) {
@@ -30,7 +30,7 @@ export function RoomOutline({ polygon, className }: { polygon: readonly Vec[]; c
 }
 
 /** Band along a wall between two points, `inner`/`outer` cm to each side. */
-function wallBand(a: Vec, b: Vec, wall: Wall, inner: number, outer: number): Vec[] {
+export function wallBand(a: Vec, b: Vec, wall: Wall, inner: number, outer: number): Vec[] {
   const i = scale(wall.inward, inner);
   const o = scale(wall.inward, -outer);
   return [add(a, o), add(b, o), add(b, i), add(a, i)];
@@ -55,7 +55,10 @@ export function OpeningShape({ walls, opening, selected, onPointerDown }: Openin
     case "door": {
       const leaf = doorLeaf(walls, opening);
       const gap = <polygon points={pts(wallBand(start, end, wall, half, half))} className="fill-card stroke-none" />;
-      if (!leaf) {
+      if (opening.swing === "none") {
+        // Pass-through: just the gap.
+        body = gap;
+      } else if (!leaf) {
         // Sliding: two offset panels.
         const mid = add(start, scale(sub(end, start), 0.5));
         body = (

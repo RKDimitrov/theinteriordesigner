@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { CompassInput } from "@/components/plan-editor/compass";
+import { CompassInput } from "@/components/plan-view/compass";
 import { Button } from "@/components/ui/button";
 import { FillSampleButton } from "@/components/dev/fill-sample-button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

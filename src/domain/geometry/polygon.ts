@@ -107,3 +107,33 @@ export function isSelfIntersecting(poly: readonly Vec[]): boolean {
   }
   return false;
 }
+
+/**
+ * Polygon offset outward (away from the interior) by `dist` cm, with mitred
+ * corners. Used to draw walls as a solid band around a room. Works for the
+ * simple polygons rooms are made of; very sharp corners are clamped.
+ */
+export function offsetPolygon(poly: readonly Vec[], dist: number): Vec[] {
+  const n = poly.length;
+  const sign = signedArea(poly) > 0 ? 1 : -1;
+  // Outward normal of edge i (from vertex i to i+1).
+  const normal = (i: number): Vec => {
+    const a = poly[i]!;
+    const b = poly[(i + 1) % n]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    // Clockwise (y-down) rooms have the interior on the right, so outward is the left normal.
+    return { x: (dy / len) * sign, y: (-dx / len) * sign };
+  };
+  return poly.map((p, i) => {
+    const n1 = normal((i - 1 + n) % n);
+    const n2 = normal(i);
+    const bis = { x: n1.x + n2.x, y: n1.y + n2.y };
+    const cos = (n1.x * n2.x + n1.y * n2.y + 1) / 2; // cos² of half the turn
+    const len = Math.hypot(bis.x, bis.y);
+    if (len < 1e-9) return { x: p.x + n2.x * dist, y: p.y + n2.y * dist };
+    const miter = dist / Math.sqrt(Math.max(cos, 0.08));
+    return { x: p.x + (bis.x / len) * miter, y: p.y + (bis.y / len) * miter };
+  });
+}

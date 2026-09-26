@@ -22,6 +22,8 @@ export interface LibraryPiece {
   /** Where it appears: the design page of a room, or the style profile for owned pieces. */
   href: string;
   where: string;
+  /** Planner link: "Added" pieces are on a plan already; the others open the planner ready to place them. */
+  plan: { href: string; added: boolean } | null;
 }
 
 export type LibraryMaterial = {
@@ -76,7 +78,10 @@ export async function libraryData(userId: string): Promise<LibraryData> {
   await Promise.all(
     apartments.map(async (apt) => {
       const [rooms, profile] = await Promise.all([listRooms(userId, apt.id), getProfile(userId, apt.id)]);
+      const designs = await Promise.all(rooms.map((r) => getDesign(userId, r.id)));
+      const placed = designs.flatMap((d) => d?.content.furniture.filter((f) => f.existing) ?? []);
       for (const m of profile?.mustKeep ?? []) {
+        const added = placed.some((f) => f.category === m.category && ((f.w === m.w && f.d === m.d) || (f.w === m.d && f.d === m.w)));
         pieces.push({
           key: `keep-${apt.id}-${m.id}`,
           name: m.name,
@@ -90,9 +95,9 @@ export async function libraryData(userId: string): Promise<LibraryData> {
           mine: true,
           href: `/apartments/${apt.id}/profile#must-keep`,
           where: apt.name,
+          plan: rooms.length > 0 ? { href: `/apartments/${apt.id}/planner?room=${m.roomId ?? "all"}&arm=mine-${m.id}`, added } : null,
         });
       }
-      const designs = await Promise.all(rooms.map((r) => getDesign(userId, r.id)));
       rooms.forEach((room, i) => {
         const design = designs[i];
         if (!design) return;
@@ -114,6 +119,7 @@ export async function libraryData(userId: string): Promise<LibraryData> {
             mine: false,
             href,
             where,
+            plan: { href: `/apartments/${apt.id}/planner?room=${room.id}`, added: true },
           });
         }
         for (const l of c.lighting) {
@@ -131,6 +137,7 @@ export async function libraryData(userId: string): Promise<LibraryData> {
             mine: false,
             href,
             where,
+            plan: null,
           });
         }
         for (const x of c.textiles) {
@@ -147,6 +154,7 @@ export async function libraryData(userId: string): Promise<LibraryData> {
             mine: false,
             href,
             where,
+            plan: null,
           });
         }
         c.surfaces.forEach((s, j) => {

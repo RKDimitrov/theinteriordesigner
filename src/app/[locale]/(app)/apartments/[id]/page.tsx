@@ -62,10 +62,13 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
               ]}
             />
             <div className="flex flex-wrap justify-end gap-2.5">
-              <Link href={`/apartments/${id}/edit`} className={buttonVariants({ variant: "ghost" })}>
-                {tc("edit")}
-              </Link>
               <DeleteApartmentButton id={id} />
+              <Link href={`/apartments/${id}/edit`} className={buttonVariants({ variant: "ghost" })}>
+                {t("editDetails")}
+              </Link>
+              <Link href={`/apartments/${id}/planner?room=all`} className={buttonVariants()} data-testid="open-planner">
+                {t("openPlanner")} <span aria-hidden>→</span>
+              </Link>
             </div>
           </>
         }
@@ -124,7 +127,7 @@ async function Stepper({ apartmentId: id, progress: p }: { apartmentId: string; 
     p.rooms.length === 0 ? t("sumDesignNoRooms") : t("sumDesign", { designed: p.designedRooms, total: p.rooms.length }),
   ];
   const meta = [
-    { title: t("stepRooms"), href: `/apartments/${id}#rooms` },
+    { title: t("stepRooms"), href: `/apartments/${id}/planner?room=all` },
     { title: t("stepProfile"), href: `/apartments/${id}/profile` },
     { title: t("stepContext"), href: `/apartments/${id}/context` },
     { title: t("stepDesign"), href: p.rooms[0] ? `/apartments/${id}/design/${p.rooms[0].id}` : null },
@@ -193,8 +196,8 @@ async function RoomCards({ apartment, progress, userId }: { apartment: Apartment
               {light.dominantOrientation && (
                 <Badge variant="outline">{t("orientation", { dir: light.dominantOrientation, temp: tl(light.lightTemperature) })}</Badge>
               )}
-              <SheetLink href={`${base}/rooms/${r.id}`} aria-label={`${tc("edit")}: ${r.name}`}>
-                {tc("edit")}
+              <SheetLink href={`${base}/planner?room=${r.id}`} aria-label={`${t("editPlan")}: ${r.name}`}>
+                {t("editPlan")}
               </SheetLink>
               {design ? (
                 <SheetLink href={`${base}/design/${r.id}`} aria-label={`${t("open")}: ${r.name}`}>

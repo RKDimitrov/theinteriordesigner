@@ -34,6 +34,12 @@ export function newOpening(kind: OpeningKind, id: string, wallIndex: number, cen
   }
 }
 
+/** A doorway without a leaf: a door that does not swing. */
+export function newPassThrough(id: string, wallIndex: number, centerOffset: number, wallLength: number): Opening {
+  const door = newOpening("door", id, wallIndex, centerOffset, wallLength);
+  return door.kind === "door" ? { ...door, width: Math.min(door.width, 80), swing: "none" } : door;
+}
+
 /** Short unique id for openings and fixed elements, e.g. "door-3". */
 export function nextId(prefix: string, taken: Iterable<string>): string {
   const used = new Set(taken);

@@ -36,10 +36,10 @@ export interface DoorSwing {
 
 /**
  * Swept quarter disc of a hinged door leaf, on whichever side it opens to
- * ("out" opens away from this room). Null for sliding doors. Used for drawing.
+ * ("out" opens away from this room). Null for sliding doors and pass-throughs. Used for drawing.
  */
 export function doorLeaf(walls: readonly Wall[], door: Door, segments = SWING_SEGMENTS): DoorSwing | null {
-  if (door.swing === "sliding") return null;
+  if (door.swing === "sliding" || door.swing === "none") return null;
   const span = openingSpan(walls, door);
   if (!span) return null;
   const { wall } = span;

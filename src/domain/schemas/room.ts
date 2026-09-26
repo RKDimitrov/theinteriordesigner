@@ -32,8 +32,8 @@ export const Door = z.object({
   height: PositiveCm.default(200),
   /** Which end of the opening (along the wall direction) carries the hinge. */
   hinge: z.enum(["start", "end"]),
-  /** "in" swings into this room; "out" swings away from it. */
-  swing: z.enum(["in", "out", "sliding"]),
+  /** "in" swings into this room; "out" swings away from it; "none" is a pass-through without a leaf. */
+  swing: z.enum(["in", "out", "sliding", "none"]),
 });
 
 export const Window = z.object({

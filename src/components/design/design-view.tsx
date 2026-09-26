@@ -10,6 +10,7 @@ import { designCost } from "@/domain/validator";
 import type { DesignContent, FurnitureItem, SolverStats } from "@/domain/schemas/design";
 import type { RoomShape } from "@/domain/schemas/room";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
+import { useEur } from "@/lib/use-eur";
 import { cn } from "@/lib/utils";
 import { DesignPlan } from "./design-plan";
 
@@ -27,7 +28,6 @@ export interface DesignViewProps {
   generation: { model: string; seconds: number; repairs: number; cost: string; date: string };
 }
 
-const eur = (n: number) => new Intl.NumberFormat("en", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
 /** A room this small (m²) rarely fits everything the model asked for. */
 const SMALL_ROOM_M2 = 6;
@@ -37,6 +37,7 @@ const CROWDING = new Set(["WALKWAY_TOO_NARROW", "OVERLAP"]);
 const STATUS_TONE = { valid: "done", valid_with_warnings: "warn", invalid: "error" } as const;
 
 export function DesignView({ room, northAngleDeg, design, issues, status, budgetEur, solver, areaM2, generation }: DesignViewProps) {
+  const eur = useEur();
   const t = useTranslations("Design");
   const tc = useTranslations("FurnitureCategory");
   const [selected, setSelected] = useState<string | null>(null);
@@ -278,6 +279,7 @@ function FurnitureRow({
   onToggle: () => void;
   onHover: (on: boolean) => void;
 }) {
+  const eur = useEur();
   const t = useTranslations("Design");
   const tc = useTranslations("FurnitureCategory");
   return (

@@ -1,12 +1,15 @@
+import { cookies } from "next/headers";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { FormSection } from "@/components/atelier/form-section";
 import { PageHeader } from "@/components/atelier/page-header";
 import { Rows } from "@/components/atelier/sidebar";
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { FixedChoice, FixedToggle } from "@/components/settings/fixed-controls";
+import { LanguageChoice, PlannerPrefs } from "@/components/settings/preference-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
+import { OPENS_3D_COOKIE, parseOpens3d, parsePlannerView, PLANNER_VIEW_COOKIE } from "@/lib/planner-prefs";
 import { getCurrentUser, requireUserId } from "@/server/auth";
 import { monthlyUsage } from "@/server/llm/usage";
 import { listApartments } from "@/server/repo/apartments";
@@ -14,7 +17,7 @@ import { getProfile } from "@/server/repo/profiles";
 
 export default async function SettingsPage() {
   const userId = await requireUserId();
-  const [user, apartments, usage, t, tn, tp, format] = await Promise.all([
+  const [user, apartments, usage, t, tn, tp, format, jar] = await Promise.all([
     getCurrentUser(),
     listApartments(userId),
     monthlyUsage(userId),
@@ -22,6 +25,7 @@ export default async function SettingsPage() {
     getTranslations("Nav"),
     getTranslations("PetType"),
     getFormatter(),
+    cookies(),
   ]);
   const profiles = await Promise.all(apartments.map((a) => getProfile(userId, a.id)));
   const money = (n: number) => format.number(n, { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -94,15 +98,11 @@ export default async function SettingsPage() {
             { value: "USD", label: "USD" },
           ]}
         />
-        <FixedChoice
-          label={t("language")}
-          value="en"
-          options={[
-            { value: "en", label: "English" },
-            { value: "de", label: "Deutsch" },
-            { value: "bg", label: "Български" },
-          ]}
-        />
+        <LanguageChoice label={t("language")} />
+      </FormSection>
+
+      <FormSection title={t("planner")} hint={t("plannerHint")}>
+        <PlannerPrefs view={parsePlannerView(jar.get(PLANNER_VIEW_COOKIE)?.value)} opens3d={parseOpens3d(jar.get(OPENS_3D_COOKIE)?.value)} />
       </FormSection>
 
       <FormSection title={t("designer")} hint={t("designerHint")}>

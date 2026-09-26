@@ -49,6 +49,8 @@ export async function generateDesign(args: {
   userId: string;
   apartmentId: string;
   roomId: string;
+  note?: string;
+  keepPlaced?: boolean;
   onProgress: (e: PlanProgress) => void;
 }): Promise<StoredDesign> {
   const { userId, apartmentId, roomId } = args;
@@ -58,7 +60,15 @@ export async function generateDesign(args: {
   if (!ctx) throw new DesignInputError("Apartment not found");
 
   const facts = planFacts(room, apartment.northAngleDeg);
-  const brief = designBrief(room.id, ctx, profile);
+  const previous = await getDesign(userId, roomId);
+  const keepPieces = args.keepPlaced
+    ? (previous?.content.furniture ?? []).filter((f) => f.locked).map((f) => ({ name: f.name, category: f.category, w: f.w, d: f.d, h: f.h, colorHex: f.colorHex }))
+    : [];
+  const brief = {
+    ...designBrief(room.id, ctx, profile),
+    ...(args.note ? { changeRequest: args.note } : {}),
+    ...(keepPieces.length > 0 ? { keepPieces } : {}),
+  };
   const def = PROMPTS.designGenerateV2;
   const prompt = await buildPrompt(def, { roomFacts: JSON.stringify(facts), brief: JSON.stringify(brief) });
   // The catalogue is rendered into the system prompt: static, so it stays in the cached prefix.
@@ -66,7 +76,6 @@ export async function generateDesign(args: {
   const repairTemplate = (await loadPrompt(PROMPTS.designRepairV2)).user;
   const mustKeep = (profile?.mustKeep ?? []).filter((m) => m.roomId === room.id);
   const budgetEur = profile?.budgetPerRoom[room.id] ?? null;
-  const previous = await getDesign(userId, roomId);
 
   const client = anthropic();
   const models = designModels();

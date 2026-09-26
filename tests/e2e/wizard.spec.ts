@@ -1,37 +1,36 @@
-import { expect, test } from "@playwright/test";
-import { createApartment, deleteApartment, UUID } from "./helpers";
+import { expect, type Page, test } from "@playwright/test";
+import { createApartment, deleteApartment, UUID, waitForSave, wallPoint } from "./helpers";
 
-test("create apartment, add room by dimensions with a door and a window, reload keeps data", async ({ page }) => {
+async function newRoom(page: Page, name: string, w: string, l: string) {
+  await page.getByRole("link", { name: "Add room" }).click();
+  await page.getByLabel("Room name").fill(name);
+  await page.getByLabel("Width", { exact: true }).fill(w);
+  await page.getByLabel("Length", { exact: true }).fill(l);
+}
+
+test("create apartment, add a room by size, add a door and a window in the planner, reload keeps data", async ({ page }) => {
   const name = `E2E flat ${Date.now()}`;
   const aptUrl = await createApartment(page, name);
 
-  await page.getByRole("link", { name: "Add room" }).click();
-  await page.getByLabel("Room name").fill("Living");
-  await page.getByLabel("Width", { exact: true }).fill("420");
-  await page.getByLabel("Length", { exact: true }).fill("380");
+  await newRoom(page, "Living", "420", "380");
   await expect(page.getByTestId("room-area")).toHaveText("15.96 m²");
+  await page.getByRole("button", { name: /Save & open planner/ }).click();
+  await expect(page).toHaveURL(new RegExp(`/apartments/${UUID}/planner\\?room=all$`));
 
-  await page.getByRole("button", { name: "Add Door" }).click();
-  const door = page.getByTestId("opening-door-1");
-  await expect(door).toBeVisible();
-  await door.getByLabel("Wall").selectOption("2");
-  await door.getByRole("radio", { name: "Into room" }).click();
-  await expect(door.getByRole("radio", { name: "Into room" })).toBeChecked();
-
-  await page.getByRole("button", { name: "Add Window" }).click();
-  const win = page.getByTestId("opening-window-1");
-  await expect(win).toBeVisible();
-  await win.getByLabel("Sill height").fill("85");
-
-  await expect(page.getByTestId("room-issues")).toHaveCount(0);
-  await page.getByRole("button", { name: "Save room" }).click();
-  await expect(page).toHaveURL(new RegExp(`/rooms/${UUID}$`));
+  await page.getByTestId("planner-tool-door").click();
+  const bottom = await wallPoint(page, "bottom");
+  await page.mouse.click(bottom.x, bottom.y);
+  await page.getByTestId("planner-tool-window").click();
+  const top = await wallPoint(page, "top");
+  await page.mouse.click(top.x, top.y);
+  await page.getByTestId("planner-tool-select").click();
+  await expect(page.getByTestId("opening-door-1")).toBeAttached();
+  await expect(page.getByTestId("opening-window-1")).toBeAttached();
+  await waitForSave(page);
 
   await page.reload();
-  await expect(page.getByLabel("Room name")).toHaveValue("Living");
-  await expect(page.getByLabel("Width", { exact: true }).first()).toHaveValue("420");
-  await expect(page.getByTestId("opening-door-1").getByLabel("Wall")).toHaveValue("2");
-  await expect(page.getByTestId("opening-window-1").getByLabel("Sill height")).toHaveValue("85");
+  await expect(page.getByTestId("opening-door-1")).toBeAttached();
+  await expect(page.getByTestId("opening-window-1")).toBeAttached();
 
   await page.goto(aptUrl);
   await expect(page.getByTestId("room-card")).toHaveCount(1);
@@ -40,37 +39,48 @@ test("create apartment, add room by dimensions with a door and a window, reload 
   await deleteApartment(page, aptUrl);
 });
 
-test("overlapping openings block saving", async ({ page }) => {
+test("overlapping openings are flagged in the planner checks", async ({ page }) => {
   const aptUrl = await createApartment(page, `E2E overlap ${Date.now()}`);
-  await page.getByRole("link", { name: "Add room" }).click();
-  await page.getByLabel("Room name").fill("Office");
-  await page.getByLabel("Width", { exact: true }).fill("300");
-  await page.getByLabel("Length", { exact: true }).fill("300");
-  // Both land centred on wall 1.
-  await page.getByRole("button", { name: "Add Door" }).click();
-  await page.getByRole("button", { name: "Add Window" }).click();
+  await newRoom(page, "Office", "300", "300");
+  await page.getByRole("button", { name: /Save & open planner/ }).click();
+
+  // Both land centred on the bottom wall.
+  const bottom = await wallPoint(page, "bottom");
+  await page.getByTestId("planner-tool-door").click();
+  await page.mouse.click(bottom.x, bottom.y);
+  await page.getByTestId("planner-tool-window").click();
+  await page.mouse.click(bottom.x, bottom.y);
+
+  await page.getByTestId("planner-tab-designer").click();
   await expect(page.getByTestId("room-issues")).toContainText("overlaps");
-  await expect(page.getByRole("button", { name: "Save room" })).toBeDisabled();
   await deleteApartment(page, aptUrl);
 });
 
-test("draw a room by dragging on the canvas", async ({ page, isMobile }) => {
+test("a room that is too small cannot be saved", async ({ page }) => {
+  const aptUrl = await createApartment(page, `E2E small ${Date.now()}`);
+  await newRoom(page, "Cupboard", "60", "60");
+  await expect(page.getByTestId("room-issues")).toContainText("at least 1 m²");
+  await expect(page.getByRole("button", { name: /Save & open planner/ })).toBeDisabled();
+  await deleteApartment(page, aptUrl);
+});
+
+test("draw a second room in the planner by dragging", async ({ page, isMobile }) => {
   test.skip(isMobile, "Mouse drag test runs on desktop only");
   const aptUrl = await createApartment(page, `E2E draw ${Date.now()}`);
-  await page.getByRole("link", { name: "Add room" }).click();
-  await expect(page.getByTestId("room-area")).toHaveText("—");
+  await newRoom(page, "Hall", "300", "200");
+  await page.getByRole("button", { name: /Save & open planner/ }).click();
 
+  await page.getByTestId("planner-tool-room").click();
   const box = await page.getByTestId("plan-canvas").boundingBox();
   if (!box) throw new Error("canvas not visible");
-  await page.mouse.move(box.x + box.width * 0.2, box.y + box.height * 0.2);
+  await page.mouse.move(box.x + box.width * 0.72, box.y + box.height * 0.2);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width * 0.6, box.y + box.height * 0.5, { steps: 8 });
-  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.7, { steps: 8 });
+  await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.45, { steps: 8 });
+  await page.mouse.move(box.x + box.width * 0.95, box.y + box.height * 0.6, { steps: 8 });
   await page.mouse.up();
 
-  await expect(page.getByTestId("room-area")).not.toHaveText("—");
-  const width = Number(await page.getByLabel("Width", { exact: true }).inputValue());
-  expect(width % 5).toBe(0);
-  expect(width).toBeGreaterThanOrEqual(50);
+  await expect(page.getByRole("radio", { name: "Room 2" })).toBeVisible();
+  await page.goto(aptUrl);
+  await expect(page.getByTestId("room-card")).toHaveCount(2);
   await deleteApartment(page, aptUrl);
 });
