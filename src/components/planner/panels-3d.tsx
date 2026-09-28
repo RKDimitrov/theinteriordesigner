@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { clamp } from "@/domain/geometry/units";
+import { FitOutBlock } from "./fit-out-controls";
 import { SelectionBlock } from "./inspector";
 import { usePlanner } from "./planner-context";
 import { type Camera, CAMERA_PRESETS, type CameraPreset, DEFAULT_FINISH, FLOOR_FINISHES, WALL_FINISHES } from "./state";
@@ -283,6 +284,7 @@ function Finishes() {
         </div>
         <p className="pl-hint">{t("finishesLocal")}</p>
       </div>
+      <FitOutBlock />
       <div className="pl-blk">
         <h3>
           <span>{t("textiles")}</span>
@@ -329,6 +331,7 @@ function Scene() {
       <div className="pl-blk">
         {(
           [
+            ["realistic", t("realistic")],
             ["ceilingLights", t("ceilingLights")],
             ["labels", t("pieceLabels")],
             ["foldWalls", t("foldWalls")],

@@ -2,7 +2,8 @@
 
 import { memo } from "react";
 import { pts, wallBand } from "@/components/plan-view/shapes";
-import { doorLeaf, openingSpan } from "@/domain/geometry/openings";
+import { type DoorSwing, doorLeaves, openingSpan } from "@/domain/geometry/openings";
+import { doorStyle, radiatorStyle, slides, windowStyle } from "@/domain/room/fit-out";
 import { area, bbox, offsetPolygon } from "@/domain/geometry/polygon";
 import { m2 } from "@/domain/geometry/units";
 import { add, cross, scale, sub, type Vec } from "@/domain/geometry/vec";
@@ -65,59 +66,82 @@ function OpeningMark({ walls, opening }: { walls: readonly Wall[]; opening: Open
   const cut = <polygon points={pts(wallBand(start, end, wall, 0.5, W + 0.5))} fill={SHEET} />;
   switch (opening.kind) {
     case "window": {
-      const lines = [0, W / 2, W].map((off) => [add(start, scale(wall.inward, -off)), add(end, scale(wall.inward, -off))] as const);
-      const capA = [start, add(start, scale(wall.inward, -W))] as const;
-      const capB = [end, add(end, scale(wall.inward, -W))] as const;
+      // Along the wall at depth `off` (0 = room face, W = outside face), from `t0` to `t1` of the width.
+      const run = (off: number, t0 = 0, t1 = 1) => {
+        const a = add(add(start, scale(sub(end, start), t0)), scale(wall.inward, -off));
+        const b = add(add(start, scale(sub(end, start), t1)), scale(wall.inward, -off));
+        return [a, b] as const;
+      };
+      const style = windowStyle(opening);
+      const lines = [run(0), run(W), [start, add(start, scale(wall.inward, -W))] as const, [end, add(end, scale(wall.inward, -W))] as const];
+      // Glass: sliding sashes overlap, a fixed pane is one heavy line, openable sashes one line.
+      const glass = style === "sliding" ? [run(W / 3, 0, 0.6), run((2 * W) / 3, 0.4, 1)] : [run(W / 2)];
       return (
         <g data-opening-id={opening.id}>
           {cut}
-          {[...lines, capA, capB].map(([a, b], i) => (
+          {lines.map(([a, b], i) => (
             <line key={i} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={INK} strokeWidth={1.2} {...thin} />
           ))}
+          {glass.map(([a, b], i) => (
+            <line key={`g${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={INK} strokeWidth={style === "fixed" ? 2.4 : 1.2} {...thin} />
+          ))}
+          {style === "floor_to_ceiling" && (
+            // Glazing down to the floor: dashed sill line on the room side.
+            <line x1={run(-6)[0].x} y1={run(-6)[0].y} x2={run(-6)[1].x} y2={run(-6)[1].y} stroke={INK} strokeWidth={1} strokeDasharray="3 3" {...thin} />
+          )}
         </g>
       );
     }
     case "door": {
-      const leaf = doorLeaf(walls, opening);
-      if (!leaf) {
-        // Sliding door: a panel along the wall. Pass-through: just the gap.
+      if (opening.swing === "none") return <g data-opening-id={opening.id}>{cut}</g>;
+      const style = doorStyle(opening);
+      if (slides(opening)) {
+        const park = opening.hinge === "start" ? -1 : 1;
+        // The leaf's closed position, and where it parks when open (towards the hinge end).
+        const shift = scale(wall.dir, park * opening.width);
+        const parkFrom = park < 0 ? start : end;
+        const parkTo = add(parkFrom, shift);
+        const inset = style === "pocket" ? -W / 2 : style === "barn" ? 6 : 4;
+        const onFace = (p: Vec) => add(p, scale(wall.inward, inset));
+        const [a, b] = [onFace(start), onFace(end)];
+        const [pa, pb] = [onFace(parkFrom), onFace(parkTo)];
         return (
           <g data-opening-id={opening.id}>
             {cut}
-            {opening.swing === "sliding" && (
-              <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} stroke={INK} strokeWidth={2.5} {...thin} transform={`translate(${-wall.inward.x * 3} ${-wall.inward.y * 3})`} />
+            <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={INK} strokeWidth={2.5} {...thin} />
+            {/* Where the leaf runs to: inside the wall for a pocket door, along the face otherwise. */}
+            <line x1={pa.x} y1={pa.y} x2={pb.x} y2={pb.y} stroke={INK} strokeWidth={1} strokeDasharray="4 3" {...thin} />
+            {style === "barn" && (
+              // Rail above the leaf, spanning opening and parking run.
+              <line x1={onFace(start).x + wall.inward.x * 3} y1={onFace(start).y + wall.inward.y * 3} x2={pb.x + wall.inward.x * 3} y2={pb.y + wall.inward.y * 3} stroke={INK} strokeWidth={0.8} {...thin} />
             )}
           </g>
         );
       }
-      const sweep = cross(sub(leaf.closedTip, leaf.hinge), sub(leaf.openTip, leaf.hinge)) > 0 ? 1 : 0;
+      const glazed = style === "glazed" || style === "balcony";
       return (
         <g data-opening-id={opening.id}>
           {cut}
-          <line x1={leaf.hinge.x} y1={leaf.hinge.y} x2={leaf.openTip.x} y2={leaf.openTip.y} stroke={INK} strokeWidth={2.5} {...thin} />
-          <path
-            d={`M ${leaf.closedTip.x} ${leaf.closedTip.y} A ${leaf.radius} ${leaf.radius} 0 0 ${sweep} ${leaf.openTip.x} ${leaf.openTip.y}`}
-            fill="none"
-            stroke={INK}
-            strokeWidth={1.2}
-            strokeDasharray="4 3"
-            {...thin}
-          />
+          {doorLeaves(walls, opening).map((leaf, i) => (
+            <LeafMark key={i} leaf={leaf} glazed={glazed} fold={style === "bifold"} />
+          ))}
         </g>
       );
     }
     case "radiator": {
+      const style = radiatorStyle(opening);
       const a = add(start, scale(wall.inward, 3));
       const b = add(end, scale(wall.inward, 3));
       const band = wallBand(a, b, wall, opening.depth, 0);
+      const step = style === "column" ? 3.5 : style === "towel" ? 12 : style === "convector" ? 4 : 6;
       const fins: Vec[][] = [];
-      for (let t = 6; t < opening.width - 3; t += 6) {
+      for (let t = step; t < opening.width - 3; t += step) {
         const p = add(a, scale(wall.dir, t));
         fins.push([p, add(p, scale(wall.inward, opening.depth))]);
       }
       return (
         <g data-opening-id={opening.id}>
-          <polygon points={pts(band)} fill={SHEET} stroke={INK} strokeWidth={1.2} {...thin} />
+          <polygon points={pts(band)} fill={SHEET} stroke={INK} strokeWidth={1.2} strokeDasharray={style === "convector" ? "4 2" : undefined} {...thin} />
           {fins.map(([p, q], i) => (
             <line key={i} x1={p!.x} y1={p!.y} x2={q!.x} y2={q!.y} stroke={INK} strokeWidth={0.8} {...thin} />
           ))}
@@ -140,6 +164,33 @@ function OpeningMark({ walls, opening }: { walls: readonly Wall[]; opening: Open
       );
     }
   }
+}
+
+/** One swinging leaf: the leaf itself and its dashed swing arc. Glazed leaves are drawn hollow; a bifold shows its fold. */
+function LeafMark({ leaf, glazed, fold }: { leaf: DoorSwing; glazed: boolean; fold: boolean }) {
+  const thin = { vectorEffect: "non-scaling-stroke" as const };
+  const sweep = cross(sub(leaf.closedTip, leaf.hinge), sub(leaf.openTip, leaf.hinge)) > 0 ? 1 : 0;
+  const mid = scale(add(leaf.hinge, leaf.openTip), 0.5);
+  const out = scale(sub(leaf.closedTip, leaf.hinge), 0.25);
+  return (
+    <>
+      {fold ? (
+        // Folded panels: a zigzag from the hinge to the open tip.
+        <polyline points={pts([leaf.hinge, add(mid, out), leaf.openTip])} fill="none" stroke={INK} strokeWidth={2.2} {...thin} />
+      ) : (
+        <line x1={leaf.hinge.x} y1={leaf.hinge.y} x2={leaf.openTip.x} y2={leaf.openTip.y} stroke={INK} strokeWidth={glazed ? 4 : 2.5} {...thin} />
+      )}
+      {glazed && <line x1={leaf.hinge.x} y1={leaf.hinge.y} x2={leaf.openTip.x} y2={leaf.openTip.y} stroke={SHEET} strokeWidth={1.6} {...thin} />}
+      <path
+        d={`M ${leaf.closedTip.x} ${leaf.closedTip.y} A ${leaf.radius} ${leaf.radius} 0 0 ${sweep} ${leaf.openTip.x} ${leaf.openTip.y}`}
+        fill="none"
+        stroke={INK}
+        strokeWidth={1.2}
+        strokeDasharray="4 3"
+        {...thin}
+      />
+    </>
+  );
 }
 
 /** Invisible wide hit areas for openings, drawn above furniture so they stay clickable. */

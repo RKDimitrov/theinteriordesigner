@@ -1,4 +1,5 @@
 import type { Vec } from "@/domain/geometry/vec";
+import { DEFAULT_FIT_OUT, type FitOut } from "@/domain/room/fit-out";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room } from "@/domain/schemas/room";
 
@@ -82,6 +83,8 @@ export interface Finish {
 export const DEFAULT_FINISH: Finish = { floor: "oak", walls: "limewash" };
 
 export interface SceneSettings {
+  /** Real models and PBR textures; off shows the drafting look (boxes with ink edges). */
+  realistic: boolean;
   /** Hour of day, 7–21. */
   hour: number;
   ceilingLights: boolean;
@@ -130,6 +133,8 @@ export interface PlannerState {
   doorsOpen: Record<string, boolean>;
   savedViews: SavedView[];
   walking: boolean;
+  /** Apartment defaults for doors, windows and radiators; saved to the apartment. */
+  fitOut: FitOut;
 }
 
 export type Action =
@@ -149,7 +154,7 @@ export type Action =
 
 const HISTORY = 100;
 
-export function initialState(plan: Plan, scope: "all" | string, drawerOpen: boolean | null = null): PlannerState {
+export function initialState(plan: Plan, scope: "all" | string, drawerOpen: boolean | null = null, fitOut: FitOut = DEFAULT_FIT_OUT): PlannerState {
   const ids = plan.rooms.map((r) => r.room.id);
   return {
     plan,
@@ -173,10 +178,11 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     camera: { ...CAMERA_PRESETS.architect },
     preset: "architect",
     finishes: {},
-    scene: { hour: 16, ceilingLights: false, labels: false, foldWalls: true },
+    scene: { realistic: true, hour: 16, ceilingLights: false, labels: false, foldWalls: true },
     doorsOpen: {},
     savedViews: [],
     walking: false,
+    fitOut,
   };
 }
 

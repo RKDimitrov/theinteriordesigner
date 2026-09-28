@@ -4,22 +4,26 @@ import { RADIATOR_COVER } from "../clearances";
 import { moveHint } from "../hints";
 import type { Rule } from "../types";
 
-/** Door swings and the path in front of doors stay free of floor items. */
+const DOOR_ZONE = {
+  door_swing: { code: "DOOR_SWING_BLOCKED", what: "is in the swing area of" },
+  door_path: { code: "DOOR_PATH_BLOCKED", what: "blocks the 80 cm path in front of" },
+  door_slide: { code: "DOOR_SLIDE_BLOCKED", what: "stands where the sliding leaf runs open beside" },
+} as const;
+
+/** Door swings, sliding-leaf runs and the path in front of doors stay free of floor items. */
 export const doorsRule: Rule = ({ zones, floorItems, footprints }) => {
   const issues: ValidationIssue[] = [];
   for (const z of zones) {
-    if (z.kind !== "door_swing" && z.kind !== "door_path") continue;
+    if (z.kind !== "door_swing" && z.kind !== "door_path" && z.kind !== "door_slide") continue;
+    const { code, what } = DOOR_ZONE[z.kind];
     for (const f of floorItems) {
       const o = convexOverlap(footprints.get(f.id)!, z.polygon);
       if (!o) continue;
       issues.push({
-        code: z.kind === "door_swing" ? "DOOR_SWING_BLOCKED" : "DOOR_PATH_BLOCKED",
+        code,
         severity: "error",
         itemIds: [f.id],
-        message:
-          z.kind === "door_swing"
-            ? `${f.name} is in the swing area of door ${z.refId}`
-            : `${f.name} blocks the 80 cm path in front of door ${z.refId}`,
+        message: `${f.name} ${what} door ${z.refId}`,
         hint: moveHint(f.name, o),
       });
     }

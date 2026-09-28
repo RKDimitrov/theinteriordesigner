@@ -22,6 +22,7 @@ export interface AutofixResult {
 const ZONE_CODES: Readonly<Partial<Record<ValidationIssue["code"], readonly KeepClearZone["kind"][]>>> = {
   DOOR_SWING_BLOCKED: ["door_swing"],
   DOOR_PATH_BLOCKED: ["door_path"],
+  DOOR_SLIDE_BLOCKED: ["door_slide"],
   WINDOW_BLOCKED: ["window"],
   RADIATOR_BLOCKED: ["radiator"],
   FIXED_ELEMENT_COLLISION: ["fixed"],

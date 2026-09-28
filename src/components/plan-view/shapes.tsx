@@ -1,4 +1,4 @@
-import { doorLeaf, openingSpan } from "@/domain/geometry/openings";
+import { doorLeaves, openingSpan } from "@/domain/geometry/openings";
 import { add, cross, scale, sub, type Vec } from "@/domain/geometry/vec";
 import type { Wall } from "@/domain/geometry/walls";
 import type { FixedElement, Opening } from "@/domain/schemas/room";
@@ -53,12 +53,12 @@ export function OpeningShape({ walls, opening, selected, onPointerDown }: Openin
   let body: React.ReactNode;
   switch (opening.kind) {
     case "door": {
-      const leaf = doorLeaf(walls, opening);
+      const leaves = doorLeaves(walls, opening);
       const gap = <polygon points={pts(wallBand(start, end, wall, half, half))} className="fill-card stroke-none" />;
       if (opening.swing === "none") {
         // Pass-through: just the gap.
         body = gap;
-      } else if (!leaf) {
+      } else if (leaves.length === 0) {
         // Sliding: two offset panels.
         const mid = add(start, scale(sub(end, start), 0.5));
         body = (
@@ -75,18 +75,25 @@ export function OpeningShape({ walls, opening, selected, onPointerDown }: Openin
           </>
         );
       } else {
-        const sweep = cross(sub(leaf.closedTip, leaf.hinge), sub(leaf.openTip, leaf.hinge)) > 0 ? 1 : 0;
+        // One leaf, or two for a double door.
         body = (
           <>
             {gap}
-            <line x1={leaf.hinge.x} y1={leaf.hinge.y} x2={leaf.openTip.x} y2={leaf.openTip.y} className={cn("stroke-[2.5]", hl)} />
-            <path
-              d={`M ${leaf.closedTip.x} ${leaf.closedTip.y} A ${leaf.radius} ${leaf.radius} 0 0 ${sweep} ${leaf.openTip.x} ${leaf.openTip.y}`}
-              className="fill-none stroke-primary"
-              strokeWidth={1.4}
-              strokeDasharray="4 3"
-              vectorEffect="non-scaling-stroke"
-            />
+            {leaves.map((leaf, i) => {
+              const sweep = cross(sub(leaf.closedTip, leaf.hinge), sub(leaf.openTip, leaf.hinge)) > 0 ? 1 : 0;
+              return (
+                <g key={i}>
+                  <line x1={leaf.hinge.x} y1={leaf.hinge.y} x2={leaf.openTip.x} y2={leaf.openTip.y} className={cn("stroke-[2.5]", hl)} />
+                  <path
+                    d={`M ${leaf.closedTip.x} ${leaf.closedTip.y} A ${leaf.radius} ${leaf.radius} 0 0 ${sweep} ${leaf.openTip.x} ${leaf.openTip.y}`}
+                    className="fill-none stroke-primary"
+                    strokeWidth={1.4}
+                    strokeDasharray="4 3"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                </g>
+              );
+            })}
           </>
         );
       }

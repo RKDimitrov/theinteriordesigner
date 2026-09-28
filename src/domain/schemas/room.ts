@@ -26,14 +26,35 @@ const OnWall = {
   width: PositiveCm,
 };
 
+/*
+ * Styles and finishes are optional so rooms saved before they existed stay
+ * valid; read them through src/domain/room/fit-out.ts, which fills defaults.
+ */
+export const DoorStyle = z.enum(["hinged", "double", "sliding", "pocket", "glazed", "balcony", "barn", "bifold"]);
+export type DoorStyle = z.infer<typeof DoorStyle>;
+export const WindowStyle = z.enum(["casement", "tilt_turn", "sliding", "fixed", "floor_to_ceiling"]);
+export type WindowStyle = z.infer<typeof WindowStyle>;
+export const RadiatorStyle = z.enum(["panel", "column", "towel", "vertical", "convector"]);
+export type RadiatorStyle = z.infer<typeof RadiatorStyle>;
+
+export const DoorFinish = z.enum(["white_lacquer", "light_oak", "walnut", "black", "glass"]);
+export type DoorFinish = z.infer<typeof DoorFinish>;
+export const FrameFinish = z.enum(["white", "oak", "anthracite", "black"]);
+export type FrameFinish = z.infer<typeof FrameFinish>;
+export const RadiatorFinish = z.enum(["white", "anthracite", "black", "chrome"]);
+export type RadiatorFinish = z.infer<typeof RadiatorFinish>;
+
 export const Door = z.object({
   ...OnWall,
   kind: z.literal("door"),
   height: PositiveCm.default(200),
-  /** Which end of the opening (along the wall direction) carries the hinge. */
+  /** Which end of the opening (along the wall direction) carries the hinge, or where a sliding leaf parks. */
   hinge: z.enum(["start", "end"]),
   /** "in" swings into this room; "out" swings away from it; "none" is a pass-through without a leaf. */
   swing: z.enum(["in", "out", "sliding", "none"]),
+  style: DoorStyle.optional(),
+  /** Overrides the apartment's default door finish. */
+  finish: DoorFinish.optional(),
 });
 
 export const Window = z.object({
@@ -42,6 +63,9 @@ export const Window = z.object({
   height: PositiveCm,
   sillHeight: Cm,
   openable: z.boolean().default(true),
+  style: WindowStyle.optional(),
+  /** Frame finish; overrides the apartment default. */
+  finish: FrameFinish.optional(),
 });
 
 export const Radiator = z.object({
@@ -49,6 +73,8 @@ export const Radiator = z.object({
   kind: z.literal("radiator"),
   height: PositiveCm,
   depth: PositiveCm.default(10),
+  style: RadiatorStyle.optional(),
+  finish: RadiatorFinish.optional(),
 });
 
 export const Socket = z.object({

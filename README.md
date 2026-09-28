@@ -61,6 +61,7 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | `npm run test:e2e` | Playwright. Needs `npm run dev` already running (or `E2E_BASE_URL`). Runs desktop Chrome and a Pixel 7 profile. |
 | `npm run db:migrate` | `prisma migrate dev`, used to create new migrations during development |
 | `npm run db:deploy` | `prisma migrate deploy` |
+| `node scripts/fetch-assets.mjs` | Re-downloads the 3D models and PBR textures in `public/models` and `public/textures` from Poly Haven (CC0) and compresses them (meshopt + WebP). The mapping from catalogue category to asset is in `src/components/planner/three/assets.ts`. |
 
 ## Project layout
 

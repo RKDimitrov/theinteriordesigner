@@ -11,7 +11,7 @@ import { distance, sub, type Vec } from "@/domain/geometry/vec";
 import { nearestWall, wallsOf } from "@/domain/geometry/walls";
 import { newPlannerItem, snapTo, SYMBOL_OF, turn } from "@/domain/planner/items";
 import { roomsBounds } from "@/domain/planner/layout";
-import { clampOffset, newOpening, newPassThrough, nextId } from "@/domain/room/openings-edit";
+import { clampOffset, newOpening, newPassThrough, nextId, withFitOutStyle } from "@/domain/room/openings-edit";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening, OpeningKind } from "@/domain/schemas/room";
 import { createRoomAction } from "@/server/actions/rooms";
@@ -180,7 +180,10 @@ export function Stage2D() {
     if (!hit) return toast(t("clickWall"));
     const { room, hit: h } = hit;
     const id = nextId(kind === "pass" ? "pass" : kind, room.room.openings.map((o) => o.id));
-    const opening = kind === "pass" ? newPassThrough(id, h.wall.index, h.offset, h.wall.length) : newOpening(kind, id, h.wall.index, h.offset, h.wall.length);
+    const opening =
+      kind === "pass"
+        ? newPassThrough(id, h.wall.index, h.offset, h.wall.length)
+        : withFitOutStyle(newOpening(kind, id, h.wall.index, h.offset, h.wall.length), s.fitOut, room.room.ceilingHeight, h.wall.length);
     dispatch({ type: "edit", fn: (pl) => mapRoom(pl, room.room.id, (r) => ({ ...r, room: { ...r.room, openings: [...r.room.openings, opening] } })) });
     dispatch({ type: "select", selection: { kind: "opening", roomId: room.room.id, id } });
   };

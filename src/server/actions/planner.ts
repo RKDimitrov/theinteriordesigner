@@ -3,16 +3,29 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { renterRules } from "@/domain/context/renter-rules";
+import { FitOut } from "@/domain/room/fit-out";
 import { blankDesign, PLANNER_SOURCE, withFurniture } from "@/domain/planner/items";
 import { FurnitureItem } from "@/domain/schemas/design";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
 import { summarizeIssues, validateDesign } from "@/domain/validator";
 import { type ActionResult, fail, ok } from "@/lib/action-result";
 import { requireUserId } from "../auth";
-import { getApartment } from "../repo/apartments";
+import { getApartment, setApartmentFitOut } from "../repo/apartments";
 import { createDesign, type DesignStatus, getDesign, updateDesign } from "../repo/designs";
 import { getProfile } from "../repo/profiles";
 import { getRoom } from "../repo/rooms";
+
+const FitOutInput = z.object({ apartmentId: z.uuid(), fitOut: FitOut });
+
+/** Save the apartment's default door, window and radiator styles and finishes. */
+export async function saveFitOutAction(input: unknown): Promise<ActionResult<null>> {
+  const userId = await requireUserId();
+  const parsed = FitOutInput.safeParse(input);
+  if (!parsed.success) return fail("Invalid fit-out");
+  if (!(await setApartmentFitOut(userId, parsed.data.apartmentId, parsed.data.fitOut))) return fail("Apartment not found");
+  revalidatePath(`/apartments/${parsed.data.apartmentId}/planner`);
+  return ok(null);
+}
 
 const SaveInput = z.object({
   apartmentId: z.uuid(),

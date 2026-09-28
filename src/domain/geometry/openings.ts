@@ -1,3 +1,4 @@
+import { doorStyle, slides } from "../room/fit-out";
 import type { Door, Opening } from "../schemas/room";
 import type { Vec } from "./vec";
 import { add, scale } from "./vec";
@@ -39,14 +40,35 @@ export interface DoorSwing {
  * ("out" opens away from this room). Null for sliding doors and pass-throughs. Used for drawing.
  */
 export function doorLeaf(walls: readonly Wall[], door: Door, segments = SWING_SEGMENTS): DoorSwing | null {
-  if (door.swing === "sliding" || door.swing === "none") return null;
+  return doorLeaves(walls, door, segments)[0] ?? null;
+}
+
+/**
+ * Every swinging leaf of a door: one for hinged, glazed and balcony doors,
+ * two half-width leaves for a double door, one half-width fold for a bifold.
+ * Empty for sliding styles and pass-throughs.
+ */
+export function doorLeaves(walls: readonly Wall[], door: Door, segments = SWING_SEGMENTS): DoorSwing[] {
+  if (door.swing === "sliding" || door.swing === "none" || slides(door)) return [];
+  const style = doorStyle(door);
+  if (style === "double") {
+    const half = door.width / 2;
+    return (["start", "end"] as const).flatMap((hinge) => {
+      const leaf = swingLeaf(walls, door, hinge, half, segments);
+      return leaf ? [leaf] : [];
+    });
+  }
+  const leaf = swingLeaf(walls, door, door.hinge, style === "bifold" ? door.width / 2 : door.width, segments);
+  return leaf ? [leaf] : [];
+}
+
+function swingLeaf(walls: readonly Wall[], door: Door, hingeAt: "start" | "end", r: number, segments: number): DoorSwing | null {
   const span = openingSpan(walls, door);
   if (!span) return null;
   const { wall } = span;
   const openDir = door.swing === "in" ? wall.inward : scale(wall.inward, -1);
-  const hinge = door.hinge === "start" ? span.start : span.end;
-  const closedDir = door.hinge === "start" ? wall.dir : scale(wall.dir, -1);
-  const r = door.width;
+  const hinge = hingeAt === "start" ? span.start : span.end;
+  const closedDir = hingeAt === "start" ? wall.dir : scale(wall.dir, -1);
   const polygon: Vec[] = [hinge];
   for (let i = 0; i <= segments; i++) {
     const t = ((i / segments) * Math.PI) / 2;
@@ -67,6 +89,31 @@ export function doorLeaf(walls: readonly Wall[], door: Door, segments = SWING_SE
  */
 export function doorSwing(walls: readonly Wall[], door: Door, segments = SWING_SEGMENTS): DoorSwing | null {
   return door.swing === "in" ? doorLeaf(walls, door, segments) : null;
+}
+
+/** Areas swept inside this room by all of a door's leaves. */
+export function doorSwings(walls: readonly Wall[], door: Door, segments = SWING_SEGMENTS): DoorSwing[] {
+  return door.swing === "in" ? doorLeaves(walls, door, segments) : [];
+}
+
+export const SLIDE_RUN_DEPTH_CM = 15;
+
+/**
+ * Strip of wall face a sliding or barn leaf runs along when open: `width` long
+ * on the hinge side of the opening, clipped to the wall. Null for pocket doors
+ * (the leaf disappears into the wall) and for swinging doors.
+ */
+export function slideRun(walls: readonly Wall[], door: Door): Vec[] | null {
+  if (!slides(door) || doorStyle(door) === "pocket") return null;
+  const wall = walls[door.wallIndex];
+  if (!wall) return null;
+  const from = door.hinge === "start" ? Math.max(0, door.offset - door.width) : door.offset + door.width;
+  const to = door.hinge === "start" ? door.offset : Math.min(wall.length, door.offset + 2 * door.width);
+  if (to - from < 1) return null;
+  const a = pointOnWall(wall, from);
+  const b = pointOnWall(wall, to);
+  const inward = scale(wall.inward, SLIDE_RUN_DEPTH_CM);
+  return [a, b, add(b, inward), add(a, inward)];
 }
 
 /** Openings that pierce the wall and therefore may not overlap each other. */

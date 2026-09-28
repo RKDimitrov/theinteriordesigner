@@ -1,5 +1,6 @@
 import { clamp, snap } from "../geometry/units";
 import type { Opening, OpeningKind } from "../schemas/room";
+import { applyDoorStyle, applyRadiatorStyle, applyWindowStyle, type FitOut } from "./fit-out";
 
 export const DEFAULT_OPENING_WIDTH: Record<OpeningKind, number> = {
   door: 90,
@@ -47,4 +48,21 @@ export function nextId(prefix: string, taken: Iterable<string>): string {
     const id = `${prefix}-${i}`;
     if (!used.has(id)) return id;
   }
+}
+
+/**
+ * A freshly drawn door, window or radiator in the apartment's default style,
+ * still fully on its wall. Pass-throughs (doors without a leaf) and sockets
+ * are returned unchanged.
+ */
+export function withFitOutStyle(o: Opening, fitOut: FitOut, ceilingHeight: number, wallLength: number): Opening {
+  let next: Opening;
+  if (o.kind === "door") {
+    if (o.swing === "none") return o;
+    next = applyDoorStyle(o, fitOut.doors.style);
+  } else if (o.kind === "window") next = applyWindowStyle(o, fitOut.windows.style, ceilingHeight);
+  else if (o.kind === "radiator") next = applyRadiatorStyle(o, fitOut.radiators.style);
+  else return o;
+  const width = Math.min(next.width, Math.floor(wallLength));
+  return { ...next, width, offset: clampOffset(next.offset, width, wallLength) };
 }

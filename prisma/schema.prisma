@@ -28,6 +28,8 @@ model Apartment {
   yearBuilt     Int?
   /// Direction of north, clockwise degrees from plan "up"
   northAngleDeg Float    @default(0)
+  /// FitOut: default door/window/radiator styles and finishes, see src/domain/room/fit-out.ts
+  fitOut        Json     @default("{}")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   rooms         Room[]

@@ -1,14 +1,17 @@
 "use client";
 
-import { Edges, Environment, Html, Lightformer, OrbitControls } from "@react-three/drei";
+import apartmentHdri from "@pmndrs/assets/hdri/apartment.exr";
+import { Edges, Environment, Html, OrbitControls, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
+import { EffectComposer, N8AO, ToneMapping } from "@react-three/postprocessing";
+import { ToneMappingMode } from "postprocessing";
 import { Camera as CameraIcon, DoorOpen, Footprints, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPosition } from "suncalc";
 import * as THREE from "three";
 import { Button } from "@/components/ui/button";
-import { doorLeaf, openingSpan } from "@/domain/geometry/openings";
+import { openingSpan } from "@/domain/geometry/openings";
 import { bbox } from "@/domain/geometry/polygon";
 import { clamp } from "@/domain/geometry/units";
 import type { Vec } from "@/domain/geometry/vec";
@@ -16,15 +19,18 @@ import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { canStand, roomAt, startSpot, type WalkRoom, wallPieces } from "@/domain/planner/walls3d";
 import type { FurnitureItem } from "@/domain/schemas/design";
-import type { Door, Opening, Room } from "@/domain/schemas/room";
+import type { Opening, Room } from "@/domain/schemas/room";
 import { usePlanner } from "./planner-context";
 import { type Camera, DEFAULT_FINISH, type Finish, type PlanRoom } from "./state";
-import { floorTexture, WALL_COLOR } from "./three/materials";
+import { AssetBoundary } from "./three/asset-boundary";
+import { FLOOR_TEXTURE } from "./three/assets";
+import { FLOOR_BASE, floorTexture, WALL_COLOR } from "./three/materials";
+import { Opening3D, sideSign } from "./three/openings3d";
+import { RealPiece } from "./three/pieces";
+import { tintFor, usePbr } from "./three/textures";
 
 const INK = "#2b2622";
 const CLAY = "#c8794a";
-const WALNUT = "#6b4a32";
-const DOOR = "#b58a60";
 const W = PLANNER_WALL_CM;
 const WALK_SPEED = 150; // cm/s
 const TURN_SPEED = 80; // °/s
@@ -50,6 +56,8 @@ export default function Stage3D() {
   const gl = useRef<THREE.WebGLRenderer | null>(null);
   const [locked, setLocked] = useState(false);
   const [location, setLocation] = useState<string | null>(null);
+  // Ambient occlusion is the costliest pass; drop it when the frame rate sags.
+  const [ao, setAo] = useState(true);
   const walkApiRef = useRef<{ toggleNearestDoor: () => void; move: (key: string, down: boolean) => void } | null>(null);
 
   const placed: Placed[] = useMemo(
@@ -117,11 +125,18 @@ export default function Stage3D() {
             camera={{ fov: fovOf(s.camera.lens), near: 5, far: 40000, position: [bounds.cx + 800, 700, bounds.cz + 800] }}
             onCreated={(state) => {
               gl.current = state.gl;
-              state.gl.toneMapping = THREE.ACESFilmicToneMapping;
+              // Neutral keeps paint and fabric colours true; the composer below takes over while mounted.
+              state.gl.toneMapping = THREE.NeutralToneMapping;
             }}
             onPointerMissed={() => !s.walking && dispatch({ type: "select", selection: null })}
           >
+            <PerformanceMonitor onDecline={() => setAo(false)} />
             <SceneContents placed={placed} sun={sun} />
+            <EffectComposer multisampling={4}>
+              {/* Scene units are cm: occlusion reaches ~40 cm from contact. */}
+              <N8AO enabled={ao} aoRadius={40} distanceFalloff={1} intensity={2.5} quality="medium" halfRes />
+              <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+            </EffectComposer>
             {s.walking ? (
               <WalkControls placed={placed} onLocation={setLocation} apiRef={walkApiRef} coarse={!!coarse} onExit={stopWalk} />
             ) : (
@@ -221,6 +236,7 @@ function sunVector(hour: number, lat: number, northAngleDeg: number) {
   return {
     dir,
     intensity: up ? (warm ? 1.6 : 2.6) : 0.3,
+    envIntensity: up ? (warm ? 0.45 : 0.6) : 0.2,
     color: warm ? "#ffd2a1" : "#fff4e2",
     sky: !up ? "#b9b3b8" : warm ? "#f1dcc6" : "#ece6d8",
   };
@@ -247,15 +263,17 @@ const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Pla
 
   return (
     <>
-      <hemisphereLight args={["#fff7ea", "#d8c6a8", 1.35]} />
-      <ambientLight intensity={0.35} color="#fff3e2" />
+      {/* The interior HDRI does most of the fill; these only warm it up. */}
+      <hemisphereLight args={["#fff7ea", "#d8c6a8", 0.35]} />
+      <ambientLight intensity={0.1} color="#fff3e2" />
       <directionalLight
         position={sunPos}
         target={target}
         intensity={sun.intensity}
         color={sun.color}
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[2048, 2048]}
+        shadow-radius={4}
         shadow-camera-left={-1500}
         shadow-camera-right={1500}
         shadow-camera-top={1500}
@@ -266,10 +284,7 @@ const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Pla
         shadow-normalBias={3}
       />
       <primitive object={target} />
-      <Environment resolution={128} frames={1}>
-        <Lightformer intensity={1.2} position={[0, 5, -9]} scale={[10, 5, 1]} color="#fff4e6" />
-        <Lightformer intensity={0.6} position={[-6, 2, 3]} rotation-y={Math.PI / 2} scale={[8, 4, 1]} color="#f2e6d6" />
-      </Environment>
+      <Environment files={apartmentHdri} environmentIntensity={sun.envIntensity} />
       <mesh rotation-x={-Math.PI / 2} position={[center.x, -1.5, center.z]} receiveShadow>
         <circleGeometry args={[3000, 48]} />
         <meshStandardMaterial color="#e3d5bd" roughness={1} />
@@ -297,13 +312,20 @@ function Room3D({ placed }: { placed: Placed }) {
     g.rotateX(Math.PI / 2);
     return g;
   }, [room.polygon]);
-  const tex = useMemo(() => floorTexture(finish.floor), [finish.floor]);
   const lamps = r.furniture.filter((f) => f.category === "floor_lamp").slice(0, 6);
 
   return (
     <group position={[origin.x, 0, origin.y]}>
       <mesh geometry={floorGeo} receiveShadow>
-        <meshStandardMaterial map={tex} color={tex ? "#ffffff" : "#cfa77a"} roughness={0.8} side={THREE.DoubleSide} />
+        {s.scene.realistic ? (
+          <AssetBoundary fallback={<DrawnFloor finish={finish.floor} />}>
+            <Suspense fallback={<DrawnFloor finish={finish.floor} />}>
+              <RealFloor finish={finish.floor} />
+            </Suspense>
+          </AssetBoundary>
+        ) : (
+          <DrawnFloor finish={finish.floor} />
+        )}
       </mesh>
       {walls.map((w) => (
         <FoldGroup key={w.index} wall={w} origin={origin}>
@@ -311,14 +333,14 @@ function Room3D({ placed }: { placed: Placed }) {
           {room.openings
             .filter((o) => o.wallIndex === w.index && o.kind !== "radiator")
             .map((o) => (
-              <Opening3D key={o.id} roomId={room.id} walls={walls} o={o} ceiling={room.ceilingHeight} />
+              <RoomOpening key={o.id} roomId={room.id} walls={walls} o={o} ceiling={room.ceilingHeight} />
             ))}
         </FoldGroup>
       ))}
       {room.openings
         .filter((o) => o.kind === "radiator")
         .map((o) => (
-          <Opening3D key={o.id} roomId={room.id} walls={walls} o={o} ceiling={room.ceilingHeight} />
+          <RoomOpening key={o.id} roomId={room.id} walls={walls} o={o} ceiling={room.ceilingHeight} />
         ))}
       {room.fixedElements.map((f) => (
         <mesh key={f.id} position={[f.rect.x + f.rect.w / 2, Math.min(f.height, room.ceilingHeight) / 2, f.rect.y + f.rect.d / 2]} castShadow receiveShadow>
@@ -335,6 +357,19 @@ function Room3D({ placed }: { placed: Placed }) {
       ))}
     </group>
   );
+}
+
+function DrawnFloor({ finish }: { finish: Finish["floor"] }) {
+  const tex = useMemo(() => floorTexture(finish), [finish]);
+  return <meshStandardMaterial map={tex} color={tex ? "#ffffff" : "#cfa77a"} roughness={0.8} side={THREE.DoubleSide} />;
+}
+
+/** Photographed PBR floor, tinted to the finish's swatch; the floor geometry's UVs are already in cm. */
+function RealFloor({ finish }: { finish: Finish["floor"] }) {
+  const id = FLOOR_TEXTURE[finish];
+  const t = usePbr(id);
+  const color = useMemo(() => tintFor(FLOOR_BASE[finish], id), [finish, id]);
+  return <meshStandardMaterial {...t} color={color} side={THREE.DoubleSide} />;
 }
 
 /** Hides its children while the camera is outside `wall` (dollhouse cutaway), unless folding is off or walking. */
@@ -369,111 +404,21 @@ function Wall3D({ room, wall, color }: { room: Room; wall: Wall; color: string }
   );
 }
 
-/**
- * After rotating the wall group so local +x runs along the wall, the room's
- * inside is +z or −z depending on winding; walls sit on the outside.
- */
-function sideSign(wall: Wall): number {
-  // Local +z after rotation by −atan2(dir.y, dir.x) is the plan direction perpCw(dir) = (−dir.y, dir.x).
-  const pz = { x: -wall.dir.y, y: wall.dir.x };
-  return pz.x * wall.inward.x + pz.y * wall.inward.y > 0 ? 1 : -1;
-}
-
-function Opening3D({ roomId, walls, o, ceiling }: { roomId: string; walls: readonly Wall[]; o: Opening; ceiling: number }) {
-  const span = openingSpan(walls, o);
-  if (!span) return null;
-  const { wall } = span;
-  const angle = -Math.atan2(wall.dir.y, wall.dir.x);
-  const side = sideSign(wall);
-  if (o.kind === "window") {
-    const h = Math.min(o.height, ceiling - o.sillHeight);
-    return (
-      <group position={[wall.a.x, 0, wall.a.y]} rotation-y={angle}>
-        <group position={[o.offset + o.width / 2, o.sillHeight + h / 2, (-W / 2) * side]}>
-          <mesh>
-            <boxGeometry args={[o.width - 8, h - 8, 1]} />
-            <meshPhysicalMaterial color="#cdd9d5" transparent opacity={0.28} roughness={0.05} metalness={0} />
-          </mesh>
-          {[
-            [0, h / 2 - 2, o.width, 4],
-            [0, -h / 2 + 2, o.width, 4],
-            [-o.width / 2 + 2, 0, 4, h],
-            [o.width / 2 - 2, 0, 4, h],
-            [0, 0, 4, h],
-          ].map(([x, y, w, hh], i) => (
-            <mesh key={i} position={[x!, y!, 0]} castShadow>
-              <boxGeometry args={[w!, hh!, 6]} />
-              <meshStandardMaterial color={WALNUT} roughness={0.7} />
-            </mesh>
-          ))}
-        </group>
-      </group>
-    );
-  }
-  if (o.kind === "door") return <Door3D roomId={roomId} walls={walls} door={o} ceiling={ceiling} />;
-  if (o.kind === "radiator") {
-    return (
-      <group position={[wall.a.x, 0, wall.a.y]} rotation-y={angle}>
-        <mesh position={[o.offset + o.width / 2, 15 + o.height / 2, (o.depth / 2 + 3) * side]} castShadow>
-          <boxGeometry args={[o.width, o.height, o.depth]} />
-          <meshStandardMaterial color="#f6f1e8" roughness={0.6} />
-          <Edges color={INK} threshold={15} />
-        </mesh>
-      </group>
-    );
-  }
-  return null;
-}
-
-/** A leaf hinged at the door's hinge side; swings 90° over 0.8 s. Click to open or close. */
-function Door3D({ roomId, walls, door, ceiling }: { roomId: string; walls: readonly Wall[]; door: Door; ceiling: number }) {
+/** A door, window or radiator, with the planner's open doors and finishes. Click a door to open or close it. */
+function RoomOpening({ roomId, walls, o, ceiling }: { roomId: string; walls: readonly Wall[]; o: Opening; ceiling: number }) {
   const { s, dispatch } = usePlanner();
-  const pivot = useRef<THREE.Group>(null);
-  const key = doorKey(roomId, door.id);
+  const key = doorKey(roomId, o.id);
   const open = !!s.doorsOpen[key];
-  const leaf = doorLeaf(walls, door);
-  const span = openingSpan(walls, door);
-
-  const geo = useMemo(() => {
-    if (!leaf || !span) return null;
-    const closed = new THREE.Vector2(leaf.closedTip.x - leaf.hinge.x, leaf.closedTip.y - leaf.hinge.y);
-    const opened = new THREE.Vector2(leaf.openTip.x - leaf.hinge.x, leaf.openTip.y - leaf.hinge.y);
-    const a0 = -Math.atan2(closed.y, closed.x);
-    const a1 = -Math.atan2(opened.y, opened.x);
-    let delta = a1 - a0;
-    if (delta > Math.PI) delta -= 2 * Math.PI;
-    if (delta < -Math.PI) delta += 2 * Math.PI;
-    return { a0, delta };
-  }, [leaf, span]);
-  const progress = useRef(open ? 1 : 0);
-
-  useFrame((_, dt) => {
-    if (!pivot.current || !geo) return;
-    const step = dt / 0.8;
-    progress.current = open ? Math.min(1, progress.current + step) : Math.max(0, progress.current - step);
-    const eased = progress.current < 0.5 ? 2 * progress.current ** 2 : 1 - (-2 * progress.current + 2) ** 2 / 2;
-    pivot.current.rotation.y = geo.a0 + geo.delta * eased;
-  });
-
-  if (!leaf || !span || !geo) return null;
-  const h = Math.min(door.height, ceiling);
   return (
-    <group position={[leaf.hinge.x, 0, leaf.hinge.y]}>
-      <group ref={pivot} rotation-y={geo.a0}>
-        <mesh
-          position={[door.width / 2, h / 2, 0]}
-          castShadow
-          onClick={(e: ThreeEvent<MouseEvent>) => {
-            e.stopPropagation();
-            dispatch({ type: "set", patch: { doorsOpen: { ...s.doorsOpen, [key]: !open } } });
-          }}
-        >
-          <boxGeometry args={[door.width - 2, h - 2, 4]} />
-          <meshStandardMaterial color={DOOR} roughness={0.6} />
-          <Edges color={WALNUT} threshold={15} />
-        </mesh>
-      </group>
-    </group>
+    <Opening3D
+      walls={walls}
+      o={o}
+      ceiling={ceiling}
+      fitOut={s.fitOut}
+      realistic={s.scene.realistic}
+      open={open}
+      onToggle={() => dispatch({ type: "set", patch: { doorsOpen: { ...s.doorsOpen, [key]: !open } } })}
+    />
   );
 }
 
@@ -483,21 +428,42 @@ function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: Furnitu
   const rug = f.placement === "floor_covering";
   const h = rug ? 1 : Math.max(1, Math.min(f.h, ceiling));
   const y = f.placement === "wall" ? f.elevation + h / 2 : f.placement === "ceiling" ? ceiling - h / 2 : h / 2 + (rug ? 0.5 : 0);
+  const lit = s.scene.ceilingLights || s.scene.hour > 18;
+  const box = (
+    <mesh castShadow={!rug} receiveShadow>
+      <boxGeometry args={[f.w, h, f.d]} />
+      <meshStandardMaterial color={f.colorHex} roughness={0.75} />
+      <Edges color={selected ? CLAY : INK} lineWidth={selected ? 2.5 : 1} threshold={15} />
+    </mesh>
+  );
   return (
-    <group position={[f.x, y, f.y]} rotation-y={(-f.rotation * Math.PI) / 180}>
-      <mesh
-        castShadow={!rug}
-        receiveShadow
-        onClick={(e: ThreeEvent<MouseEvent>) => {
-          if (s.walking) return;
-          e.stopPropagation();
-          dispatch({ type: "set", patch: { selection: { kind: "item", roomId, id: f.id }, tab3d: "selection" } });
-        }}
-      >
-        <boxGeometry args={[f.w, h, f.d]} />
-        <meshStandardMaterial color={f.colorHex} roughness={0.75} />
-        <Edges color={selected ? CLAY : INK} lineWidth={selected ? 2.5 : 1} threshold={15} />
-      </mesh>
+    <group
+      position={[f.x, y, f.y]}
+      rotation-y={(-f.rotation * Math.PI) / 180}
+      onClick={(e: ThreeEvent<MouseEvent>) => {
+        if (s.walking) return;
+        e.stopPropagation();
+        dispatch({ type: "set", patch: { selection: { kind: "item", roomId, id: f.id }, tab3d: "selection" } });
+      }}
+    >
+      {s.scene.realistic ? (
+        <AssetBoundary fallback={box}>
+          <Suspense fallback={box}>
+            <group position-y={-h / 2}>
+              <RealPiece category={f.category} w={f.w} d={f.d} h={h} hex={f.colorHex} lit={lit} seed={f.id} />
+            </group>
+            {selected && (
+              <mesh>
+                <boxGeometry args={[f.w + 2, h + 2, f.d + 2]} />
+                <meshBasicMaterial visible={false} />
+                <Edges color={CLAY} lineWidth={2.5} threshold={15} />
+              </mesh>
+            )}
+          </Suspense>
+        </AssetBoundary>
+      ) : (
+        box
+      )}
       {showLabel && (
         <Html position={[0, h / 2 + 12, 0]} center style={{ pointerEvents: "none" }}>
           <span style={{ font: "500 10px var(--mono)", background: "#fbf6ec", border: "1px solid #2b2622", padding: "1px 5px", whiteSpace: "nowrap" }}>{f.name}</span>

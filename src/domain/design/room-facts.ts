@@ -3,13 +3,16 @@ import { area, bbox } from "../geometry/polygon";
 import type { Vec } from "../geometry/vec";
 import { backAgainstRotation, wallOrientations, wallsOf } from "../geometry/walls";
 import { keepClearZones } from "../geometry/zones";
-import type { RoomShape } from "../schemas/room";
+import { doorStyle, radiatorStyle, windowStyle } from "../room/fit-out";
+import type { Opening, RoomShape } from "../schemas/room";
 import { maxItems } from "./catalogue";
 import { freeFloorRect, wallSlots } from "./solver/slots";
 
 interface OpeningFact {
   id: string;
   kind: string;
+  /** Door, window or radiator type, e.g. "sliding" or "floor_to_ceiling". */
+  style?: string;
   wallIndex: number;
   from: Vec;
   to: Vec;
@@ -23,6 +26,13 @@ interface OpeningFact {
 }
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
+
+const styleOf = (o: Opening) =>
+  o.kind === "door" ? doorStyle(o) : o.kind === "window" ? windowStyle(o) : o.kind === "radiator" ? radiatorStyle(o) : undefined;
+const withStyle = (o: Opening) => {
+  const style = styleOf(o);
+  return style ? { style } : {};
+};
 const pt = (p: Vec) => ({ x: r1(p.x), y: r1(p.y) });
 
 /**
@@ -59,7 +69,7 @@ export function roomFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
     openings: room.openings.flatMap((o): OpeningFact[] => {
       const span = openingSpan(walls, o);
       if (!span) return [];
-      const base = { id: o.id, kind: o.kind, wallIndex: o.wallIndex, from: pt(span.start), to: pt(span.end), widthCm: o.width };
+      const base = { id: o.id, kind: o.kind, ...withStyle(o), wallIndex: o.wallIndex, from: pt(span.start), to: pt(span.end), widthCm: o.width };
       switch (o.kind) {
         case "door":
           return [{ ...base, heightCm: o.height, swing: o.swing, hinge: o.hinge }];
@@ -112,6 +122,7 @@ export function planFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
     openings: room.openings.map((o) => ({
       id: o.id,
       kind: o.kind,
+      ...withStyle(o),
       wallIndex: o.wallIndex,
       offsetCm: o.offset,
       widthCm: o.width,

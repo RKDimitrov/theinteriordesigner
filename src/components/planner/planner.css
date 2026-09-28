@@ -1664,3 +1664,77 @@
     animation: none !important;
   }
 }
+
+/* Door, window and radiator types and finishes */
+.pl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.pl-sub {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  font: 500 10.5px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mute);
+}
+h4.pl-sub {
+  margin-top: 16px;
+  color: var(--ink);
+}
+.pl-sub em {
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.pl-styles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.pl-styles > button {
+  height: 31px;
+  padding: 0 8px;
+  border: 1.5px solid var(--ink);
+  background: var(--sheet);
+  font: 500 11px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.pl-styles > button[aria-checked="true"] {
+  background: var(--ink);
+  color: var(--sheet);
+}
+.pl-styles > button:hover:not([aria-checked="true"]) {
+  background: var(--hover);
+}
+.pl-sws-fine {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+/* "Apartment default": the default's colour with a clay corner. */
+.pl-sws button.def {
+  position: relative;
+}
+.pl-sws button.def::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-style: solid;
+  border-width: 0 12px 12px 0;
+  border-color: transparent var(--clay) transparent transparent;
+}
+/* A lone last type spans the row, so long names like "Floor to ceiling" fit. */
+.pl-styles > button:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}

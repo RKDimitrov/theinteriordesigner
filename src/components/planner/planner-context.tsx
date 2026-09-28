@@ -140,7 +140,7 @@ export function PlannerProvider({
   const t = useTranslations("Planner");
   const tf = useTranslations("FurnitureCategory");
   const [s, dispatch] = useReducer(reducer, undefined, () => {
-    const st = initialState(initialPlan(data), scope);
+    const st = initialState(initialPlan(data), scope, null, data.apartment.fitOut);
     const valid = arm !== null && cataloguePieces(data.mustKeep).some((p) => p.key === arm);
     return valid ? { ...st, armed: arm, drawerOpen: true } : st;
   });

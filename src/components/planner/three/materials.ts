@@ -9,6 +9,14 @@ export const WALL_COLOR: Readonly<Record<WallFinish, string>> = {
   sage: "#b9bfa3",
 };
 
+/** Average colour of each floor finish: the drawn texture's base, and the tint for the photographed one. */
+export const FLOOR_BASE: Readonly<Record<FloorFinish, string>> = {
+  oak: "#cfa77a",
+  ash: "#e6d3b3",
+  terracotta: "#c07a55",
+  microcement: "#cbc3b6",
+};
+
 /** Swatch backgrounds for the Finishes tab (CSS), matching the 3D textures. */
 export const FLOOR_SWATCH: Readonly<Record<FloorFinish, string>> = {
   oak: "repeating-linear-gradient(0deg,rgba(80,50,25,.22) 0 1px,transparent 1px 20px),repeating-linear-gradient(90deg,transparent 0 119px,rgba(80,50,25,.14) 119px 120px),#cfa77a",
@@ -27,7 +35,7 @@ function draw(finish: FloorFinish, ctx: CanvasRenderingContext2D) {
   switch (finish) {
     case "oak":
     case "ash": {
-      fill(finish === "oak" ? "#cfa77a" : "#e6d3b3");
+      fill(FLOOR_BASE[finish]);
       const plank = finish === "oak" ? 20 : 18; // cm wide
       const rows = Math.round(100 / plank);
       const h = PX / rows;
@@ -43,7 +51,7 @@ function draw(finish: FloorFinish, ctx: CanvasRenderingContext2D) {
       break;
     }
     case "terracotta": {
-      fill("#c07a55");
+      fill(FLOOR_BASE.terracotta);
       const tile = PX / 3; // 33 cm tiles
       ctx.fillStyle = "rgba(90,40,20,.35)";
       for (let i = 0; i <= 3; i++) {
@@ -58,7 +66,7 @@ function draw(finish: FloorFinish, ctx: CanvasRenderingContext2D) {
       break;
     }
     case "microcement": {
-      fill("#cbc3b6");
+      fill(FLOOR_BASE.microcement);
       // Soft trowel clouds.
       for (let i = 0; i < 40; i++) {
         const x = (i * 97) % PX;

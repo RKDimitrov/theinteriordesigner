@@ -10,6 +10,7 @@ import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening } from "@/domain/schemas/room";
 import { DesignerTab } from "./designer-tab";
 import { removeSelected, usePlanner } from "./planner-context";
+import { OpeningStyleFields } from "./fit-out-controls";
 import { BASIC_LAYERS, type LayerId, LAYERS, mapItem, mapRoom } from "./state";
 
 const LAYER_ICON: Record<LayerId, LucideIcon> = {
@@ -196,7 +197,8 @@ function OpeningBlock({ roomId, o, wallLength, ceiling }: { roomId: string; o: O
             openings: r.room.openings.map((x) => {
               if (x.id !== o.id) return x;
               const next = { ...x, ...patch } as Opening;
-              return { ...next, offset: clampOffset(next.offset, next.width, wallLength) };
+              const width = Math.min(next.width, Math.floor(wallLength));
+              return { ...next, width, offset: clampOffset(next.offset, width, wallLength) };
             }),
           },
         })),
@@ -237,26 +239,7 @@ function OpeningBlock({ roomId, o, wallLength, ceiling }: { roomId: string; o: O
           ))}
         </div>
       )}
-      {o.kind === "door" && (
-        <>
-          <div className="pl-tg" role="radiogroup" aria-label={t("swing")}>
-            {(["in", "out", "sliding", "none"] as const).map((sw) => (
-              <button key={sw} type="button" role="radio" aria-checked={o.swing === sw} style={{ flex: 1 }} onClick={() => set({ swing: sw })}>
-                {t(`swing_${sw}`)}
-              </button>
-            ))}
-          </div>
-          {(o.swing === "in" || o.swing === "out") && (
-            <div className="pl-tg" role="radiogroup" aria-label={t("hinge")}>
-              {(["start", "end"] as const).map((h) => (
-                <button key={h} type="button" role="radio" aria-checked={o.hinge === h} style={{ flex: 1 }} onClick={() => set({ hinge: h })}>
-                  {t(`hinge_${h}`)}
-                </button>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      <OpeningStyleFields o={o} ceiling={ceiling} set={(next) => set(next)} />
       <div className="pl-row">
         <Button
           size="sm"

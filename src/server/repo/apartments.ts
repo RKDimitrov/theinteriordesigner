@@ -1,5 +1,6 @@
 import "server-only";
 import type { Apartment as ApartmentRow } from "@/generated/prisma/client";
+import type { FitOut } from "@/domain/room/fit-out";
 import { Apartment, type ApartmentInput } from "@/domain/schemas/apartment";
 import { db } from "../db";
 import { isUuid } from "./ids";
@@ -20,6 +21,7 @@ function toDomain(row: ApartmentRow): Apartment {
     northAngleDeg: row.northAngleDeg,
     lat: row.lat,
     lng: row.lng,
+    fitOut: row.fitOut,
   });
 }
 
@@ -50,6 +52,12 @@ export async function updateApartment(userId: string, id: string, input: Apartme
   const moved = before.city.trim().toLowerCase() !== input.city.trim().toLowerCase() || before.country !== input.country;
   await db.apartment.updateMany({ where: { id, userId }, data: moved ? { ...input, lat: null, lng: null } : input });
   return getApartment(userId, id);
+}
+
+export async function setApartmentFitOut(userId: string, id: string, fitOut: FitOut): Promise<boolean> {
+  if (!isUuid(id)) return false;
+  const { count } = await db.apartment.updateMany({ where: { id, userId }, data: { fitOut } });
+  return count > 0;
 }
 
 /** Store (or clear) geocoded coordinates. */

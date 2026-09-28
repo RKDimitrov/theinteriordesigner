@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FitOut } from "../room/fit-out";
 import { Degrees, Id } from "./common";
 
 export const Tenure = z.enum(["rent", "own"]);
@@ -27,5 +28,7 @@ export const Apartment = ApartmentInput.extend({
   id: Id,
   lat: z.number().min(-90).max(90).nullable(),
   lng: z.number().min(-180).max(180).nullable(),
+  /** Default door, window and radiator styles and finishes. */
+  fitOut: FitOut,
 });
 export type Apartment = z.infer<typeof Apartment>;
