@@ -124,6 +124,12 @@ export default async function SettingsPage() {
         </div>
       </FormSection>
 
+      <FormSection title={t("about")} hint={t("aboutHint")}>
+        <Link href="/credits" className="font-mono text-[12.5px] underline underline-offset-3 hover:text-primary">
+          {t("creditsLink")} <span aria-hidden>→</span>
+        </Link>
+      </FormSection>
+
       <FormSection title={t("danger")} hint={t("dangerHint")} titleClassName="text-destructive">
         <div>
           <Button variant="destructive" disabled>

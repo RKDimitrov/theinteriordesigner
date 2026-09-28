@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { LoginForm } from "@/components/layout/login-form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Link } from "@/i18n/navigation";
 
 export default async function LoginPage({ searchParams }: PageProps<"/[locale]/login">) {
   const { error } = await searchParams;
@@ -26,6 +27,9 @@ function LoginView({ linkError }: { linkError: boolean }) {
           <LoginForm />
         </CardContent>
       </Card>
+      <Link href="/credits" className="mt-4 text-center font-mono text-[11.5px] text-muted-foreground underline underline-offset-3 hover:text-foreground">
+        {t("credits")}
+      </Link>
     </main>
   );
 }

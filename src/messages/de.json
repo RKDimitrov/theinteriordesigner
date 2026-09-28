@@ -36,7 +36,8 @@
     "signIn": "Anmelden",
     "sendLink": "Anmeldelink per E-Mail senden",
     "linkSent": "Den Anmeldelink finden Sie in Ihrem Posteingang.",
-    "linkError": "Der Anmeldelink war ungültig oder abgelaufen. Bitte versuchen Sie es erneut."
+    "linkError": "Der Anmeldelink war ungültig oder abgelaufen. Bitte versuchen Sie es erneut.",
+    "credits": "Credits für 3D-Assets"
   },
   "Apartments": {
     "title": "Wohnungen",
@@ -504,7 +505,10 @@
     "layout_full": "Detailliert",
     "opens3d": "3D öffnet mit",
     "opens3d_room": "Aktuellem Raum",
-    "opens3d_all": "Allen Räumen"
+    "opens3d_all": "Allen Räumen",
+    "about": "Über",
+    "aboutHint": "Woher die 3D-Assets stammen.",
+    "creditsLink": "Asset-Credits"
   },
   "Library": {
     "eyebrow": "Verzeichnis · Stücke und Materialien aus Ihren Entwürfen",
@@ -897,6 +901,44 @@
     "radiatorFinish_white": "Weiß",
     "radiatorFinish_anthracite": "Anthrazit",
     "radiatorFinish_black": "Schwarz",
-    "radiatorFinish_chrome": "Chrom"
+    "radiatorFinish_chrome": "Chrom",
+    "design": "Design",
+    "handle": "Griff",
+    "trim": "Leisten",
+    "trimHint": "Türbekleidungen und Sockelleisten haben dasselbe Profil.",
+    "profile": "Profil",
+    "trimFinish": "Oberfläche",
+    "skirting": "Sockelleisten",
+    "skirtingHeight": "Höhe der Sockelleiste",
+    "fillSample": "Beispielausstattung einfügen",
+    "doorDesign_flush": "Glatt",
+    "doorDesign_shaker": "Shaker",
+    "doorDesign_four_panel": "Vier Füllungen",
+    "doorDesign_three_lite": "Drei Glasfelder",
+    "doorDesign_full_lite": "Ganzglas",
+    "doorDesign_planks": "Brettertür",
+    "windowDesign_plain": "Ohne Sprossen",
+    "windowDesign_grid": "Sprossen",
+    "windowDesign_transom": "Oberlicht",
+    "handle_lever_modern": "Moderner Drücker",
+    "handle_lever_classic": "Klassische Drückergarnitur",
+    "handle_knob": "Knauf",
+    "trim_square": "Kantig",
+    "trim_bevel": "Abgeschrägt",
+    "trim_ogee": "Karnies"
+  },
+  "Credits": {
+    "eyebrow": "Credits",
+    "title": "3D-Modelle, Texturen und Himmel",
+    "intro": "Die realistische 3D-Ansicht nutzt frei lizenzierte Assets. Danke an alle, die sie erstellt haben.",
+    "count": "{count, plural, one {# Asset} other {# Assets}}",
+    "attribution": "Mit Namensnennung",
+    "attributionHint": "Lizenziert unter CC BY. Jede Datei wurde für das Web optimiert und verkleinert; die Originale finden sich unter den Links.",
+    "noAttribution": "Noch keine Assets mit Namensnennungspflicht.",
+    "by": "von {author}",
+    "publicDomain": "Gemeinfrei",
+    "publicDomainHint": "Veröffentlicht als CC0. Eine Nennung ist nicht nötig, erfolgt aber gern.",
+    "fromSource": "{count, plural, one {# Asset} other {# Assets}} von {source}",
+    "authors": "Erstellt von {authors}"
   }
 }

@@ -57,11 +57,30 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | --- | --- |
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
 | `npm run lint` | ESLint (Next core-web-vitals + TypeScript) |
-| `npm test` | Vitest unit tests (`src/**/*.test.ts`) |
+| `npm test` | Vitest unit tests (`src/**/*.test.ts`, `scripts/**/*.test.ts`) |
 | `npm run test:e2e` | Playwright. Needs `npm run dev` already running (or `E2E_BASE_URL`). Runs desktop Chrome and a Pixel 7 profile. |
 | `npm run db:migrate` | `prisma migrate dev`, used to create new migrations during development |
 | `npm run db:deploy` | `prisma migrate deploy` |
-| `node scripts/fetch-assets.mjs` | Re-downloads the 3D models and PBR textures in `public/models` and `public/textures` from Poly Haven (CC0) and compresses them (meshopt + WebP). The mapping from catalogue category to asset is in `src/components/planner/three/assets.ts`. |
+| `node scripts/fetch-assets.mjs` | The asset pipeline: fetches what is missing among the assets listed in `assets/manifest/*.json`, compresses them (meshopt + WebP), and regenerates `src/components/planner/three/asset-catalogue.json`. Flags: `--force`, `--only <id>`, `--source <name>`, `--check` (offline consistency check). See "3D assets" below. |
+
+## 3D assets
+
+Every model, texture and HDRI in `public/models`, `public/textures` and `public/hdris` comes through the pipeline in `scripts/assets/`. The design is in `docs/superpowers/specs/2026-09-28-asset-pipeline-design.md`.
+
+To add an asset:
+
+1. Add an entry to `assets/manifest/models.json`, `textures.json` or `hdris.json`. Give the id, source, source ref, title, author, source URL, licence and tags. Poly Haven and ambientCG take their own id as `ref`. Sketchfab takes the model uid. Khronos, Poly Pizza, Kenney, Quaternius, cgbookcase and 3dtextures.me take a pinned file or zip URL, plus `pick` (and `thumbPick`) patterns for zips. Textures from anywhere except Poly Haven need `tileCm`.
+2. Run `node scripts/fetch-assets.mjs --only <id>`. Commit the new files in `public/`, the catalogue and `asset-ids.ts`.
+3. Map it in `src/components/planner/three/assets.ts` if a category should use it.
+
+Rules:
+
+- **Licences:** only CC0 and CC-BY (3.0 or 4.0) may be added; the manifest schema refuses anything else. Never add NC, ND or SA assets, store downloads (TurboSquid, CGTrader, BlenderKit), or retailer models. The app ships the raw file, which counts as redistribution.
+- **Credits:** CC-BY assets are credited automatically on the public `/credits` page, which is linked from Settings and the login page.
+- **Sketchfab:** set `SKETCHFAB_TOKEN` in `.env.local` (from sketchfab.com → Settings → Password & API). Never commit it. The pipeline reads each model's licence from the API and refuses anything other than CC0 or CC-BY.
+- **Budget:** a model must stay under 1.5 MB. If it does not fit, set `"textureSize": 512` on its entry.
+
+Doors, windows, radiators and skirting are built from real joinery profiles, not stretched models, so they always match the planner's size exactly. Door handles and radiator valves are real models. See `docs/superpowers/specs/2026-09-28-openings-b1-design.md`. The apartment's design, handle and trim defaults are set in the planner's 3D Finishes tab; a dev-only "Fill sample fit-out" button there cycles through three presets.
 
 ## Project layout
 

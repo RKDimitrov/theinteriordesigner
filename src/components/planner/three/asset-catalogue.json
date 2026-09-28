@@ -1,0 +1,464 @@
+{
+  "acg_plaster_001": {
+    "title": "Plaster 001",
+    "author": "Lennart Demes (ambientCG)",
+    "source": "ambientcg",
+    "sourceUrl": "https://ambientcg.com/view?id=Plaster001",
+    "licence": "cc0",
+    "tags": [
+      "wall.plaster"
+    ],
+    "bytes": 551812,
+    "thumb": "/thumbs/acg_plaster_001.webp",
+    "kind": "texture",
+    "tileCm": 200,
+    "mean": [
+      215,
+      211,
+      208
+    ]
+  },
+  "dining_chair_02": {
+    "title": "Dining Chair 02",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/dining_chair_02",
+    "licence": "cc0",
+    "tags": [
+      "furniture.dining_chair",
+      "furniture.office_chair"
+    ],
+    "bytes": 265040,
+    "thumb": "/thumbs/dining_chair_02.webp",
+    "kind": "model",
+    "size": [
+      43.4,
+      97.3,
+      57.6
+    ]
+  },
+  "door_with_frame_witnessk": {
+    "title": "Door with frame",
+    "author": "witnessk",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/door-with-frame-2f2f149f3ec44d658a02c1f924dfa449",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "door.hinged"
+    ],
+    "bytes": 92340,
+    "thumb": "/thumbs/door_with_frame_witnessk.webp",
+    "kind": "model",
+    "size": [
+      9699.9,
+      20600,
+      2606
+    ]
+  },
+  "handle_knob": {
+    "title": "Door Knob",
+    "author": "pipotgrz1885",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/door-knob-07c38627c7f04016b4128f3ad130b80a",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "hardware.door_handle"
+    ],
+    "bytes": 344156,
+    "thumb": "/thumbs/handle_knob.webp",
+    "kind": "model",
+    "size": [
+      3226.8,
+      3198,
+      3226.4
+    ]
+  },
+  "handle_lever_classic": {
+    "title": "Lever Lockset",
+    "author": "ChuckyTheDoll",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/lever-lockset-1bb5002b217c4687898da98d49882ffa",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "hardware.door_handle",
+      "style.modern_classic"
+    ],
+    "bytes": 460900,
+    "thumb": "/thumbs/handle_lever_classic.webp",
+    "kind": "model",
+    "size": [
+      14.3,
+      15.2,
+      17.2
+    ]
+  },
+  "handle_lever_modern": {
+    "kind": "model",
+    "title": "CC0 - Door Handle 3",
+    "author": "plaggy",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/cc0-door-handle-3-0f4459df86af469dad41c5d025973d87",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "hardware.door_handle",
+      "style.modern"
+    ],
+    "bytes": 57404,
+    "size": [
+      15.4,
+      5.3,
+      4.7
+    ],
+    "thumb": "/thumbs/handle_lever_modern.webp"
+  },
+  "handle_pull": {
+    "title": "Door Handle",
+    "author": "WolffC",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/door-handle-861e2e83aecf46d99d237c23db790f33",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "hardware.pull_handle"
+    ],
+    "bytes": 8636,
+    "thumb": "/thumbs/handle_pull.webp",
+    "kind": "model",
+    "size": [
+      1549.1,
+      5500,
+      1500.1
+    ]
+  },
+  "hanging_picture_frame_02": {
+    "title": "Hanging Picture Frame 02",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/hanging_picture_frame_02",
+    "licence": "cc0",
+    "tags": [
+      "furniture.art"
+    ],
+    "bytes": 205536,
+    "thumb": "/thumbs/hanging_picture_frame_02.webp",
+    "kind": "model",
+    "size": [
+      75.2,
+      50,
+      3.3
+    ]
+  },
+  "kenney_toilet": {
+    "title": "Toilet (Furniture Kit)",
+    "author": "Kenney",
+    "source": "kenney",
+    "sourceUrl": "https://kenney.nl/assets/furniture-kit",
+    "licence": "cc0",
+    "tags": [
+      "fixture.wc",
+      "style.stylised"
+    ],
+    "bytes": 8120,
+    "thumb": "/thumbs/kenney_toilet.webp",
+    "kind": "model",
+    "size": [
+      31.3,
+      45.1,
+      47.7
+    ]
+  },
+  "kloofendal_48d_partly_cloudy_puresky": {
+    "title": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+    "author": "Greg Zaal, Jarod Guest",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+    "licence": "cc0",
+    "tags": [
+      "hdri.sky.day"
+    ],
+    "bytes": 1435119,
+    "thumb": "/thumbs/kloofendal_48d_partly_cloudy_puresky.webp",
+    "kind": "hdri"
+  },
+  "laminate_floor_02": {
+    "title": "Laminate Floor 02",
+    "author": "Dario Barresi, Charlotte Baglioni",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/laminate_floor_02",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood"
+    ],
+    "bytes": 343888,
+    "thumb": "/thumbs/laminate_floor_02.webp",
+    "kind": "texture",
+    "tileCm": 170,
+    "mean": [
+      155,
+      129,
+      99
+    ]
+  },
+  "modern_arm_chair_01": {
+    "title": "Modern Arm Chair 01",
+    "author": "Vibrant Nordic",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/modern_arm_chair_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.armchair",
+      "style.modern"
+    ],
+    "bytes": 315264,
+    "thumb": "/thumbs/modern_arm_chair_01.webp",
+    "kind": "model",
+    "size": [
+      82,
+      102.3,
+      98.7
+    ]
+  },
+  "modern_coffee_table_01": {
+    "title": "Modern Coffee Table 01",
+    "author": "Amin",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/modern_coffee_table_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.coffee_table",
+      "style.modern"
+    ],
+    "bytes": 168436,
+    "thumb": "/thumbs/modern_coffee_table_01.webp",
+    "kind": "model",
+    "size": [
+      60,
+      39,
+      120.2
+    ]
+  },
+  "modern_wooden_cabinet": {
+    "title": "Modern Wooden Cabinet",
+    "author": "Patrik Pangerl",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/modern_wooden_cabinet",
+    "licence": "cc0",
+    "tags": [
+      "furniture.tv_unit",
+      "furniture.sideboard"
+    ],
+    "bytes": 425932,
+    "thumb": "/thumbs/modern_wooden_cabinet.webp",
+    "kind": "model",
+    "size": [
+      244,
+      68,
+      52
+    ]
+  },
+  "oak_veneer_01": {
+    "title": "Oak Veneer 01",
+    "author": "Jenelle van Heerden",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/oak_veneer_01",
+    "licence": "cc0",
+    "tags": [
+      "material.wood"
+    ],
+    "bytes": 491300,
+    "thumb": "/thumbs/oak_veneer_01.webp",
+    "kind": "texture",
+    "tileCm": 183,
+    "mean": [
+      161,
+      126,
+      87
+    ]
+  },
+  "painted_wooden_chair_01": {
+    "title": "Painted Wooden Chair 01",
+    "author": "Kuutti Siitonen",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_chair_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.dining_chair"
+    ],
+    "bytes": 201096,
+    "thumb": "/thumbs/painted_wooden_chair_01.webp",
+    "kind": "model",
+    "size": [
+      43.2,
+      95.6,
+      54
+    ]
+  },
+  "plastered_wall_04": {
+    "title": "Plastered Wall 04",
+    "author": "Rob Tuytel",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/plastered_wall_04",
+    "licence": "cc0",
+    "tags": [
+      "floor.concrete",
+      "wall.plaster"
+    ],
+    "bytes": 38468,
+    "thumb": "/thumbs/plastered_wall_04.webp",
+    "kind": "texture",
+    "tileCm": 320,
+    "mean": [
+      141,
+      138,
+      135
+    ]
+  },
+  "poly_wool_herringbone": {
+    "title": "Poly Wool Herringbone",
+    "author": "colormass, Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/poly_wool_herringbone",
+    "licence": "cc0",
+    "tags": [
+      "material.fabric"
+    ],
+    "bytes": 1065280,
+    "thumb": "/thumbs/poly_wool_herringbone.webp",
+    "kind": "texture",
+    "tileCm": 27,
+    "mean": [
+      121,
+      117,
+      113
+    ]
+  },
+  "potted_plant_01": {
+    "title": "Potted Plant 01",
+    "author": "Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/potted_plant_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.plant"
+    ],
+    "bytes": 1283776,
+    "thumb": "/thumbs/potted_plant_01.webp",
+    "kind": "model",
+    "size": [
+      58.7,
+      133.6,
+      63.4
+    ]
+  },
+  "potted_plant_02": {
+    "title": "Potted Plant 02",
+    "author": "Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/potted_plant_02",
+    "licence": "cc0",
+    "tags": [
+      "furniture.plant"
+    ],
+    "bytes": 888380,
+    "thumb": "/thumbs/potted_plant_02.webp",
+    "kind": "model",
+    "size": [
+      70.1,
+      84.1,
+      65.7
+    ]
+  },
+  "radiator_valve_trv": {
+    "title": "Radiator Thermostatic Valve (UK)",
+    "author": "cedeon",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/radiator-thermostatic-valve-uk-6a836cf7662f4cfaa7e1244a24d6e73a",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "hardware.radiator_valve"
+    ],
+    "bytes": 174628,
+    "thumb": "/thumbs/radiator_valve_trv.webp",
+    "kind": "model",
+    "size": [
+      12.8,
+      35.6,
+      9.1
+    ]
+  },
+  "sheen_wood_leather_sofa": {
+    "title": "Sheen Wood Leather Sofa",
+    "author": "Eric Chadwick, Darmstadt Graphics Group GmbH (after Fran Calvente, CC0)",
+    "source": "khronos",
+    "sourceUrl": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SheenWoodLeatherSofa",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.sofa",
+      "style.modern"
+    ],
+    "bytes": 1247688,
+    "thumb": "/thumbs/sheen_wood_leather_sofa.webp",
+    "kind": "model",
+    "size": [
+      272.6,
+      111.7,
+      92.3
+    ]
+  },
+  "side_table_01": {
+    "title": "Side Table 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/side_table_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.side_table",
+      "furniture.nightstand"
+    ],
+    "bytes": 188956,
+    "thumb": "/thumbs/side_table_01.webp",
+    "kind": "model",
+    "size": [
+      55,
+      55.1,
+      45
+    ]
+  },
+  "terracotta_floor_tiles": {
+    "title": "Terracotta Floor Tiles",
+    "author": "Dimitrios Savva",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/terracotta_floor_tiles",
+    "licence": "cc0",
+    "tags": [
+      "floor.tile"
+    ],
+    "bytes": 290080,
+    "thumb": "/thumbs/terracotta_floor_tiles.webp",
+    "kind": "texture",
+    "tileCm": 208,
+    "mean": [
+      77,
+      39,
+      26
+    ]
+  },
+  "wood_floor": {
+    "title": "Wood Floor",
+    "author": "Dimitrios Savva",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/wood_floor",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood"
+    ],
+    "bytes": 215174,
+    "thumb": "/thumbs/wood_floor.webp",
+    "kind": "texture",
+    "tileCm": 170,
+    "mean": [
+      128,
+      96,
+      66
+    ]
+  }
+}

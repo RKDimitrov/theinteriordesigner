@@ -37,6 +37,12 @@ export type WindowStyle = z.infer<typeof WindowStyle>;
 export const RadiatorStyle = z.enum(["panel", "column", "towel", "vertical", "convector"]);
 export type RadiatorStyle = z.infer<typeof RadiatorStyle>;
 
+/** How a leaf or a window looks, independent of how it opens. */
+export const DoorDesign = z.enum(["flush", "shaker", "four_panel", "three_lite", "full_lite", "planks"]);
+export type DoorDesign = z.infer<typeof DoorDesign>;
+export const WindowDesign = z.enum(["plain", "grid", "transom"]);
+export type WindowDesign = z.infer<typeof WindowDesign>;
+
 export const DoorFinish = z.enum(["white_lacquer", "light_oak", "walnut", "black", "glass"]);
 export type DoorFinish = z.infer<typeof DoorFinish>;
 export const FrameFinish = z.enum(["white", "oak", "anthracite", "black"]);
@@ -53,6 +59,8 @@ export const Door = z.object({
   /** "in" swings into this room; "out" swings away from it; "none" is a pass-through without a leaf. */
   swing: z.enum(["in", "out", "sliding", "none"]),
   style: DoorStyle.optional(),
+  /** Overrides the apartment's default leaf design. */
+  design: DoorDesign.optional(),
   /** Overrides the apartment's default door finish. */
   finish: DoorFinish.optional(),
 });
@@ -64,6 +72,7 @@ export const Window = z.object({
   sillHeight: Cm,
   openable: z.boolean().default(true),
   style: WindowStyle.optional(),
+  design: WindowDesign.optional(),
   /** Frame finish; overrides the apartment default. */
   finish: FrameFinish.optional(),
 });

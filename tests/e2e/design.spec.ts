@@ -25,7 +25,7 @@ test("sample design renders, validates and highlights items", async ({ page }) =
   await page.getByRole("button", { name: "Insert sample design" }).click();
   await expect(page.getByTestId("design-status")).toContainText("Not valid");
   await expect(page.getByTestId("design-issues")).toContainText("overlaps");
-  await expect(page.getByText("Version 2")).toBeVisible();
+  await expect(page.getByText("Version 2", { exact: true })).toBeVisible();
 
   await page.goto(aptUrl);
   await expect(page.getByTestId("step-4")).toContainText("Not done");
@@ -44,7 +44,7 @@ test("re-solves the layout of an existing design", async ({ page }) => {
   await expect(page.getByTestId("design-status")).toContainText("Valid");
 
   await page.getByTestId("resolve-layout").click();
-  await expect(page.getByText("Version 2")).toBeVisible();
+  await expect(page.getByText("Version 2", { exact: true })).toBeVisible();
   await expect(page.getByTestId("design-status")).toBeVisible();
   await expect(page.getByTestId("plan-item-sofa")).toBeVisible();
   await expect(page.getByTestId("item-sideboard")).toContainText("existing");

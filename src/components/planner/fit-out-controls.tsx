@@ -1,8 +1,23 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { applyDoorStyle, applyRadiatorStyle, applyWindowStyle, doorStyle, type FitOut, radiatorStyle, slides, windowStyle } from "@/domain/room/fit-out";
-import { DoorFinish, DoorStyle, FrameFinish, type Opening, RadiatorFinish, RadiatorStyle, WindowStyle } from "@/domain/schemas/room";
+import { FillSampleButton } from "@/components/dev/fill-sample-button";
+import { pickSample, SAMPLE_FIT_OUTS } from "@/lib/dev/samples";
+import {
+  applyDoorStyle,
+  applyRadiatorStyle,
+  applyWindowStyle,
+  doorDesign,
+  DoorHandle,
+  doorStyle,
+  type FitOut,
+  radiatorStyle,
+  slides,
+  TrimProfile,
+  windowDesign,
+  windowStyle,
+} from "@/domain/room/fit-out";
+import { DoorDesign, DoorFinish, DoorStyle, FrameFinish, type Opening, RadiatorFinish, RadiatorStyle, WindowDesign, WindowStyle } from "@/domain/schemas/room";
 import { saveFitOutAction } from "@/server/actions/planner";
 import { usePlanner } from "./planner-context";
 import { DOOR_LOOK, FRAME_LOOK, type Look, RADIATOR_LOOK, swatchOf } from "./three/fit-out-look";
@@ -110,6 +125,16 @@ export function OpeningStyleFields({ o, ceiling, set }: { o: Opening; ceiling: n
           </div>
         )}
         {o.swing !== "none" && (
+          <StylePicker
+            label={t("design")}
+            value={doorDesign(o, s.fitOut)}
+            // Glazed and balcony doors are glass by definition.
+            options={style === "glazed" || style === "balcony" ? (["three_lite", "full_lite"] as const) : DoorDesign.options}
+            name={(v) => t(`doorDesign_${v}`)}
+            onPick={(design) => set({ ...o, design })}
+          />
+        )}
+        {o.swing !== "none" && (
           <FinishPicker label={t("finish")} value={o.finish} looks={DOOR_LOOK} name={(v) => t(`doorFinish_${v}`)} fallback={s.fitOut.doors.finish} onPick={(finish) => set({ ...o, finish })} />
         )}
       </>
@@ -119,6 +144,7 @@ export function OpeningStyleFields({ o, ceiling, set }: { o: Opening; ceiling: n
     return (
       <>
         <StylePicker label={t("type")} value={windowStyle(o)} options={WindowStyle.options} name={(v) => t(`window_${v}`)} onPick={(v) => set(applyWindowStyle(o, v, ceiling))} />
+        <StylePicker label={t("design")} value={windowDesign(o, s.fitOut)} options={WindowDesign.options} name={(v) => t(`windowDesign_${v}`)} onPick={(design) => set({ ...o, design })} />
         <FinishPicker label={t("frame")} value={o.finish} looks={FRAME_LOOK} name={(v) => t(`frameFinish_${v}`)} fallback={s.fitOut.windows.finish} onPick={(finish) => set({ ...o, finish })} />
       </>
     );
@@ -133,6 +159,9 @@ export function OpeningStyleFields({ o, ceiling, set }: { o: Opening; ceiling: n
 }
 
 /* ---------------- apartment defaults (Finishes tab) ---------------- */
+
+/** Common skirting heights in cm; "—" turns skirting off. */
+const SKIRTING_HEIGHTS = [6, 8, 10, 12, 15] as const;
 
 export function FitOutBlock() {
   const t = useTranslations("FitOut");
@@ -155,15 +184,33 @@ export function FitOutBlock() {
         <span>{t("title")}</span>
       </h3>
       <p className="pl-hint">{t("hint")}</p>
+      <FillSampleButton
+        label={t("fillSample")}
+        onFill={(n) => void save(pickSample(SAMPLE_FIT_OUTS, n).fitOut)}
+      />
       <h4 className="pl-sub">{t("doors")}</h4>
       <StylePicker label={t("type")} value={fit.doors.style} options={DoorStyle.options} name={(v) => t(`door_${v}`)} onPick={(style) => save({ ...fit, doors: { ...fit.doors, style } })} />
+      <StylePicker label={t("design")} value={fit.doors.design} options={DoorDesign.options} name={(v) => t(`doorDesign_${v}`)} onPick={(design) => save({ ...fit, doors: { ...fit.doors, design } })} />
+      <StylePicker label={t("handle")} value={fit.doors.handle} options={DoorHandle.options} name={(v) => t(`handle_${v}`)} onPick={(handle) => save({ ...fit, doors: { ...fit.doors, handle } })} />
       <FinishPicker label={t("finish")} value={fit.doors.finish} looks={DOOR_LOOK} name={(v: DoorFinish) => t(`doorFinish_${v}`)} onPick={(finish) => finish && save({ ...fit, doors: { ...fit.doors, finish } })} />
       <h4 className="pl-sub">{t("windows")}</h4>
       <StylePicker label={t("type")} value={fit.windows.style} options={WindowStyle.options} name={(v) => t(`window_${v}`)} onPick={(style) => save({ ...fit, windows: { ...fit.windows, style } })} />
+      <StylePicker label={t("design")} value={fit.windows.design} options={WindowDesign.options} name={(v) => t(`windowDesign_${v}`)} onPick={(design) => save({ ...fit, windows: { ...fit.windows, design } })} />
       <FinishPicker label={t("frame")} value={fit.windows.finish} looks={FRAME_LOOK} name={(v: FrameFinish) => t(`frameFinish_${v}`)} onPick={(finish) => finish && save({ ...fit, windows: { ...fit.windows, finish } })} />
       <h4 className="pl-sub">{t("radiators")}</h4>
       <StylePicker label={t("type")} value={fit.radiators.style} options={RadiatorStyle.options} name={(v) => t(`radiator_${v}`)} onPick={(style) => save({ ...fit, radiators: { ...fit.radiators, style } })} />
       <FinishPicker label={t("finish")} value={fit.radiators.finish} looks={RADIATOR_LOOK} name={(v: RadiatorFinish) => t(`radiatorFinish_${v}`)} onPick={(finish) => finish && save({ ...fit, radiators: { ...fit.radiators, finish } })} />
+      <h4 className="pl-sub">{t("trim")}</h4>
+      <p className="pl-hint">{t("trimHint")}</p>
+      <StylePicker label={t("profile")} value={fit.trim.profile} options={TrimProfile.options} name={(v) => t(`trim_${v}`)} onPick={(profile) => save({ ...fit, trim: { ...fit.trim, profile } })} />
+      <FinishPicker label={t("trimFinish")} value={fit.trim.finish} looks={FRAME_LOOK} name={(v: FrameFinish) => t(`frameFinish_${v}`)} onPick={(finish) => finish && save({ ...fit, trim: { ...fit.trim, finish } })} />
+      <StylePicker
+        label={t("skirtingHeight")}
+        value={fit.trim.skirting ? String(fit.trim.skirtingHeight) : "0"}
+        options={["0", ...SKIRTING_HEIGHTS.map(String)]}
+        name={(v) => (v === "0" ? "—" : `${v} cm`)}
+        onPick={(v) => save({ ...fit, trim: { ...fit.trim, skirting: v !== "0", skirtingHeight: v === "0" ? fit.trim.skirtingHeight : Number(v) } })}
+      />
     </div>
   );
 }

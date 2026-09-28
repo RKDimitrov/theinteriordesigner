@@ -1,3 +1,4 @@
+import type { FitOut } from "@/domain/room/fit-out";
 import type { ApartmentInput } from "@/domain/schemas/apartment";
 import { QUIZ_PAIRS } from "@/domain/profile/quiz";
 import type { StyleKey, StyleProfileInput } from "@/domain/schemas/profile";
@@ -169,6 +170,37 @@ function rect(w: number, d: number) {
     { x: 0, y: d },
   ];
 }
+
+/** Apartment fit-outs (Finishes tab): a modern, a classic and a Scandinavian flat. */
+export const SAMPLE_FIT_OUTS: readonly { name: string; fitOut: FitOut }[] = [
+  {
+    name: "Modern",
+    fitOut: {
+      doors: { style: "hinged", finish: "white_lacquer", design: "flush", handle: "lever_modern" },
+      windows: { style: "tilt_turn", finish: "anthracite", design: "plain" },
+      radiators: { style: "vertical", finish: "anthracite" },
+      trim: { profile: "square", finish: "white", skirting: true, skirtingHeight: 8 },
+    },
+  },
+  {
+    name: "Classic",
+    fitOut: {
+      doors: { style: "hinged", finish: "white_lacquer", design: "four_panel", handle: "lever_classic" },
+      windows: { style: "casement", finish: "white", design: "grid" },
+      radiators: { style: "column", finish: "white" },
+      trim: { profile: "ogee", finish: "white", skirting: true, skirtingHeight: 15 },
+    },
+  },
+  {
+    name: "Scandinavian",
+    fitOut: {
+      doors: { style: "hinged", finish: "light_oak", design: "shaker", handle: "knob" },
+      windows: { style: "tilt_turn", finish: "oak", design: "transom" },
+      radiators: { style: "panel", finish: "white" },
+      trim: { profile: "bevel", finish: "oak", skirting: true, skirtingHeight: 10 },
+    },
+  },
+];
 
 /** Preset at `counter`, cycling. Use for preset factories (functions cannot be cloned). */
 export function samplePreset<T>(list: readonly T[], counter: number): T {

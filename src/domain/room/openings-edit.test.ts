@@ -47,7 +47,7 @@ describe("nearestWall", () => {
 });
 
 describe("withFitOutStyle", () => {
-  const fitOut = { ...DEFAULT_FIT_OUT, doors: { style: "double" as const, finish: "walnut" as const }, windows: { style: "floor_to_ceiling" as const, finish: "black" as const } };
+  const fitOut = { ...DEFAULT_FIT_OUT, doors: { ...DEFAULT_FIT_OUT.doors, style: "double" as const, finish: "walnut" as const }, windows: { ...DEFAULT_FIT_OUT.windows, style: "floor_to_ceiling" as const, finish: "black" as const } };
 
   it("gives a new opening the apartment's default style, kept on the wall", () => {
     const d = withFitOutStyle(newOpening("door", "door-1", 0, 350, 400), fitOut, 260, 400);

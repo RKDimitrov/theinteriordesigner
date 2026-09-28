@@ -36,7 +36,8 @@
     "signIn": "Вход",
     "sendLink": "Изпрати ми линк за вход",
     "linkSent": "Проверете пощата си за линка за вход.",
-    "linkError": "Линкът за вход е невалиден или изтекъл. Моля, опитайте отново."
+    "linkError": "Линкът за вход е невалиден или изтекъл. Моля, опитайте отново.",
+    "credits": "Благодарности за 3D ресурсите"
   },
   "Apartments": {
     "title": "Жилища",
@@ -504,7 +505,10 @@
     "layout_full": "Подробен",
     "opens3d": "3D се отваря с",
     "opens3d_room": "Текущата стая",
-    "opens3d_all": "Всички стаи"
+    "opens3d_all": "Всички стаи",
+    "about": "Относно",
+    "aboutHint": "Откъде идват 3D ресурсите.",
+    "creditsLink": "Благодарности за ресурсите"
   },
   "Library": {
     "eyebrow": "Регистър · мебели и материали от вашите проекти",
@@ -897,6 +901,44 @@
     "radiatorFinish_white": "Бяло",
     "radiatorFinish_anthracite": "Антрацит",
     "radiatorFinish_black": "Черно",
-    "radiatorFinish_chrome": "Хром"
+    "radiatorFinish_chrome": "Хром",
+    "design": "Дизайн",
+    "handle": "Дръжка",
+    "trim": "Первази",
+    "trimHint": "Обкантовките на вратите и первазите са с един и същ профил.",
+    "profile": "Профил",
+    "trimFinish": "Покритие",
+    "skirting": "Первази",
+    "skirtingHeight": "Височина на перваза",
+    "fillSample": "Попълни примерно обзавеждане",
+    "doorDesign_flush": "Гладка",
+    "doorDesign_shaker": "Шейкър",
+    "doorDesign_four_panel": "С четири пана",
+    "doorDesign_three_lite": "С три стъкла",
+    "doorDesign_full_lite": "Изцяло стъклена",
+    "doorDesign_planks": "От дъски",
+    "windowDesign_plain": "Без каре",
+    "windowDesign_grid": "С каре",
+    "windowDesign_transom": "С горен фрамуг",
+    "handle_lever_modern": "Модерна дръжка",
+    "handle_lever_classic": "Класически комплект",
+    "handle_knob": "Топка",
+    "trim_square": "Прав",
+    "trim_bevel": "Скосен",
+    "trim_ogee": "Профилиран"
+  },
+  "Credits": {
+    "eyebrow": "Благодарности",
+    "title": "3D модели, текстури и небета",
+    "intro": "Реалистичният 3D изглед използва свободно лицензирани ресурси. Благодарим на всички, които са ги създали.",
+    "count": "{count, plural, one {# ресурс} other {# ресурса}}",
+    "attribution": "С посочване на автора",
+    "attributionHint": "Лиценз CC BY. Всеки файл е оптимизиран и смален за уеб; оригиналите са на връзките.",
+    "noAttribution": "Все още няма ресурси, които изискват посочване на автора.",
+    "by": "от {author}",
+    "publicDomain": "Обществено достояние",
+    "publicDomainHint": "Публикувани като CC0. Посочването не е задължително, но го правим с удоволствие.",
+    "fromSource": "{count, plural, one {# ресурс} other {# ресурса}} от {source}",
+    "authors": "Автори: {authors}"
   }
 }

@@ -17,6 +17,7 @@ import { clamp } from "@/domain/geometry/units";
 import type { Vec } from "@/domain/geometry/vec";
 import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
+import { skirtingPieces } from "@/domain/room/opening-parts";
 import { canStand, roomAt, startSpot, type WalkRoom, wallPieces } from "@/domain/planner/walls3d";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening, Room } from "@/domain/schemas/room";
@@ -26,6 +27,7 @@ import { AssetBoundary } from "./three/asset-boundary";
 import { FLOOR_TEXTURE } from "./three/assets";
 import { FLOOR_BASE, floorTexture, WALL_COLOR } from "./three/materials";
 import { Opening3D, sideSign } from "./three/openings3d";
+import { SkirtingBoard } from "./three/trim3d";
 import { RealPiece } from "./three/pieces";
 import { tintFor, usePbr } from "./three/textures";
 
@@ -313,6 +315,8 @@ function Room3D({ placed }: { placed: Placed }) {
     return g;
   }, [room.polygon]);
   const lamps = r.furniture.filter((f) => f.category === "floor_lamp").slice(0, 6);
+  const trim = s.fitOut.trim;
+  const skirting = useMemo(() => (trim.skirting ? skirtingPieces(walls, room.openings, trim.skirtingHeight) : []), [walls, room.openings, trim.skirting, trim.skirtingHeight]);
 
   return (
     <group position={[origin.x, 0, origin.y]}>
@@ -330,18 +334,18 @@ function Room3D({ placed }: { placed: Placed }) {
       {walls.map((w) => (
         <FoldGroup key={w.index} wall={w} origin={origin}>
           <Wall3D room={room} wall={w} color={WALL_COLOR[finish.walls]} />
+          {skirting
+            .filter((p) => p.wallIndex === w.index)
+            .map((p, i) => (
+              <SkirtingBoard key={`sk${i}`} piece={p} wall={w} trim={trim} realistic={s.scene.realistic} />
+            ))}
           {room.openings
-            .filter((o) => o.wallIndex === w.index && o.kind !== "radiator")
+            .filter((o) => o.wallIndex === w.index)
             .map((o) => (
               <RoomOpening key={o.id} roomId={room.id} walls={walls} o={o} ceiling={room.ceilingHeight} />
             ))}
         </FoldGroup>
       ))}
-      {room.openings
-        .filter((o) => o.kind === "radiator")
-        .map((o) => (
-          <RoomOpening key={o.id} roomId={room.id} walls={walls} o={o} ceiling={room.ceilingHeight} />
-        ))}
       {room.fixedElements.map((f) => (
         <mesh key={f.id} position={[f.rect.x + f.rect.w / 2, Math.min(f.height, room.ceilingHeight) / 2, f.rect.y + f.rect.d / 2]} castShadow receiveShadow>
           <boxGeometry args={[f.rect.w, Math.min(f.height, room.ceilingHeight), f.rect.d]} />

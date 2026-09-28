@@ -4,11 +4,17 @@ import { isQuizComplete } from "@/domain/profile/quiz";
 import { profileStatus } from "@/domain/profile/status";
 import { ApartmentInput } from "@/domain/schemas/apartment";
 import { StyleProfileInput } from "@/domain/schemas/profile";
-import { pickSample, SAMPLE_APARTMENTS, SAMPLE_PROFILES, SAMPLE_ROOMS } from "./samples";
+import { FitOut } from "@/domain/room/fit-out";
+import { pickSample, SAMPLE_APARTMENTS, SAMPLE_FIT_OUTS, SAMPLE_PROFILES, SAMPLE_ROOMS } from "./samples";
 
 describe("sample data", () => {
   it.each(SAMPLE_APARTMENTS.map((a) => [a.name, a] as const))("apartment %s is valid", (_, a) => {
     expect(ApartmentInput.safeParse(a).error?.issues ?? []).toEqual([]);
+  });
+
+  it.each(SAMPLE_FIT_OUTS.map((f) => [f.name, f.fitOut] as const))("fit-out %s is valid", (_, f) => {
+    expect(FitOut.safeParse(f).error?.issues ?? []).toEqual([]);
+    expect(FitOut.parse(f)).toEqual(f);
   });
 
   it.each(SAMPLE_ROOMS.map((r) => [r.name, r] as const))("room %s is valid", (_, r) => {

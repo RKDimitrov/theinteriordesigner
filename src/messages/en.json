@@ -36,7 +36,8 @@
     "signIn": "Sign in",
     "sendLink": "Email me a sign-in link",
     "linkSent": "Check your inbox for the sign-in link.",
-    "linkError": "The sign-in link was invalid or expired. Please try again."
+    "linkError": "The sign-in link was invalid or expired. Please try again.",
+    "credits": "3D asset credits"
   },
   "Apartments": {
     "title": "Apartments",
@@ -504,7 +505,10 @@
     "layout_full": "Detailed",
     "opens3d": "3D opens with",
     "opens3d_room": "Current room",
-    "opens3d_all": "All rooms"
+    "opens3d_all": "All rooms",
+    "about": "About",
+    "aboutHint": "Where the 3D assets come from.",
+    "creditsLink": "Asset credits"
   },
   "Library": {
     "eyebrow": "Index · pieces and materials in your designs",
@@ -897,6 +901,44 @@
     "radiatorFinish_white": "White",
     "radiatorFinish_anthracite": "Anthracite",
     "radiatorFinish_black": "Black",
-    "radiatorFinish_chrome": "Chrome"
+    "radiatorFinish_chrome": "Chrome",
+    "design": "Design",
+    "handle": "Handle",
+    "trim": "Trim",
+    "trimHint": "Architraves round the doors and skirting boards share one profile.",
+    "profile": "Profile",
+    "trimFinish": "Finish",
+    "skirting": "Skirting boards",
+    "skirtingHeight": "Skirting height",
+    "fillSample": "Fill sample fit-out",
+    "doorDesign_flush": "Flush",
+    "doorDesign_shaker": "Shaker",
+    "doorDesign_four_panel": "Four panel",
+    "doorDesign_three_lite": "Three lites",
+    "doorDesign_full_lite": "Full glass",
+    "doorDesign_planks": "Boarded",
+    "windowDesign_plain": "Plain",
+    "windowDesign_grid": "Glazing bars",
+    "windowDesign_transom": "Top light",
+    "handle_lever_modern": "Modern lever",
+    "handle_lever_classic": "Classic lever set",
+    "handle_knob": "Knob",
+    "trim_square": "Square",
+    "trim_bevel": "Bevelled",
+    "trim_ogee": "Ogee"
+  },
+  "Credits": {
+    "eyebrow": "Credits",
+    "title": "3D models, textures and skies",
+    "intro": "The realistic 3D view uses freely licensed assets. Thank you to everyone who made them.",
+    "count": "{count, plural, one {# asset} other {# assets}}",
+    "attribution": "With attribution",
+    "attributionHint": "Licensed CC BY. Each file was optimised and resized for the web; the originals are at the links.",
+    "noAttribution": "No assets need attribution yet.",
+    "by": "by {author}",
+    "publicDomain": "Public domain",
+    "publicDomainHint": "Released as CC0. Credit is not required, but given gladly.",
+    "fromSource": "{count, plural, one {# asset} other {# assets}} from {source}",
+    "authors": "Made by {authors}"
   }
 }

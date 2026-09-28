@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   type Door,
+  DoorDesign,
   DoorFinish,
   DoorStyle,
   FrameFinish,
@@ -8,27 +9,54 @@ import {
   RadiatorFinish,
   RadiatorStyle,
   type Window,
+  WindowDesign,
   WindowStyle,
 } from "../schemas/room";
+
+/** Door hardware, as real models (see three/hardware.tsx). */
+export const DoorHandle = z.enum(["lever_modern", "lever_classic", "knob"]);
+export type DoorHandle = z.infer<typeof DoorHandle>;
+/** One profile family for architraves and skirting, so the trim matches. */
+export const TrimProfile = z.enum(["square", "bevel", "ogee"]);
+export type TrimProfile = z.infer<typeof TrimProfile>;
 
 /**
  * The apartment's fit-out: the style new openings get when drawn, and the
  * finish every opening shows unless it overrides it. Stored on the apartment.
  */
 export const DEFAULT_FIT_OUT = {
-  doors: { style: "hinged", finish: "white_lacquer" },
-  windows: { style: "tilt_turn", finish: "white" },
+  doors: { style: "hinged", finish: "white_lacquer", design: "flush", handle: "lever_modern" },
+  windows: { style: "tilt_turn", finish: "white", design: "plain" },
   radiators: { style: "panel", finish: "white" },
+  trim: { profile: "square", finish: "white", skirting: true, skirtingHeight: 8 },
 } as const;
 
+const D = DEFAULT_FIT_OUT;
+
 export const FitOut = z.object({
-  doors: z.object({ style: DoorStyle.default(DEFAULT_FIT_OUT.doors.style), finish: DoorFinish.default(DEFAULT_FIT_OUT.doors.finish) }).default(DEFAULT_FIT_OUT.doors),
+  doors: z
+    .object({
+      style: DoorStyle.default(D.doors.style),
+      finish: DoorFinish.default(D.doors.finish),
+      design: DoorDesign.default(D.doors.design),
+      handle: DoorHandle.default(D.doors.handle),
+    })
+    .default(D.doors),
   windows: z
-    .object({ style: WindowStyle.default(DEFAULT_FIT_OUT.windows.style), finish: FrameFinish.default(DEFAULT_FIT_OUT.windows.finish) })
-    .default(DEFAULT_FIT_OUT.windows),
+    .object({ style: WindowStyle.default(D.windows.style), finish: FrameFinish.default(D.windows.finish), design: WindowDesign.default(D.windows.design) })
+    .default(D.windows),
   radiators: z
     .object({ style: RadiatorStyle.default(DEFAULT_FIT_OUT.radiators.style), finish: RadiatorFinish.default(DEFAULT_FIT_OUT.radiators.finish) })
     .default(DEFAULT_FIT_OUT.radiators),
+  /** Architraves round doors and skirting boards along the walls. */
+  trim: z
+    .object({
+      profile: TrimProfile.default(D.trim.profile),
+      finish: FrameFinish.default(D.trim.finish),
+      skirting: z.boolean().default(D.trim.skirting),
+      skirtingHeight: z.number().min(4).max(20).default(D.trim.skirtingHeight),
+    })
+    .default(D.trim),
 });
 export type FitOut = z.infer<typeof FitOut>;
 
@@ -36,6 +64,21 @@ export type FitOut = z.infer<typeof FitOut>;
 export const doorStyle = (d: Door): DoorStyle => d.style ?? (d.swing === "sliding" ? "sliding" : "hinged");
 export const windowStyle = (w: Window): WindowStyle => w.style ?? "casement";
 export const radiatorStyle = (r: Radiator): RadiatorStyle => r.style ?? "panel";
+
+const GLAZED: readonly DoorDesign[] = ["three_lite", "full_lite"];
+
+/**
+ * The leaf design: the door's own, else what its style implies (glazed and
+ * balcony doors are glass, barn doors are boarded), else the apartment's.
+ */
+export function doorDesign(d: Door, fitOut: FitOut): DoorDesign {
+  const style = doorStyle(d);
+  if (style === "glazed" || style === "balcony") return d.design && GLAZED.includes(d.design) ? d.design : "full_lite";
+  if (d.design) return d.design;
+  return style === "barn" ? "planks" : fitOut.doors.design;
+}
+
+export const windowDesign = (w: Window, fitOut: FitOut): WindowDesign => w.design ?? fitOut.windows.design;
 
 /** Leaf runs along the wall instead of swinging: no swing area, but the wall beside it must stay free. */
 export const slides = (d: Door): boolean => {

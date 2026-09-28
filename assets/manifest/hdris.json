@@ -1,0 +1,15 @@
+[
+  {
+    "id": "kloofendal_48d_partly_cloudy_puresky",
+    "kind": "hdri",
+    "source": "polyhaven",
+    "ref": "kloofendal_48d_partly_cloudy_puresky",
+    "title": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+    "author": "Greg Zaal, Jarod Guest",
+    "sourceUrl": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+    "licence": "cc0",
+    "tags": [
+      "hdri.sky.day"
+    ]
+  }
+]

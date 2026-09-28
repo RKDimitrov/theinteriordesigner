@@ -1,0 +1,95 @@
+[
+  {
+    "id": "wood_floor",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "wood_floor",
+    "title": "Wood Floor",
+    "author": "Dimitrios Savva",
+    "sourceUrl": "https://polyhaven.com/a/wood_floor",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood"
+    ]
+  },
+  {
+    "id": "laminate_floor_02",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "laminate_floor_02",
+    "title": "Laminate Floor 02",
+    "author": "Dario Barresi, Charlotte Baglioni",
+    "sourceUrl": "https://polyhaven.com/a/laminate_floor_02",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood"
+    ]
+  },
+  {
+    "id": "terracotta_floor_tiles",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "terracotta_floor_tiles",
+    "title": "Terracotta Floor Tiles",
+    "author": "Dimitrios Savva",
+    "sourceUrl": "https://polyhaven.com/a/terracotta_floor_tiles",
+    "licence": "cc0",
+    "tags": [
+      "floor.tile"
+    ]
+  },
+  {
+    "id": "plastered_wall_04",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "plastered_wall_04",
+    "title": "Plastered Wall 04",
+    "author": "Rob Tuytel",
+    "sourceUrl": "https://polyhaven.com/a/plastered_wall_04",
+    "licence": "cc0",
+    "tags": [
+      "floor.concrete",
+      "wall.plaster"
+    ]
+  },
+  {
+    "id": "oak_veneer_01",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "oak_veneer_01",
+    "title": "Oak Veneer 01",
+    "author": "Jenelle van Heerden",
+    "sourceUrl": "https://polyhaven.com/a/oak_veneer_01",
+    "licence": "cc0",
+    "tags": [
+      "material.wood"
+    ]
+  },
+  {
+    "id": "poly_wool_herringbone",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "poly_wool_herringbone",
+    "title": "Poly Wool Herringbone",
+    "author": "colormass, Rico Cilliers",
+    "sourceUrl": "https://polyhaven.com/a/poly_wool_herringbone",
+    "licence": "cc0",
+    "tags": [
+      "material.fabric"
+    ]
+  },
+  {
+    "id": "acg_plaster_001",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Plaster001",
+    "title": "Plaster 001",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Plaster001",
+    "licence": "cc0",
+    "tileCm": 200,
+    "tags": [
+      "wall.plaster"
+    ]
+  }
+]
