@@ -6,6 +6,9 @@ import { defineConfig, devices } from "@playwright/test";
 const baseURL = process.env["E2E_BASE_URL"] ?? "http://localhost:3000";
 // Optional: use an installed browser instead of Playwright's download, e.g. E2E_BROWSER_CHANNEL=chrome.
 const channel = process.env["E2E_BROWSER_CHANNEL"] || undefined;
+// Optional: E2E_GPU=1 renders WebGL on the graphics card. Headless Chrome otherwise
+// falls back to SwiftShader (CPU), where the 3D planner runs at about 1 frame a second.
+const launchOptions = process.env["E2E_GPU"] ? { args: ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=gl"] } : {};
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -21,12 +24,12 @@ export default defineConfig({
     { name: "setup", testMatch: /auth\.setup\.ts/, use: { channel } },
     {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"], channel, storageState: "playwright/.auth/user.json" },
+      use: { ...devices["Desktop Chrome"], channel, launchOptions, storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
     },
     {
       name: "mobile",
-      use: { ...devices["Pixel 7"], channel, storageState: "playwright/.auth/user.json" },
+      use: { ...devices["Pixel 7"], channel, launchOptions, storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
     },
   ],

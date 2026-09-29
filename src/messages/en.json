@@ -835,8 +835,8 @@
     "foldHint": "Walls facing you fold away",
     "exitWalk": "Exit walkthrough",
     "doorway": "Doorway",
-    "walkHintLocked": "Move the mouse to look · W A S D to walk · click or E to open a door · Esc to leave",
-    "walkHintFree": "Click the view to take control · W A S D to walk · Esc to leave",
+    "walkHintLocked": "Move the mouse to look · W A S D to walk · click a window to go to it · E opens a door · C sits · V saves the view · P takes a photo · Esc to leave",
+    "walkHintFree": "Click the view to take control, or a window to go to it · W A S D to walk · C to sit · Esc to leave",
     "walkHintTouch": "Drag to look · use the pad to walk",
     "walk_w": "Forward",
     "walk_a": "Left",
@@ -881,7 +881,12 @@
     "lightsHint": "Lights come on by themselves after dark. In the walkthrough, click a light switch to flip a room's lights.",
     "photo": "Photo",
     "photoSaved": "High-quality photo saved.",
-    "photoRendering": "Rendering photo…"
+    "photoRendering": "Rendering photo…",
+    "decorProps": "Decor on furniture",
+    "walkSit": "Sit",
+    "walkStand": "Stand",
+    "viewSaved": "View saved with its time of day and lights",
+    "savedWalk": "Walkthrough · eye {eye} cm"
   },
   "FitOut": {
     "title": "Doors & windows",
@@ -1071,6 +1076,25 @@
     "auto": "Automatic",
     "built": "Simple",
     "builtHint": "Built to size, all in the piece's colour",
-    "vary": "Vary models"
+    "vary": "Vary models",
+    "decor": "Decor",
+    "reroll": "Re-roll",
+    "rerollRoom": "Re-roll room",
+    "decorOff": "No decor",
+    "decorOn": "Add decor"
+  },
+  "DecorKind": {
+    "vase": "Vase",
+    "books": "Books",
+    "bowl": "Bowl",
+    "plant": "Plant",
+    "frame": "Photo frame",
+    "clock": "Clock",
+    "figurine": "Figurine",
+    "tea_set": "Tea set",
+    "basket": "Basket",
+    "lamp": "Desk lamp",
+    "candle": "Candle",
+    "pillows": "Cushions"
   }
 }

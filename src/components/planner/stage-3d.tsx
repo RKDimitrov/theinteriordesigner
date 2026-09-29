@@ -5,7 +5,7 @@ import { Edges, Environment, Html, OrbitControls, PerformanceMonitor } from "@re
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer, N8AO, ToneMapping } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
-import { Aperture, Camera as CameraIcon, DoorOpen, Footprints, X } from "lucide-react";
+import { Aperture, Armchair, Bookmark, Camera as CameraIcon, DoorOpen, Footprints, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPosition } from "suncalc";
@@ -22,11 +22,13 @@ import { fixtureWall } from "@/domain/room/fixtures";
 import { type Material, resolveFinishes } from "@/domain/materials/library";
 import { roomLit, skyLight } from "@/domain/planner/lighting";
 import { skirtingPieces } from "@/domain/room/opening-parts";
-import { canStand, roomAt, startSpot, type WalkRoom, wallPieces } from "@/domain/planner/walls3d";
+import { canStand, roomAt, startSpot, type WalkRoom, wallPieces, windowSpot } from "@/domain/planner/walls3d";
+import { approach, EYE_SITTING, EYE_STANDING, shortestTurn, smoothstep } from "@/domain/planner/walk-motion";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening, Room } from "@/domain/schemas/room";
+import { newSavedView } from "./panels-3d";
 import { usePlanner } from "./planner-context";
-import { type Camera, type PlanRoom } from "./state";
+import { type Camera, type PlanRoom, type WalkSpot } from "./state";
 import { AssetBoundary } from "./three/asset-boundary";
 import { cmUV } from "./three/geometry";
 import { FlatSurface, RealSurface } from "./three/surface-materials";
@@ -36,6 +38,7 @@ import { Outside } from "./three/outside3d";
 import { RoomLights } from "./three/lights3d";
 import { PhotoCapture, type PhotoApi } from "./three/photo";
 import { SkirtingBoard } from "./three/trim3d";
+import { PieceDecor3D } from "./three/decor3d";
 import { RealPiece } from "./three/pieces";
 
 const INK = "#2b2622";
@@ -67,7 +70,7 @@ export default function Stage3D() {
   const [location, setLocation] = useState<string | null>(null);
   // Ambient occlusion is the costliest pass; drop it when the frame rate sags.
   const [ao, setAo] = useState(true);
-  const walkApiRef = useRef<{ toggleNearestDoor: () => void; move: (key: string, down: boolean) => void } | null>(null);
+  const walkApiRef = useRef<WalkApi | null>(null);
 
   const placed: Placed[] = useMemo(
     () =>
@@ -117,7 +120,24 @@ export default function Stage3D() {
     toast(t("photoSaved"));
   };
 
-  const startWalk = () => dispatch({ type: "set", patch: { walking: true } });
+  const [sitting, setSitting] = useState(false);
+  const startWalk = () => {
+    setSitting(false);
+    dispatch({ type: "set", patch: { walking: true } });
+  };
+  // A saved view that reopens the walk: at this spot, with this light.
+  const saveWalkView = () => {
+    const spot = walkApiRef.current?.spot() ?? null;
+    const view = newSavedView(s, t("savedViewName", { n: s.savedViews.length + 1 }), spot);
+    dispatch({ type: "set", patch: { savedViews: [...s.savedViews, view] } });
+    toast(t("viewSaved"));
+  };
+  // A saved view sitting down reopens the walk seated.
+  const [prevStart, setPrevStart] = useState(s.walkStart);
+  if (s.walkStart !== prevStart) {
+    setPrevStart(s.walkStart);
+    if (s.walkStart) setSitting(s.walkStart.eye <= EYE_SITTING);
+  }
   const stopWalk = () => {
     if (document.pointerLockElement) document.exitPointerLock();
     dispatch({ type: "set", patch: { walking: false } });
@@ -172,7 +192,16 @@ export default function Stage3D() {
               />
             </EffectComposer>
             {s.walking ? (
-              <WalkControls placed={placed} onLocation={setLocation} apiRef={walkApiRef} coarse={!!coarse} onExit={stopWalk} />
+              <WalkControls
+                placed={placed}
+                onLocation={setLocation}
+                apiRef={walkApiRef}
+                coarse={!!coarse}
+                onExit={stopWalk}
+                onSit={setSitting}
+                onSaveView={saveWalkView}
+                onPhoto={() => void photo()}
+              />
             ) : (
               <OrbitRig cx={bounds.cx} cz={bounds.cz} radius={bounds.radius} />
             )}
@@ -212,6 +241,20 @@ export default function Stage3D() {
           <div className="pl-walkui">
             <div className="wtop">
               {location && <span className="pl-wchip">{location === "__doorway" ? t("doorway") : location}</span>}
+              <Button
+                size="sm"
+                variant="outline"
+                data-testid="walk-sit"
+                onClick={() => walkApiRef.current?.toggleSit()}
+              >
+                <Armchair /> {sitting ? t("walkStand") : t("walkSit")}
+              </Button>
+              <Button size="sm" variant="outline" data-testid="walk-save-view" onClick={saveWalkView}>
+                <Bookmark /> {t("saveView")}
+              </Button>
+              <Button size="sm" variant="outline" onClick={photo} disabled={photoBusy} data-testid="walk-photo">
+                <Aperture /> {photoBusy ? t("photoRendering") : t("photo")}
+              </Button>
               <Button size="sm" variant="outline" onClick={stopWalk}>
                 <X /> {t("exitWalk")}
               </Button>
@@ -505,20 +548,23 @@ function RoomOpening({ roomId, walls, o, ceiling }: { roomId: string; walls: rea
   const key = doorKey(roomId, o.id);
   const open = !!s.doorsOpen[key];
   return (
-    <Opening3D
-      walls={walls}
-      o={o}
-      ceiling={ceiling}
-      fitOut={s.fitOut}
-      realistic={s.scene.realistic}
-      open={open}
-      onToggle={() =>
-        o.kind === "switch"
-          ? // A light switch flips its room's lights.
-            dispatch({ type: "set", patch: { lightsSwitched: { ...s.lightsSwitched, [roomId]: !roomLit(roomId, s.lightsSwitched, s.scene.hour) } } })
-          : dispatch({ type: "set", patch: { doorsOpen: { ...s.doorsOpen, [key]: !open } } })
-      }
-    />
+    // Windows are tagged so a click in the walkthrough can walk up to them.
+    <group userData={o.kind === "window" ? { walkWindow: { roomId, id: o.id } } : {}}>
+      <Opening3D
+        walls={walls}
+        o={o}
+        ceiling={ceiling}
+        fitOut={s.fitOut}
+        realistic={s.scene.realistic}
+        open={open}
+        onToggle={() =>
+          o.kind === "switch"
+            ? // A light switch flips its room's lights.
+              dispatch({ type: "set", patch: { lightsSwitched: { ...s.lightsSwitched, [roomId]: !roomLit(roomId, s.lightsSwitched, s.scene.hour) } } })
+            : dispatch({ type: "set", patch: { doorsOpen: { ...s.doorsOpen, [key]: !open } } })
+        }
+      />
+    </group>
   );
 }
 
@@ -563,6 +609,11 @@ function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: Furnitu
         </AssetBoundary>
       ) : (
         box
+      )}
+      {s.scene.realistic && s.scene.decor && (
+        <group position-y={-h / 2}>
+          <PieceDecor3D f={f} h={h} />
+        </group>
       )}
       {showLabel && (
         <Html position={[0, h / 2 + 12, 0]} center style={{ pointerEvents: "none" }}>
@@ -629,21 +680,44 @@ function OrbitRig({ cx, cz, radius }: { cx: number; cz: number; radius: number }
 
 /* ---------------- walkthrough ---------------- */
 
+export interface WalkApi {
+  toggleNearestDoor: () => void;
+  move: (key: string, down: boolean) => void;
+  /** Sit down or stand up (eye height 115 or 165 cm). */
+  toggleSit: () => void;
+  /** Where the walker is and looks, for a saved view. */
+  spot: () => WalkSpot | null;
+}
+
+/** Seconds to glide up to a window. */
+const GLIDE_S = 1.1;
+/** How fast speed and gaze catch up with the keys and the mouse (per second). */
+const ACCEL_RATE = 9;
+const LOOK_RATE = 16;
+const EYE_RATE = 5;
+
 function WalkControls({
   placed,
   onLocation,
   apiRef,
   coarse,
   onExit,
+  onSit,
+  onSaveView,
+  onPhoto,
 }: {
   placed: Placed[];
   onLocation: (name: string | null) => void;
-  apiRef: React.RefObject<{ toggleNearestDoor: () => void; move: (key: string, down: boolean) => void } | null>;
+  apiRef: React.RefObject<WalkApi | null>;
   coarse: boolean;
   onExit: () => void;
+  onSit: (sitting: boolean) => void;
+  onSaveView: () => void;
+  onPhoto: () => void;
 }) {
   const { s, dispatch } = usePlanner();
   const gl = useThree((st) => st.gl);
+  const get = useThree((st) => st.get);
   const rooms: WalkRoom[] = useMemo(() => placed.map((p) => ({ id: p.r.room.id, room: p.r.room, origin: p.origin, furniture: p.r.furniture })), [placed]);
   const doors = useRef(s.doorsOpen);
   const lights = useRef({ switched: s.lightsSwitched, hour: s.scene.hour });
@@ -654,12 +728,23 @@ function WalkControls({
     doors.current = s.doorsOpen;
   }, [s.doorsOpen]);
   const isOpen = (roomId: string, id: string) => !!doors.current[doorKey(roomId, id)];
-  const player = useRef<Vec | null>(null);
-  const yaw = useRef(90);
-  const pitch = useRef(0);
+  // A saved view starts the walk where it was saved; used once.
+  const [start] = useState(s.walkStart);
+  useEffect(() => {
+    if (start) dispatch({ type: "set", patch: { walkStart: null } });
+  }, [start, dispatch]);
+  const player = useRef<Vec | null>(start ? { x: start.x, y: start.y } : null);
+  // Where the keys and mouse point (yaw, pitch) and what the camera shows, easing after them.
+  const yaw = useRef(start?.yaw ?? 90);
+  const pitch = useRef(start?.pitch ?? 0);
+  const shown = useRef({ yaw: start?.yaw ?? 90, pitch: start?.pitch ?? 0 });
+  const vel = useRef({ x: 0, y: 0 });
+  const eye0 = start?.eye ?? EYE_STANDING;
+  const eyeTarget = useRef(eye0);
+  const eyeNow = useRef(eye0);
+  const glide = useRef<{ from: Vec; to: Vec; yaw0: number; yaw1: number; pitch0: number; t: number } | null>(null);
   const keys = useRef<Record<string, boolean>>({});
   const lastLoc = useRef<string | null>(null);
-  const eye = s.camera.eyeHeight;
 
   const toggleNearestDoor = () => {
     const p = player.current;
@@ -683,8 +768,43 @@ function WalkControls({
     } else if (best) dispatch({ type: "set", patch: { doorsOpen: { ...doors.current, [best.key]: !doors.current[best.key] } } });
   };
 
+  // The key handler binds once per walk; it calls the latest callbacks through this ref.
+  const callbacks = useRef({ onSit, onSaveView, onPhoto });
   useEffect(() => {
-    apiRef.current = { toggleNearestDoor, move: (k, down) => (keys.current[k] = down) };
+    callbacks.current = { onSit, onSaveView, onPhoto };
+  });
+  const toggleSit = () => {
+    eyeTarget.current = eyeTarget.current > EYE_SITTING ? EYE_SITTING : EYE_STANDING;
+    callbacks.current.onSit(eyeTarget.current <= EYE_SITTING);
+  };
+
+  /** The window under the screen point (normalised device coordinates), if the nearest thing hit is one. */
+  const pickWindow = (ndc: THREE.Vector2): { roomId: string; id: string } | null => {
+    const { camera, scene, raycaster } = get();
+    raycaster.setFromCamera(ndc, camera);
+    const hit = raycaster.intersectObjects(scene.children, true).find((h) => h.object.visible);
+    for (let o: THREE.Object3D | null = hit?.object ?? null; o; o = o.parent) {
+      const w = o.userData["walkWindow"] as { roomId: string; id: string } | undefined;
+      if (w) return w;
+    }
+    return null;
+  };
+
+  const goToWindow = (w: { roomId: string; id: string }) => {
+    const p = player.current;
+    const spot = windowSpot(w.roomId, w.id, rooms, isOpen);
+    if (!p || !spot) return false;
+    glide.current = { from: { ...p }, to: { x: spot.x, y: spot.y }, yaw0: shown.current.yaw, yaw1: spot.yaw, pitch0: shown.current.pitch, t: 0 };
+    return true;
+  };
+
+  useEffect(() => {
+    apiRef.current = {
+      toggleNearestDoor,
+      move: (k, down) => (keys.current[k] = down),
+      toggleSit,
+      spot: () => (player.current ? { ...player.current, yaw: Math.round(yaw.current * 10) / 10, pitch: Math.round(pitch.current * 10) / 10, eye: eyeTarget.current } : null),
+    };
   });
 
   useEffect(() => {
@@ -700,22 +820,35 @@ function WalkControls({
     };
     lock();
     let dragging: { x: number; y: number } | null = null;
+    let dragged = 0;
     const onMove = (e: PointerEvent) => {
       if (document.pointerLockElement === el) {
         yaw.current -= e.movementX * YAW_PER_PX;
         pitch.current = clamp(pitch.current - e.movementY * PITCH_PER_PX, -PITCH_MAX, PITCH_MAX);
       } else if (dragging) {
+        dragged += Math.abs(e.clientX - dragging.x) + Math.abs(e.clientY - dragging.y);
         yaw.current -= (e.clientX - dragging.x) * YAW_PER_PX;
         pitch.current = clamp(pitch.current - (e.clientY - dragging.y) * PITCH_PER_PX, -PITCH_MAX, PITCH_MAX);
         dragging = { x: e.clientX, y: e.clientY };
       }
     };
     const onDown = (e: PointerEvent) => {
+      dragged = 0;
       if (document.pointerLockElement === el) return;
       dragging = { x: e.clientX, y: e.clientY };
     };
     const onUp = () => (dragging = null);
-    const onClick = () => document.pointerLockElement !== el && lock();
+    const onClick = (e: MouseEvent) => {
+      // A drag to look around is not a click.
+      if (dragged > 6) return;
+      const locked = document.pointerLockElement === el;
+      const rect = el.getBoundingClientRect();
+      // Locked, the crosshair in the middle aims; otherwise the pointer does.
+      const ndc = locked ? new THREE.Vector2(0, 0) : new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+      const w = pickWindow(ndc);
+      if (w && goToWindow(w)) return;
+      if (!locked) lock();
+    };
     const onKey = (e: KeyboardEvent) => {
       const k = e.key.toLowerCase();
       if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) {
@@ -723,6 +856,10 @@ function WalkControls({
         e.preventDefault();
       }
       if (e.type === "keydown" && k === "e") toggleNearestDoor();
+      // With the pointer locked the buttons are out of reach, so each has a key.
+      if (e.type === "keydown" && k === "c") toggleSit();
+      if (e.type === "keydown" && k === "v") callbacks.current.onSaveView();
+      if (e.type === "keydown" && k === "p") callbacks.current.onPhoto();
       if (e.type === "keydown" && k === "escape" && document.pointerLockElement !== el) onExit();
     };
     const wasLocked = { current: false };
@@ -764,25 +901,57 @@ function WalkControls({
     const dt = Math.min(0.05, dtRaw);
     const k = keys.current;
     const turn = (k["arrowright"] ? 1 : 0) - (k["arrowleft"] ? 1 : 0);
-    yaw.current -= turn * TURN_SPEED * dt;
     const fwd = (k["w"] || k["arrowup"] ? 1 : 0) - (k["s"] || k["arrowdown"] ? 1 : 0);
     const str = (k["d"] ? 1 : 0) - (k["a"] ? 1 : 0);
-    if (fwd || str) {
+    const g = glide.current;
+    // Any key takes back control from a glide.
+    if (g && (fwd || str || turn)) glide.current = null;
+
+    if (glide.current && g) {
+      g.t = Math.min(1, g.t + dt / GLIDE_S);
+      const e = smoothstep(g.t);
+      player.current = { x: g.from.x + (g.to.x - g.from.x) * e, y: g.from.y + (g.to.y - g.from.y) * e };
+      yaw.current = g.yaw0 + shortestTurn(g.yaw0, g.yaw1) * e;
+      pitch.current = g.pitch0 * (1 - e);
+      shown.current = { yaw: yaw.current, pitch: pitch.current };
+      vel.current = { x: 0, y: 0 };
+      if (g.t >= 1) glide.current = null;
+    } else {
+      yaw.current -= turn * TURN_SPEED * dt;
       const a = (yaw.current * Math.PI) / 180;
       // Yaw 0 looks toward plan +x; yaw grows counter-clockwise on screen.
       const f = { x: Math.cos(a), y: -Math.sin(a) };
       const r = { x: Math.sin(a), y: Math.cos(a) };
-      const dx = (f.x * fwd + r.x * str) * WALK_SPEED * dt;
-      const dy = (f.y * fwd + r.y * str) * WALK_SPEED * dt;
-      const both = { x: p.x + dx, y: p.y + dy };
-      if (canStand(both, rooms, isOpen)) player.current = both;
-      else if (canStand({ x: p.x + dx, y: p.y }, rooms, isOpen)) player.current = { x: p.x + dx, y: p.y };
-      else if (canStand({ x: p.x, y: p.y + dy }, rooms, isOpen)) player.current = { x: p.x, y: p.y + dy };
+      // Speed eases up and down instead of starting and stopping dead.
+      const v = vel.current;
+      v.x = approach(v.x, (f.x * fwd + r.x * str) * WALK_SPEED, ACCEL_RATE, dt);
+      v.y = approach(v.y, (f.y * fwd + r.y * str) * WALK_SPEED, ACCEL_RATE, dt);
+      if (Math.hypot(v.x, v.y) > 0.5) {
+        const dx = v.x * dt;
+        const dy = v.y * dt;
+        if (canStand({ x: p.x + dx, y: p.y + dy }, rooms, isOpen)) player.current = { x: p.x + dx, y: p.y + dy };
+        else if (canStand({ x: p.x + dx, y: p.y }, rooms, isOpen)) {
+          player.current = { x: p.x + dx, y: p.y };
+          v.y = 0;
+        } else if (canStand({ x: p.x, y: p.y + dy }, rooms, isOpen)) {
+          player.current = { x: p.x, y: p.y + dy };
+          v.x = 0;
+        } else vel.current = { x: 0, y: 0 };
+      }
+      // The gaze follows the mouse closely but without jitter.
+      const follow = 1 - Math.exp(-LOOK_RATE * dt);
+      shown.current = {
+        yaw: shown.current.yaw + shortestTurn(shown.current.yaw, yaw.current) * follow,
+        pitch: approach(shown.current.pitch, pitch.current, LOOK_RATE, dt),
+      };
     }
+    eyeNow.current = approach(eyeNow.current, eyeTarget.current, EYE_RATE, dt);
+
     const q = player.current!;
+    const eye = eyeNow.current;
     camera.position.set(q.x, eye, q.y);
-    const a = (yaw.current * Math.PI) / 180;
-    const pt = (pitch.current * Math.PI) / 180;
+    const a = (shown.current.yaw * Math.PI) / 180;
+    const pt = (shown.current.pitch * Math.PI) / 180;
     camera.lookAt(q.x + Math.cos(a) * Math.cos(pt) * 100, eye + Math.sin(pt) * 100, q.y - Math.sin(a) * Math.cos(pt) * 100);
     const here = roomAt(q, rooms);
     const name = here ? here.room.name : "__doorway";

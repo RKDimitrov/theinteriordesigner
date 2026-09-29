@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { rectPolygon } from "../geometry/polygon";
 import type { Room } from "../schemas/room";
-import { canStand, roomAt, startSpot, wallPieces, type WalkRoom } from "./walls3d";
+import { canStand, roomAt, startSpot, wallPieces, type WalkRoom, WINDOW_STAND_CM, windowSpot } from "./walls3d";
 
 describe("wallPieces", () => {
   it("leaves a full wall alone", () => {
@@ -108,5 +108,22 @@ describe("walkthrough collision", () => {
     const p = startSpot(rooms, closed)!;
     expect(canStand(p, rooms, closed)).toBe(true);
     expect(roomAt(p, rooms)?.id).toBe("A");
+  });
+});
+
+describe("windowSpot", () => {
+  const win = { id: "w", kind: "window" as const, wallIndex: 0, offset: 100, width: 100, height: 140, sillHeight: 90, openable: true };
+  const rooms: WalkRoom[] = [{ id: "A", room: room("A", [win]), origin: { x: 1000, y: 0 }, furniture: [] }];
+
+  it("stands in front of the window's middle, facing out", () => {
+    const spot = windowSpot("A", "w", rooms, () => false)!;
+    expect(spot.x).toBeCloseTo(1150);
+    expect(spot.y).toBeCloseTo(WINDOW_STAND_CM);
+    // Yaw 90 looks towards plan −y, out through wall 0.
+    expect(spot.yaw).toBeCloseTo(90);
+  });
+
+  it("is null for an unknown window", () => {
+    expect(windowSpot("A", "nope", rooms, () => false)).toBeNull();
   });
 });

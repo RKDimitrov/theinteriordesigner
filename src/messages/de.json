@@ -835,8 +835,8 @@
     "foldHint": "Wände zu Ihnen hin klappen weg",
     "exitWalk": "Rundgang beenden",
     "doorway": "Durchgang",
-    "walkHintLocked": "Maus bewegen zum Umsehen · W A S D zum Gehen · Klick oder E öffnet eine Tür · Esc zum Verlassen",
-    "walkHintFree": "Ansicht anklicken, um die Steuerung zu übernehmen · W A S D zum Gehen · Esc zum Verlassen",
+    "walkHintLocked": "Maus bewegen zum Umsehen · W A S D zum Gehen · Fenster anklicken, um hinzugehen · E öffnet eine Tür · C zum Hinsetzen · V speichert die Ansicht · P macht ein Foto · Esc zum Verlassen",
+    "walkHintFree": "Ansicht anklicken, um die Steuerung zu übernehmen, oder ein Fenster, um hinzugehen · W A S D zum Gehen · C zum Hinsetzen · Esc zum Verlassen",
     "walkHintTouch": "Ziehen zum Umsehen · Tasten zum Gehen",
     "walk_w": "Vorwärts",
     "walk_a": "Links",
@@ -881,7 +881,12 @@
     "lightsHint": "Nach Einbruch der Dunkelheit geht das Licht von selbst an. Im Rundgang schaltet ein Klick auf einen Lichtschalter das Licht im Raum.",
     "photo": "Foto",
     "photoSaved": "Hochwertiges Foto gespeichert.",
-    "photoRendering": "Foto wird berechnet …"
+    "photoRendering": "Foto wird berechnet …",
+    "decorProps": "Deko auf Möbeln",
+    "walkSit": "Hinsetzen",
+    "walkStand": "Aufstehen",
+    "viewSaved": "Ansicht mit Tageszeit und Licht gespeichert",
+    "savedWalk": "Rundgang · Augenhöhe {eye} cm"
   },
   "FitOut": {
     "title": "Türen & Fenster",
@@ -1071,6 +1076,25 @@
     "auto": "Automatisch",
     "built": "Schlicht",
     "builtHint": "Genau nach Maß, ganz in der Farbe des Stücks",
-    "vary": "Modelle variieren"
+    "vary": "Modelle variieren",
+    "decor": "Deko",
+    "reroll": "Neu würfeln",
+    "rerollRoom": "Raum neu würfeln",
+    "decorOff": "Keine Deko",
+    "decorOn": "Deko zeigen"
+  },
+  "DecorKind": {
+    "vase": "Vase",
+    "books": "Bücher",
+    "bowl": "Schale",
+    "plant": "Pflanze",
+    "frame": "Bilderrahmen",
+    "clock": "Uhr",
+    "figurine": "Figur",
+    "tea_set": "Teeservice",
+    "basket": "Korb",
+    "lamp": "Schreibtischlampe",
+    "candle": "Kerze",
+    "pillows": "Kissen"
   }
 }

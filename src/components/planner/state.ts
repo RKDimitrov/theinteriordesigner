@@ -86,6 +86,17 @@ export interface SceneSettings {
   lightKelvin: number;
   labels: boolean;
   foldWalls: boolean;
+  /** Decor props (vases, books, pillows) on the furniture. */
+  decor: boolean;
+}
+
+/** A spot in the walkthrough: apartment cm, gaze in degrees and eye height in cm. */
+export interface WalkSpot {
+  x: number;
+  y: number;
+  yaw: number;
+  pitch: number;
+  eye: number;
 }
 
 export interface SavedView {
@@ -94,6 +105,10 @@ export interface SavedView {
   camera: Camera;
   /** Small JPEG data URL. */
   thumb: string | null;
+  /** Time of day, lamp colour and rooms switched by hand when it was saved. */
+  light?: { hour: number; lightKelvin: number; lightsSwitched: Record<string, boolean> };
+  /** Saved while walking: it reopens the walkthrough at this spot. */
+  walk?: WalkSpot;
 }
 
 export interface PlannerState {
@@ -135,6 +150,8 @@ export interface PlannerState {
   doorsOpen: Record<string, boolean>;
   savedViews: SavedView[];
   walking: boolean;
+  /** Where the next walkthrough starts (a saved view); null starts in the first room. */
+  walkStart: WalkSpot | null;
   /** Apartment defaults for doors, windows and radiators; saved to the apartment. */
   fitOut: FitOut;
 }
@@ -152,7 +169,8 @@ export type Action =
   | { type: "mode"; mode: Mode }
   | { type: "toggle-layer"; layer: LayerId }
   | { type: "select"; selection: Selection }
-  | { type: "camera"; patch: Partial<Camera>; preset?: CameraPreset | null };
+  | { type: "camera"; patch: Partial<Camera>; preset?: CameraPreset | null }
+  | { type: "apply-view"; view: SavedView };
 
 const HISTORY = 100;
 
@@ -182,11 +200,12 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     preset: "architect",
     finishes: Object.fromEntries(plan.rooms.map((r) => [r.room.id, r.room.finishes])),
     outlooks: Object.fromEntries(plan.rooms.map((r) => [r.room.id, r.room.wallOutlooks])),
-    scene: { realistic: true, hour: 16, lightKelvin: 2700, labels: false, foldWalls: true },
+    scene: { realistic: true, hour: 16, lightKelvin: 2700, labels: false, foldWalls: true, decor: true },
     lightsSwitched: {},
     doorsOpen: {},
     savedViews: [],
     walking: false,
+    walkStart: null,
     fitOut,
   };
 }
@@ -248,6 +267,18 @@ export function reducer(s: PlannerState, a: Action): PlannerState {
       return { ...s, selection: a.selection, swapFor: a.selection?.kind === "item" && a.selection.id === s.swapFor ? s.swapFor : null };
     case "camera":
       return { ...s, camera: { ...s.camera, ...a.patch }, preset: a.preset === undefined ? null : a.preset };
+    case "apply-view": {
+      const { camera, light, walk } = a.view;
+      return {
+        ...s,
+        camera,
+        preset: null,
+        scene: light ? { ...s.scene, hour: light.hour, lightKelvin: light.lightKelvin } : s.scene,
+        lightsSwitched: light ? light.lightsSwitched : s.lightsSwitched,
+        walking: !!walk,
+        walkStart: walk ?? null,
+      };
+    }
   }
 }
 

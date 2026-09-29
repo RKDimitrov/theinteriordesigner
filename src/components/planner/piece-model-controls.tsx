@@ -3,7 +3,9 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { FillSampleButton } from "@/components/dev/fill-sample-button";
-import type { FurnitureItem } from "@/domain/schemas/design";
+import { Button } from "@/components/ui/button";
+import { DECOR_HOSTS, dressPiece } from "@/domain/design/decor";
+import type { FurnitureItem, PieceDecor } from "@/domain/schemas/design";
 import { StyleKey } from "@/domain/schemas/profile";
 import { usePlanner } from "./planner-context";
 import { mapRoom } from "./state";
@@ -76,6 +78,59 @@ export function PieceLook({ roomId, f, set }: { roomId: string; f: FurnitureItem
           </div>
         </>
       )}
+      {DECOR_HOSTS[f.category] && <DecorFields roomId={roomId} f={f} set={set} />}
+    </div>
+  );
+}
+
+/** The props on the selected piece: remove or bring back each one, re-roll them all, or none. */
+function DecorFields({ roomId, f, set }: { roomId: string; f: FurnitureItem; set: (patch: Partial<FurnitureItem>) => void }) {
+  const t = useTranslations("PieceModel");
+  const tk = useTranslations("DecorKind");
+  const { dispatch } = usePlanner();
+  const decor = f.decor ?? { seed: 0, hidden: [] };
+  const all = dressPiece({ ...f, decor: { seed: decor.seed, hidden: [] } });
+  const reroll = (d: PieceDecor): PieceDecor => ({ seed: (d.seed + 1) % 1_000_000, hidden: [] });
+
+  // Dev: re-rolls every piece in the room, to see many dressings quickly.
+  const rerollRoom = () =>
+    dispatch({
+      type: "edit",
+      fn: (p) => mapRoom(p, roomId, (r) => ({ ...r, furniture: r.furniture.map((x) => (DECOR_HOSTS[x.category] ? { ...x, decor: reroll(x.decor ?? { seed: 0, hidden: [] }) } : x)) })),
+    });
+
+  return (
+    <div data-testid="piece-decor">
+      <span className="pl-sub" style={{ marginTop: 10 }}>
+        <span>{t("decor")}</span>
+        <FillSampleButton label={t("rerollRoom")} onFill={rerollRoom} />
+      </span>
+      {!decor.off && all.length > 0 && (
+        <div className="pl-decor" role="group" aria-label={t("decor")}>
+          {all.map((p) => {
+            const shown = !decor.hidden.includes(p.slot);
+            return (
+              <button
+                key={p.slot}
+                type="button"
+                aria-pressed={shown}
+                data-testid={`decor-prop-${p.slot}`}
+                onClick={() => set({ decor: { ...decor, hidden: shown ? [...decor.hidden, p.slot] : decor.hidden.filter((h) => h !== p.slot) } })}
+              >
+                {tk(p.kind)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <div className="pl-row" style={{ marginTop: 6 }}>
+        <Button size="sm" variant="outline" data-testid="decor-reroll" onClick={() => set({ decor: reroll(decor) })}>
+          {t("reroll")}
+        </Button>
+        <Button size="sm" variant="ghost" data-testid="decor-off" onClick={() => set({ decor: { ...decor, off: !decor.off } })}>
+          {decor.off ? t("decorOn") : t("decorOff")}
+        </Button>
+      </div>
     </div>
   );
 }

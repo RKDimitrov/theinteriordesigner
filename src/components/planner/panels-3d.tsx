@@ -12,9 +12,34 @@ import { usePlanner } from "./planner-context";
 import { FinishesBlock } from "./finishes-controls";
 import { LightsBlock } from "./lights-controls";
 import { OutsideBlock } from "./outside-controls";
-import { type Camera, CAMERA_PRESETS, type CameraPreset } from "./state";
+import { type Camera, CAMERA_PRESETS, type CameraPreset, type PlannerState, type SavedView, type WalkSpot } from "./state";
 
 const PRESETS: readonly CameraPreset[] = ["eye", "architect", "bird", "plan"];
+
+/** A saved view of what the 3D canvas shows now: camera, time of day, lights, and the walkthrough spot if walking. */
+export function newSavedView(s: PlannerState, name: string, walk: WalkSpot | null): SavedView {
+  const canvas = document.querySelector<HTMLCanvasElement>(".pl-scene3 canvas");
+  let thumb: string | null = null;
+  try {
+    if (canvas) {
+      const c = document.createElement("canvas");
+      c.width = 112;
+      c.height = 76;
+      c.getContext("2d")?.drawImage(canvas, 0, 0, c.width, c.height);
+      thumb = c.toDataURL("image/jpeg", 0.7);
+    }
+  } catch {
+    thumb = null;
+  }
+  return {
+    id: `view-${Date.now()}`,
+    name,
+    camera: s.camera,
+    thumb,
+    light: { hour: s.scene.hour, lightKelvin: s.scene.lightKelvin, lightsSwitched: s.lightsSwitched },
+    ...(walk ? { walk } : {}),
+  };
+}
 
 /* ---------------- camera panel (left, 3D) ---------------- */
 
@@ -34,21 +59,8 @@ export function CameraPanel() {
   };
 
   const saveView = () => {
-    const canvas = document.querySelector<HTMLCanvasElement>(".pl-scene3 canvas");
-    let thumb: string | null = null;
-    try {
-      if (canvas) {
-        const c = document.createElement("canvas");
-        c.width = 112;
-        c.height = 76;
-        c.getContext("2d")?.drawImage(canvas, 0, 0, c.width, c.height);
-        thumb = c.toDataURL("image/jpeg", 0.7);
-      }
-    } catch {
-      thumb = null;
-    }
     const n = s.savedViews.length + 1;
-    dispatch({ type: "set", patch: { savedViews: [...s.savedViews, { id: `view-${Date.now()}`, name: t("savedViewName", { n }), camera: cam, thumb }] } });
+    dispatch({ type: "set", patch: { savedViews: [...s.savedViews, newSavedView(s, t("savedViewName", { n }), null)] } });
   };
 
   const chip = (label: string, on: boolean, onClick: () => void) => (
@@ -138,12 +150,13 @@ export function CameraPanel() {
         <div className="pl-saved">
           {s.savedViews.map((v) => (
             <div key={v.id} className="pl-saved-row">
-              <button type="button" onClick={() => dispatch({ type: "camera", patch: v.camera, preset: null })}>
+              <button type="button" data-testid="saved-view" onClick={() => dispatch({ type: "apply-view", view: v })}>
                 <span className="pl-thumb" style={v.thumb ? { backgroundImage: `url(${v.thumb})` } : undefined} />
                 <div>
                   <b>{v.name}</b>
                   <small>
-                    {v.camera.eyeHeight} cm · {v.camera.rotation}° · {t(`lens_${v.camera.lens}`)}
+                    {v.walk ? t("savedWalk", { eye: v.walk.eye }) : `${v.camera.eyeHeight} cm · ${v.camera.rotation}° · ${t(`lens_${v.camera.lens}`)}`}
+                    {v.light ? ` · ${String(v.light.hour).padStart(2, "0")}:00` : ""}
                   </small>
                 </div>
               </button>
@@ -310,6 +323,7 @@ function Scene() {
             ["realistic", t("realistic")],
             ["labels", t("pieceLabels")],
             ["foldWalls", t("foldWalls")],
+            ["decor", t("decorProps")],
           ] as const
         ).map(([key, label]) => (
           <label key={key} className="pl-toggle">

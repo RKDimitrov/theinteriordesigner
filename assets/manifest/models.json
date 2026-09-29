@@ -1608,5 +1608,327 @@
       "style.modern_classic",
       "style.boho"
     ]
+  },
+  {
+    "id": "ceramic_vase_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "ceramic_vase_01",
+    "title": "Ceramic Vase 01",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "ceramic_vase_02",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "ceramic_vase_02",
+    "title": "Ceramic Vase 02",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_02",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "ceramic_vase_03",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "ceramic_vase_03",
+    "title": "Ceramic Vase 03",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_03",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "ceramic_vase_04",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "ceramic_vase_04",
+    "title": "Ceramic Vase 04",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_04",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "antique_ceramic_vase_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "antique_ceramic_vase_01",
+    "title": "Antique Ceramic Vase 01",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/antique_ceramic_vase_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "brass_vase_03",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "brass_vase_03",
+    "title": "Brass Vase 03",
+    "author": "Rico Cilliers",
+    "sourceUrl": "https://polyhaven.com/a/brass_vase_03",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "metal_jug",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "metal_jug",
+    "title": "Metal Jug",
+    "author": "Anzor Lezhava",
+    "sourceUrl": "https://polyhaven.com/a/metal_jug",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "book_encyclopedia_set_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "book_encyclopedia_set_01",
+    "title": "Book Encyclopedia Set 01",
+    "author": "John Malcolm",
+    "sourceUrl": "https://polyhaven.com/a/book_encyclopedia_set_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.books"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "wooden_bowl_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "wooden_bowl_01",
+    "title": "Wooden Bowl 01",
+    "author": "Oliver Harries",
+    "sourceUrl": "https://polyhaven.com/a/wooden_bowl_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.bowl"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "carved_wooden_plate",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "carved_wooden_plate",
+    "title": "Carved Wooden Plate",
+    "author": "Jan Martens",
+    "sourceUrl": "https://polyhaven.com/a/carved_wooden_plate",
+    "licence": "cc0",
+    "tags": [
+      "decor.bowl"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "potted_plant_04",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "potted_plant_04",
+    "title": "Potted Plant 04",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/potted_plant_04",
+    "licence": "cc0",
+    "tags": [
+      "decor.plant"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "standing_picture_frame_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "standing_picture_frame_01",
+    "title": "Standing Picture Frame 01",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/standing_picture_frame_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.frame"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "standing_picture_frame_02",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "standing_picture_frame_02",
+    "title": "Standing Picture Frame 02",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/standing_picture_frame_02",
+    "licence": "cc0",
+    "tags": [
+      "decor.frame"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "alarm_clock_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "alarm_clock_01",
+    "title": "Alarm Clock 01",
+    "author": "Yann Kervran, James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/alarm_clock_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.clock"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "mantel_clock_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "mantel_clock_01",
+    "title": "Mantel Clock 01",
+    "author": "Yann Kervran, Rico Cilliers",
+    "sourceUrl": "https://polyhaven.com/a/mantel_clock_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.clock"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "horse_statue_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "horse_statue_01",
+    "title": "Horse Statue 01",
+    "author": "Rico Cilliers",
+    "sourceUrl": "https://polyhaven.com/a/horse_statue_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.figurine"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "carved_wooden_elephant",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "carved_wooden_elephant",
+    "title": "Carved Wooden Elephant",
+    "author": "Greg Zaal",
+    "sourceUrl": "https://polyhaven.com/a/carved_wooden_elephant",
+    "licence": "cc0",
+    "tags": [
+      "decor.figurine"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "concrete_cat_statue",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "concrete_cat_statue",
+    "title": "Concrete Cat Statue",
+    "author": "Rico Cilliers, Riley Queen",
+    "sourceUrl": "https://polyhaven.com/a/concrete_cat_statue",
+    "licence": "cc0",
+    "tags": [
+      "decor.figurine"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "tea_set_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "tea_set_01",
+    "title": "Tea Set 01",
+    "author": "James Ray Cock, Rico Cilliers, Jurita Burger",
+    "sourceUrl": "https://polyhaven.com/a/tea_set_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.tea_set"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "wicker_basket_02",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "wicker_basket_02",
+    "title": "Wicker Basket 02",
+    "author": "Kuutti Siitonen",
+    "sourceUrl": "https://polyhaven.com/a/wicker_basket_02",
+    "licence": "cc0",
+    "tags": [
+      "decor.basket"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "desk_lamp_arm_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "desk_lamp_arm_01",
+    "title": "Desk Lamp Arm 01",
+    "author": "Yann Kervran, Kuutti Siitonen",
+    "sourceUrl": "https://polyhaven.com/a/desk_lamp_arm_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.lamp"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "wooden_candlestick",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "wooden_candlestick",
+    "title": "Wooden Candlestick",
+    "author": "Josh Dean",
+    "sourceUrl": "https://polyhaven.com/a/wooden_candlestick",
+    "licence": "cc0",
+    "tags": [
+      "decor.candle"
+    ],
+    "textureSize": 512
+  },
+  {
+    "id": "throw_pillows_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "throw_pillows_01",
+    "title": "Throw Pillows 01",
+    "author": "Serhii Khromov",
+    "sourceUrl": "https://polyhaven.com/a/throw_pillows_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.pillows"
+    ],
+    "textureSize": 512
   }
 ]

@@ -83,3 +83,29 @@ describe("planner reducer", () => {
     expect(s.visible3d).toContain("r2");
   });
 });
+
+describe("saved views", () => {
+  const camera = { eyeHeight: 165, rotation: 90, tilt: 80, lens: 24 as const, distance: 1 };
+
+  it("restore the time of day and the lights they were saved with", () => {
+    const s = reducer(initialState(plan, "all"), {
+      type: "apply-view",
+      view: { id: "v", name: "Evening", camera, thumb: null, light: { hour: 21, lightKelvin: 3000, lightsSwitched: { r1: false } } },
+    });
+    expect(s.scene.hour).toBe(21);
+    expect(s.scene.lightKelvin).toBe(3000);
+    expect(s.lightsSwitched).toEqual({ r1: false });
+    expect(s.camera).toEqual(camera);
+    expect(s.walking).toBe(false);
+  });
+
+  it("reopen the walkthrough at the spot saved while walking, and keep the lights of older views", () => {
+    const walk = { x: 120, y: 80, yaw: 45, pitch: -5, eye: 115 };
+    let s = initialState(plan, "all");
+    s = reducer(s, { type: "set", patch: { lightsSwitched: { r1: true } } });
+    s = reducer(s, { type: "apply-view", view: { id: "v", name: "Sofa", camera, thumb: null, walk } });
+    expect(s.walking).toBe(true);
+    expect(s.walkStart).toEqual(walk);
+    expect(s.lightsSwitched).toEqual({ r1: true });
+  });
+});

@@ -58,7 +58,7 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
 | `npm run lint` | ESLint (Next core-web-vitals + TypeScript) |
 | `npm test` | Vitest unit tests (`src/**/*.test.ts`, `scripts/**/*.test.ts`) |
-| `npm run test:e2e` | Playwright. Needs `npm run dev` already running (or `E2E_BASE_URL`). Runs desktop Chrome and a Pixel 7 profile. |
+| `npm run test:e2e` | Playwright. Needs `npm run dev` already running (or `E2E_BASE_URL`). Runs desktop Chrome and a Pixel 7 profile. Set `E2E_GPU=1` to render 3D on the graphics card; headless Chrome otherwise renders on the CPU at about 1 frame a second. |
 | `npm run db:migrate` | `prisma migrate dev`, used to create new migrations during development |
 | `npm run db:deploy` | `prisma migrate deploy` |
 | `node scripts/fetch-assets.mjs` | The asset pipeline: fetches what is missing among the assets listed in `assets/manifest/*.json`, compresses them (meshopt + WebP), and regenerates `src/components/planner/three/asset-catalogue.json`. Flags: `--force`, `--only <id>`, `--source <name>`, `--check` (offline consistency check). See "3D assets" below. |

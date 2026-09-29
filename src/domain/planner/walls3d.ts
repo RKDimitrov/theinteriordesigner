@@ -101,3 +101,31 @@ export function startSpot(rooms: readonly WalkRoom[], isOpen: (roomId: string, o
   }
   return null;
 }
+
+/** How far in front of a window the walker stops to look out. */
+export const WINDOW_STAND_CM = 70;
+
+/**
+ * Where to stand to look out of a window: in front of its middle, as close
+ * to WINDOW_STAND_CM as furniture allows, facing out. `yaw` uses the
+ * walkthrough's convention (0 looks towards plan +x, counter-clockwise on
+ * screen). Null when there is no free spot in front of it.
+ */
+export function windowSpot(
+  roomId: string,
+  openingId: string,
+  rooms: readonly WalkRoom[],
+  isOpen: (roomId: string, openingId: string) => boolean,
+): { x: number; y: number; yaw: number } | null {
+  const r = rooms.find((x) => x.id === roomId);
+  const o = r?.room.openings.find((x) => x.id === openingId);
+  const w = o && r ? wallsOf(r.room.polygon)[o.wallIndex] : undefined;
+  if (!r || !o || !w) return null;
+  const mid = add(add(r.origin, w.a), scale(w.dir, o.offset + o.width / 2));
+  const yaw = (Math.atan2(w.inward.y, -w.inward.x) * 180) / Math.PI;
+  for (const dist of [WINDOW_STAND_CM, 90, 55, 120, 150, 190]) {
+    const p = add(mid, scale(w.inward, dist));
+    if (canStand(p, rooms, isOpen)) return { ...p, yaw };
+  }
+  return null;
+}

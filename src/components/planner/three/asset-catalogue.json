@@ -210,6 +210,24 @@
       50
     ]
   },
+  "alarm_clock_01": {
+    "kind": "model",
+    "title": "Alarm Clock 01",
+    "author": "Yann Kervran, James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/alarm_clock_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.clock"
+    ],
+    "bytes": 144024,
+    "size": [
+      13.2,
+      17.4,
+      6.7
+    ],
+    "thumb": "/thumbs/alarm_clock_01.webp"
+  },
   "alps_field": {
     "title": "Alps Field",
     "author": "Andreas Mischok",
@@ -224,6 +242,24 @@
     "thumb": "/thumbs/alps_field.webp",
     "kind": "hdri",
     "backplate": true
+  },
+  "antique_ceramic_vase_01": {
+    "kind": "model",
+    "title": "Antique Ceramic Vase 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/antique_ceramic_vase_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "bytes": 100780,
+    "size": [
+      25.5,
+      44,
+      25.5
+    ],
+    "thumb": "/thumbs/antique_ceramic_vase_01.webp"
   },
   "armchair_01": {
     "title": "Arm Chair 01",
@@ -444,6 +480,24 @@
       20868.9
     ]
   },
+  "book_encyclopedia_set_01": {
+    "kind": "model",
+    "title": "Book Encyclopedia Set 01",
+    "author": "John Malcolm",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/book_encyclopedia_set_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.books"
+    ],
+    "bytes": 444388,
+    "size": [
+      55.1,
+      23.7,
+      16.3
+    ],
+    "thumb": "/thumbs/book_encyclopedia_set_01.webp"
+  },
   "bookshelf_antique_drago": {
     "title": "Antique wooden bookcase - Game model",
     "author": "Lorenzo Drago",
@@ -463,6 +517,24 @@
       67.8
     ]
   },
+  "brass_vase_03": {
+    "kind": "model",
+    "title": "Brass Vase 03",
+    "author": "Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/brass_vase_03",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "bytes": 80104,
+    "size": [
+      8.3,
+      20,
+      8.3
+    ],
+    "thumb": "/thumbs/brass_vase_03.webp"
+  },
   "brick_wall_02": {
     "title": "Brick Wall 02",
     "author": "Dimitrios Savva",
@@ -481,6 +553,114 @@
       143,
       118
     ]
+  },
+  "carved_wooden_elephant": {
+    "kind": "model",
+    "title": "Carved Wooden Elephant",
+    "author": "Greg Zaal",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/carved_wooden_elephant",
+    "licence": "cc0",
+    "tags": [
+      "decor.figurine"
+    ],
+    "bytes": 108852,
+    "size": [
+      10.9,
+      9.6,
+      5.8
+    ],
+    "thumb": "/thumbs/carved_wooden_elephant.webp"
+  },
+  "carved_wooden_plate": {
+    "kind": "model",
+    "title": "Carved Wooden Plate",
+    "author": "Jan Martens",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/carved_wooden_plate",
+    "licence": "cc0",
+    "tags": [
+      "decor.bowl"
+    ],
+    "bytes": 69244,
+    "size": [
+      27.2,
+      3.8,
+      26.9
+    ],
+    "thumb": "/thumbs/carved_wooden_plate.webp"
+  },
+  "ceramic_vase_01": {
+    "kind": "model",
+    "title": "Ceramic Vase 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "bytes": 81056,
+    "size": [
+      20.4,
+      40,
+      20.4
+    ],
+    "thumb": "/thumbs/ceramic_vase_01.webp"
+  },
+  "ceramic_vase_02": {
+    "kind": "model",
+    "title": "Ceramic Vase 02",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_02",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "bytes": 128892,
+    "size": [
+      21.8,
+      30.9,
+      21.8
+    ],
+    "thumb": "/thumbs/ceramic_vase_02.webp"
+  },
+  "ceramic_vase_03": {
+    "kind": "model",
+    "title": "Ceramic Vase 03",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_03",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "bytes": 111224,
+    "size": [
+      11.2,
+      41.4,
+      11.2
+    ],
+    "thumb": "/thumbs/ceramic_vase_03.webp"
+  },
+  "ceramic_vase_04": {
+    "kind": "model",
+    "title": "Ceramic Vase 04",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ceramic_vase_04",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "bytes": 102252,
+    "size": [
+      18.1,
+      34.2,
+      18.1
+    ],
+    "thumb": "/thumbs/ceramic_vase_04.webp"
   },
   "chair_damask_purplegold": {
     "title": "Chair Damask Purplegold",
@@ -636,6 +816,24 @@
       97.3
     ]
   },
+  "concrete_cat_statue": {
+    "kind": "model",
+    "title": "Concrete Cat Statue",
+    "author": "Rico Cilliers, Riley Queen",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/concrete_cat_statue",
+    "licence": "cc0",
+    "tags": [
+      "decor.figurine"
+    ],
+    "bytes": 238476,
+    "size": [
+      15.3,
+      28.3,
+      25
+    ],
+    "thumb": "/thumbs/concrete_cat_statue.webp"
+  },
   "concrete_floor_02": {
     "title": "Concrete Floor 02",
     "author": "Rob Tuytel",
@@ -728,6 +926,24 @@
       74,
       62
     ]
+  },
+  "desk_lamp_arm_01": {
+    "kind": "model",
+    "title": "Desk Lamp Arm 01",
+    "author": "Yann Kervran, Kuutti Siitonen",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/desk_lamp_arm_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.lamp"
+    ],
+    "bytes": 269928,
+    "size": [
+      20.2,
+      89.3,
+      61.4
+    ],
+    "thumb": "/thumbs/desk_lamp_arm_01.webp"
   },
   "desk_office_aleixo": {
     "title": "Office Desk 140x60",
@@ -1343,6 +1559,24 @@
       11105.9
     ]
   },
+  "horse_statue_01": {
+    "kind": "model",
+    "title": "Horse Statue 01",
+    "author": "Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/horse_statue_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.figurine"
+    ],
+    "bytes": 220796,
+    "size": [
+      16.3,
+      22,
+      10.8
+    ],
+    "thumb": "/thumbs/horse_statue_01.webp"
+  },
   "hotel_rooftop_balcony": {
     "title": "Hotel Rooftop Balcony",
     "author": "Dimitrios Savva, Jarod Guest",
@@ -1574,6 +1808,24 @@
       182
     ]
   },
+  "mantel_clock_01": {
+    "kind": "model",
+    "title": "Mantel Clock 01",
+    "author": "Yann Kervran, Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/mantel_clock_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.clock"
+    ],
+    "bytes": 185484,
+    "size": [
+      34.2,
+      16,
+      12.6
+    ],
+    "thumb": "/thumbs/mantel_clock_01.webp"
+  },
   "marble_01": {
     "title": "Marble 01",
     "author": "Rob Tuytel",
@@ -1592,6 +1844,24 @@
       157,
       121
     ]
+  },
+  "metal_jug": {
+    "kind": "model",
+    "title": "Metal Jug",
+    "author": "Anzor Lezhava",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/metal_jug",
+    "licence": "cc0",
+    "tags": [
+      "decor.vase"
+    ],
+    "bytes": 81564,
+    "size": [
+      19.7,
+      28.8,
+      19.5
+    ],
+    "thumb": "/thumbs/metal_jug.webp"
   },
   "metal_office_desk": {
     "title": "Metal Office Desk",
@@ -2207,6 +2477,24 @@
       65.7
     ]
   },
+  "potted_plant_04": {
+    "kind": "model",
+    "title": "Potted Plant 04",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/potted_plant_04",
+    "licence": "cc0",
+    "tags": [
+      "decor.plant"
+    ],
+    "bytes": 179780,
+    "size": [
+      16.8,
+      26.7,
+      18.5
+    ],
+    "thumb": "/thumbs/potted_plant_04.webp"
+  },
   "radiator_valve_trv": {
     "title": "Radiator Thermostatic Valve (UK)",
     "author": "cedeon",
@@ -2570,6 +2858,42 @@
       78.4
     ]
   },
+  "standing_picture_frame_01": {
+    "kind": "model",
+    "title": "Standing Picture Frame 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/standing_picture_frame_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.frame"
+    ],
+    "bytes": 58176,
+    "size": [
+      10,
+      25,
+      20.1
+    ],
+    "thumb": "/thumbs/standing_picture_frame_01.webp"
+  },
+  "standing_picture_frame_02": {
+    "kind": "model",
+    "title": "Standing Picture Frame 02",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/standing_picture_frame_02",
+    "licence": "cc0",
+    "tags": [
+      "decor.frame"
+    ],
+    "bytes": 77384,
+    "size": [
+      10.2,
+      26.6,
+      21.7
+    ],
+    "thumb": "/thumbs/standing_picture_frame_02.webp"
+  },
   "steel_frame_shelves_01": {
     "title": "Steel Frame Shelves 01",
     "author": "James Ray Cock",
@@ -2669,6 +2993,24 @@
       7
     ]
   },
+  "tea_set_01": {
+    "kind": "model",
+    "title": "Tea Set 01",
+    "author": "James Ray Cock, Rico Cilliers, Jurita Burger",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/tea_set_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.tea_set"
+    ],
+    "bytes": 234360,
+    "size": [
+      91.8,
+      16.5,
+      48.4
+    ],
+    "thumb": "/thumbs/tea_set_01.webp"
+  },
   "terracotta_floor_tiles": {
     "title": "Terracotta Floor Tiles",
     "author": "Dimitrios Savva",
@@ -2687,6 +3029,24 @@
       39,
       26
     ]
+  },
+  "throw_pillows_01": {
+    "kind": "model",
+    "title": "Throw Pillows 01",
+    "author": "Serhii Khromov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/throw_pillows_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.pillows"
+    ],
+    "bytes": 207772,
+    "size": [
+      94,
+      45,
+      45.2
+    ],
+    "thumb": "/thumbs/throw_pillows_01.webp"
   },
   "toilet_hippostance": {
     "title": "Toilet",
@@ -2906,6 +3266,24 @@
       82
     ]
   },
+  "wicker_basket_02": {
+    "kind": "model",
+    "title": "Wicker Basket 02",
+    "author": "Kuutti Siitonen",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/wicker_basket_02",
+    "licence": "cc0",
+    "tags": [
+      "decor.basket"
+    ],
+    "bytes": 271404,
+    "size": [
+      34.7,
+      20,
+      25.4
+    ],
+    "thumb": "/thumbs/wicker_basket_02.webp"
+  },
   "wood_floor": {
     "title": "Wood Floor",
     "author": "Dimitrios Savva",
@@ -2944,6 +3322,42 @@
       206.3,
       58.1
     ]
+  },
+  "wooden_bowl_01": {
+    "kind": "model",
+    "title": "Wooden Bowl 01",
+    "author": "Oliver Harries",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/wooden_bowl_01",
+    "licence": "cc0",
+    "tags": [
+      "decor.bowl"
+    ],
+    "bytes": 147192,
+    "size": [
+      31.3,
+      9.4,
+      30.9
+    ],
+    "thumb": "/thumbs/wooden_bowl_01.webp"
+  },
+  "wooden_candlestick": {
+    "kind": "model",
+    "title": "Wooden Candlestick",
+    "author": "Josh Dean",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/wooden_candlestick",
+    "licence": "cc0",
+    "tags": [
+      "decor.candle"
+    ],
+    "bytes": 436008,
+    "size": [
+      9.7,
+      22,
+      9.9
+    ],
+    "thumb": "/thumbs/wooden_candlestick.webp"
   },
   "wooden_display_shelves_01": {
     "title": "Wooden Display Shelves 01",

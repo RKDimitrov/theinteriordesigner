@@ -106,6 +106,14 @@ export type Intent = z.infer<typeof Intent>;
 export const Priority = z.literal([1, 2, 3]);
 export type Priority = z.infer<typeof Priority>;
 
+/** How a piece is dressed with props: the seed to re-roll, the props removed, or none at all. */
+export const PieceDecor = z.object({
+  seed: z.number().int().min(0).max(999_999),
+  hidden: z.array(z.string().max(40)).max(20),
+  off: z.boolean().optional(),
+});
+export type PieceDecor = z.infer<typeof PieceDecor>;
+
 export const FurnitureItem = z.object({
   id: z.string().regex(/^[a-z0-9_-]{2,32}$/),
   category: FurnitureCategory,
@@ -142,6 +150,8 @@ export const FurnitureItem = z.object({
     .string()
     .regex(/^[a-z0-9_-]{1,80}$/)
     .optional(),
+  /** Decor props on this piece in 3D (see domain/design/decor); unset shows the default dressing. */
+  decor: PieceDecor.optional(),
   rationale: Rationale,
   /** Set by the solver pipeline so a stored design can be re-solved and repaired in priority order. */
   sizeClass: SizeClass.optional(),
