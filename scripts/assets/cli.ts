@@ -18,7 +18,7 @@ import { Catalogue, CatalogueEntry, MODEL_BUDGET_BYTES, assetPaths } from "../..
 import { Manifest, manifestIssues, type ManifestEntry } from "../../src/domain/assets/manifest.ts";
 import { bytesOf, exists, getBytes, kb, PUBLIC, ROOT } from "./io.ts";
 import { idsModule, mergeCatalogue, orphans, outputsOf } from "./plan.ts";
-import { measureModel, meanColour, optimizeModel, writeHdri, writeTexture, writeThumb } from "./process.ts";
+import { extractNodes, measureModel, meanColour, optimizeModel, writeHdri, writeTexture, writeThumb } from "./process.ts";
 import { ADAPTERS } from "./sources/index.ts";
 
 const THREE_DIR = join(ROOT, "src", "components", "planner", "three");
@@ -91,7 +91,12 @@ async function build(e: ManifestEntry): Promise<CatalogueEntry> {
       const raw = await adapter.model(e, tmp);
       verify(raw.licence);
       const out = join(PUBLIC, assetPaths.model(e.id));
-      optimizeModel(raw.file, out, e.textureSize ?? 1024);
+      let src = raw.file;
+      if (e.node) {
+        src = join(tmp, "extracted.glb");
+        await extractNodes(raw.file, src, e.node);
+      }
+      optimizeModel(src, out, e.textureSize ?? 1024);
       const bytes = bytesOf(out);
       if (bytes > MODEL_BUDGET_BYTES) throw new Error(`${e.id}: ${kb(bytes)} is over the ${kb(MODEL_BUDGET_BYTES)} model budget`);
       return { kind: "model", ...common, bytes, size: measureModel(out), thumb: await thumb(raw) };

@@ -7,6 +7,7 @@ export const DEFAULT_OPENING_WIDTH: Record<OpeningKind, number> = {
   window: 120,
   radiator: 100,
   socket: 10,
+  switch: 8,
 };
 
 /** Keep an opening of `width` fully on a wall of `wallLength`, snapped to the grid. */
@@ -32,6 +33,8 @@ export function newOpening(kind: OpeningKind, id: string, wallIndex: number, cen
       return { ...onWall, kind, height: 60, depth: 10 };
     case "socket":
       return { ...onWall, kind, height: 30, socketType: "power" };
+    case "switch":
+      return { ...onWall, kind, height: 105, gangs: 1 };
   }
 }
 

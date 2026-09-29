@@ -26,6 +26,7 @@ const ZONE_CODES: Readonly<Partial<Record<ValidationIssue["code"], readonly Keep
   WINDOW_BLOCKED: ["window"],
   RADIATOR_BLOCKED: ["radiator"],
   FIXED_ELEMENT_COLLISION: ["fixed"],
+  FIXTURE_CLEARANCE: ["fixture_front"],
 };
 
 const round = (n: number) => Math.round(n * 10) / 10;

@@ -121,7 +121,8 @@ export const THROUGH_WALL: ReadonlySet<Opening["kind"]> = new Set(["door", "wind
 
 /** Pairs of opening kinds that may not share wall span. */
 export function kindsConflict(a: Opening["kind"], b: Opening["kind"]): boolean {
-  if (a === "socket" || b === "socket") return false;
+  // Sockets and switches sit on the wall's surface, beside or under anything.
+  if (a === "socket" || b === "socket" || a === "switch" || b === "switch") return false;
   if (THROUGH_WALL.has(a) && THROUGH_WALL.has(b)) return true;
   // A radiator may sit under a window, never in a doorway.
   const pair = new Set([a, b]);

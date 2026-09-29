@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { placeFixture } from "../room/fixtures";
 import { SAMPLE_DESIGN, SAMPLE_DESIGN_BROKEN } from "@/lib/dev/sample-design";
 import { SAMPLE_ROOMS } from "@/lib/dev/samples";
 import { renterRules } from "../context/renter-rules";
@@ -111,6 +112,18 @@ describe("rules", () => {
     const office = SAMPLE_ROOMS[2]!;
     const d = { ...SAMPLE_DESIGN, furniture: [{ ...SAMPLE_DESIGN.furniture[5]!, x: 270, y: 130 }] };
     expect(codes(d, { room: office, mustKeep: [] })).toContain("FIXED_ELEMENT_COLLISION");
+  });
+
+  it("fixtures: nothing in the space in front of a WC", () => {
+    const bath = rectRoom({ name: "Bath", type: "bath", widthCm: 250, lengthCm: 200 });
+    const wc = placeFixture(bath, "wc", "wc-1", "WC", 0, 60)!;
+    const room: RoomShape = { ...bath, fixedElements: [wc] };
+    const plant = { ...SAMPLE_DESIGN.furniture[5]!, id: "plant", category: "plant" as const, x: 60, y: 90, w: 30, d: 30, h: 60, rotation: 0 };
+    const d: DesignContent = { ...SAMPLE_DESIGN, furniture: [plant], lighting: [], longevity: { ...SAMPLE_DESIGN.longevity, trendItems: [] } };
+    const found = validateDesign({ room, design: d, mustKeep: [], budgetEur: null, renter: null });
+    expect(found.map((i) => i.code)).toContain("FIXTURE_CLEARANCE");
+    const moved = { ...d, furniture: [{ ...plant, x: 200, y: 150 }] };
+    expect(validateDesign({ room, design: moved, mustKeep: [], budgetEur: null, renter: null }).map((i) => i.code)).not.toContain("FIXTURE_CLEARANCE");
   });
 
   it("wall items: must sit on a wall and not cross a door", () => {

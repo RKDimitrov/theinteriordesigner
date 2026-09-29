@@ -156,7 +156,8 @@
     "door": "Door",
     "window": "Window",
     "radiator": "Radiator",
-    "socket": "Socket"
+    "socket": "Socket",
+    "switch": "Light switch"
   },
   "SocketType": {
     "power": "Power",
@@ -857,7 +858,13 @@
     "realistic": "Realistic materials",
     "ceilingLights": "Ceiling lights on",
     "pieceLabels": "Show piece labels",
-    "foldWalls": "Fold away near walls"
+    "foldWalls": "Fold away near walls",
+    "tool_switch": "Switch",
+    "hint_switch": "Click a wall to add a light switch",
+    "tool_fixture": "Fixture",
+    "hint_fixture": "Click a wall to place the fixture chosen on the right; lights go anywhere in the room",
+    "fixtureSlanted": "Fixtures stand against straight walls only (parallel to the plan)",
+    "gangs": "Rockers"
   },
   "FitOut": {
     "title": "Doors & windows",
@@ -925,7 +932,14 @@
     "handle_knob": "Knob",
     "trim_square": "Square",
     "trim_bevel": "Bevelled",
-    "trim_ogee": "Ogee"
+    "trim_ogee": "Ogee",
+    "treatment": "Curtains & blinds",
+    "treatment_none": "None",
+    "treatment_curtains": "Curtains",
+    "treatment_roller": "Roller blind",
+    "treatment_venetian": "Venetian blind",
+    "treatmentOpen": "Open",
+    "treatmentClosed": "Closed"
   },
   "Credits": {
     "eyebrow": "Credits",
@@ -940,5 +954,27 @@
     "publicDomainHint": "Released as CC0. Credit is not required, but given gladly.",
     "fromSource": "{count, plural, one {# asset} other {# assets}} from {source}",
     "authors": "Made by {authors}"
+  },
+  "Fixture": {
+    "title": "Kitchen, bath & lights",
+    "pick": "What to place",
+    "fixedHint": "Stays where it is; designs work around it.",
+    "clearance": "{cm} cm kept free in front",
+    "model": "Model",
+    "sink": "Sink",
+    "cooker": "Cooker",
+    "wallUnits": "Wall units",
+    "kind_kitchen_run": "Kitchen run",
+    "kind_fridge": "Fridge",
+    "kind_wc": "WC",
+    "kind_basin": "Basin",
+    "kind_shower": "Shower",
+    "kind_bathtub": "Bathtub",
+    "kind_pendant": "Pendant light",
+    "kind_chandelier": "Chandelier",
+    "kind_chimney": "Chimney",
+    "kind_built_in": "Built-in",
+    "kind_column": "Column",
+    "kind_other": "Other"
   }
 }

@@ -82,6 +82,8 @@ Rules:
 
 Doors, windows, radiators and skirting are built from real joinery profiles, not stretched models, so they always match the planner's size exactly. Door handles and radiator valves are real models. See `docs/superpowers/specs/2026-09-28-openings-b1-design.md`. The apartment's design, handle and trim defaults are set in the planner's 3D Finishes tab; a dev-only "Fill sample fit-out" button there cycles through three presets.
 
+Kitchen and bathroom fixtures (kitchen runs, fridges, WCs, basins, showers, bathtubs) and ceiling lights are fixed elements placed with the planner's Fixture tool (`F`); light switches use the Switch tool (`S`); curtains and blinds are set per window in the inspector. The designer works around fixtures and keeps their clearance free (`FIXTURE_CLEARANCE`). See `docs/superpowers/specs/2026-09-29-fixtures-b2-design.md`. A pack of models can feed several manifest entries with the `node` option, which keeps only the named nodes.
+
 ## Project layout
 
 ```

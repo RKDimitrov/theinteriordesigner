@@ -17,6 +17,7 @@ import { clamp } from "@/domain/geometry/units";
 import type { Vec } from "@/domain/geometry/vec";
 import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
+import { fixtureWall } from "@/domain/room/fixtures";
 import { skirtingPieces } from "@/domain/room/opening-parts";
 import { canStand, roomAt, startSpot, type WalkRoom, wallPieces } from "@/domain/planner/walls3d";
 import type { FurnitureItem } from "@/domain/schemas/design";
@@ -27,6 +28,7 @@ import { AssetBoundary } from "./three/asset-boundary";
 import { FLOOR_TEXTURE } from "./three/assets";
 import { FLOOR_BASE, floorTexture, WALL_COLOR } from "./three/materials";
 import { Opening3D, sideSign } from "./three/openings3d";
+import { Fixed3D } from "./three/fixtures3d";
 import { SkirtingBoard } from "./three/trim3d";
 import { RealPiece } from "./three/pieces";
 import { tintFor, usePbr } from "./three/textures";
@@ -316,6 +318,15 @@ function Room3D({ placed }: { placed: Placed }) {
   }, [room.polygon]);
   const lamps = r.furniture.filter((f) => f.category === "floor_lamp").slice(0, 6);
   const trim = s.fitOut.trim;
+  // Fixtures against a wall fold away with it in the cut-away view.
+  const fixedWall = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const f of room.fixedElements) {
+      const wall = fixtureWall(walls, f);
+      if (wall) m.set(f.id, wall.index);
+    }
+    return m;
+  }, [walls, room.fixedElements]);
   const skirting = useMemo(() => (trim.skirting ? skirtingPieces(walls, room.openings, trim.skirtingHeight) : []), [walls, room.openings, trim.skirting, trim.skirtingHeight]);
 
   return (
@@ -334,6 +345,11 @@ function Room3D({ placed }: { placed: Placed }) {
       {walls.map((w) => (
         <FoldGroup key={w.index} wall={w} origin={origin}>
           <Wall3D room={room} wall={w} color={WALL_COLOR[finish.walls]} />
+          {room.fixedElements
+            .filter((f) => fixedWall.get(f.id) === w.index)
+            .map((f) => (
+              <Fixed3D key={f.id} f={f} ceiling={room.ceilingHeight} realistic={s.scene.realistic} />
+            ))}
           {skirting
             .filter((p) => p.wallIndex === w.index)
             .map((p, i) => (
@@ -346,13 +362,11 @@ function Room3D({ placed }: { placed: Placed }) {
             ))}
         </FoldGroup>
       ))}
-      {room.fixedElements.map((f) => (
-        <mesh key={f.id} position={[f.rect.x + f.rect.w / 2, Math.min(f.height, room.ceilingHeight) / 2, f.rect.y + f.rect.d / 2]} castShadow receiveShadow>
-          <boxGeometry args={[f.rect.w, Math.min(f.height, room.ceilingHeight), f.rect.d]} />
-          <meshStandardMaterial color="#e8dcc6" roughness={0.9} />
-          <Edges color={INK} threshold={15} />
-        </mesh>
-      ))}
+      {room.fixedElements
+        .filter((f) => !fixedWall.has(f.id))
+        .map((f) => (
+          <Fixed3D key={f.id} f={f} ceiling={room.ceilingHeight} realistic={s.scene.realistic} />
+        ))}
       {r.furniture.map((f) => (
         <Piece3D key={f.id} roomId={room.id} f={f} ceiling={room.ceilingHeight} showLabel={s.scene.labels} />
       ))}

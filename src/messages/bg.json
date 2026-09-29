@@ -156,7 +156,8 @@
     "door": "Врата",
     "window": "Прозорец",
     "radiator": "Радиатор",
-    "socket": "Контакт"
+    "socket": "Контакт",
+    "switch": "Ключ за осветление"
   },
   "SocketType": {
     "power": "Ток",
@@ -857,7 +858,13 @@
     "realistic": "Реалистични материали",
     "ceilingLights": "Таванно осветление",
     "pieceLabels": "Покажи имената на мебелите",
-    "foldWalls": "Скривай близките стени"
+    "foldWalls": "Скривай близките стени",
+    "tool_switch": "Ключ",
+    "hint_switch": "Щракнете върху стена, за да добавите ключ за осветление",
+    "tool_fixture": "Оборудване",
+    "hint_fixture": "Щракнете върху стена, за да поставите избраното вдясно; осветителните тела се поставят навсякъде в стаята",
+    "fixtureSlanted": "Оборудването се поставя само до прави стени (успоредни на плана)",
+    "gangs": "Клавиши"
   },
   "FitOut": {
     "title": "Врати и прозорци",
@@ -925,7 +932,14 @@
     "handle_knob": "Топка",
     "trim_square": "Прав",
     "trim_bevel": "Скосен",
-    "trim_ogee": "Профилиран"
+    "trim_ogee": "Профилиран",
+    "treatment": "Завеси и щори",
+    "treatment_none": "Няма",
+    "treatment_curtains": "Завеси",
+    "treatment_roller": "Ролетна щора",
+    "treatment_venetian": "Хоризонтални щори",
+    "treatmentOpen": "Отворени",
+    "treatmentClosed": "Затворени"
   },
   "Credits": {
     "eyebrow": "Благодарности",
@@ -940,5 +954,27 @@
     "publicDomainHint": "Публикувани като CC0. Посочването не е задължително, но го правим с удоволствие.",
     "fromSource": "{count, plural, one {# ресурс} other {# ресурса}} от {source}",
     "authors": "Автори: {authors}"
+  },
+  "Fixture": {
+    "title": "Кухня, баня и осветление",
+    "pick": "Какво да поставите",
+    "fixedHint": "Остава на мястото си; проектите се съобразяват с него.",
+    "clearance": "{cm} см свободни отпред",
+    "model": "Модел",
+    "sink": "Мивка",
+    "cooker": "Готварска печка",
+    "wallUnits": "Горни шкафове",
+    "kind_kitchen_run": "Кухненски ред",
+    "kind_fridge": "Хладилник",
+    "kind_wc": "Тоалетна",
+    "kind_basin": "Мивка за баня",
+    "kind_shower": "Душ",
+    "kind_bathtub": "Вана",
+    "kind_pendant": "Висяща лампа",
+    "kind_chandelier": "Полилей",
+    "kind_chimney": "Комин",
+    "kind_built_in": "Вграден елемент",
+    "kind_column": "Колона",
+    "kind_other": "Друго"
   }
 }

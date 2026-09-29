@@ -114,9 +114,10 @@ export function OpeningShape({ walls, opening, selected, onPointerDown }: Openin
       body = <polygon points={pts(wallBand(a, b, wall, opening.depth, 0))} className={cn("fill-primary stroke-[1.5]", selected ? "stroke-primary-foreground" : "stroke-clay-dark")} />;
       break;
     }
-    case "socket": {
+    case "socket":
+    case "switch": {
       const c = add(add(start, scale(sub(end, start), 0.5)), scale(wall.inward, WALL_CM / 2 + 6));
-      body = <circle cx={c.x} cy={c.y} r={6} className={cn("fill-primary stroke-[1.5]", selected ? "stroke-foreground" : "stroke-clay-dark")} />;
+      body = <circle cx={c.x} cy={c.y} r={opening.kind === "switch" ? 4 : 6} className={cn("fill-primary stroke-[1.5]", selected ? "stroke-foreground" : "stroke-clay-dark")} />;
       break;
     }
   }

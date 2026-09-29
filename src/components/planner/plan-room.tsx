@@ -9,7 +9,8 @@ import { m2 } from "@/domain/geometry/units";
 import { add, cross, scale, sub, type Vec } from "@/domain/geometry/vec";
 import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
-import type { Opening, Room } from "@/domain/schemas/room";
+import { isCeilingKind, kitchenSlots } from "@/domain/room/fixtures";
+import type { FixedElement, Opening, Room } from "@/domain/schemas/room";
 
 const INK = "#2b2622";
 const SHEET = "#fbf6ec";
@@ -44,8 +45,7 @@ export const RoomShell = memo(function RoomShell({ room, layers, dim }: { room: 
       <polygon points={pts(room.polygon)} fill={layers.floor ? "url(#pl-planks)" : SHEET} opacity={dim ? 0.4 : 1} data-testid={`room-floor-${room.id}`} />
       {room.fixedElements.map((f) => (
         <g key={f.id} opacity={dim ? 0.4 : 1}>
-          <rect x={f.rect.x} y={f.rect.y} width={f.rect.w} height={f.rect.d} fill="#e8dcc6" stroke={INK} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
-          <path d={`M${f.rect.x} ${f.rect.y}L${f.rect.x + f.rect.w} ${f.rect.y + f.rect.d}M${f.rect.x + f.rect.w} ${f.rect.y}L${f.rect.x} ${f.rect.y + f.rect.d}`} stroke={INK} strokeOpacity={0.45} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+          <FixedMark f={f} />
         </g>
       ))}
       {layers.walls && <path d={`M${pts(outer)}Z M${pts(room.polygon)}Z`} fill={INK} fillRule="evenodd" />}
@@ -163,7 +163,132 @@ function OpeningMark({ walls, opening }: { walls: readonly Wall[]; opening: Open
         </g>
       );
     }
+    case "switch": {
+      // The electrical symbol: a small circle with a slanted stroke.
+      const c = add(add(start, scale(sub(end, start), 0.5)), scale(wall.inward, 6));
+      const tip = add(c, add(scale(wall.inward, 8), scale(wall.dir, 5)));
+      return (
+        <g data-opening-id={opening.id}>
+          <circle cx={c.x} cy={c.y} r={3.5} fill={INK} {...thin} />
+          <line x1={c.x} y1={c.y} x2={tip.x} y2={tip.y} stroke={INK} strokeWidth={1.2} {...thin} />
+        </g>
+      );
+    }
   }
+}
+
+/**
+ * A fixed element in plan. Structure (chimney, column …) is a crossed box;
+ * fixtures get their usual plan symbols, drawn in a frame where the fixture's
+ * front faces down (+y) and then turned to its facing. Ceiling lights are
+ * dashed, since they hang above the furniture.
+ */
+function FixedMark({ f }: { f: FixedElement }) {
+  const thin = { vectorEffect: "non-scaling-stroke" as const, stroke: INK, strokeWidth: 1.2 };
+  const { x, y, w: rw, d: rd } = f.rect;
+  const cx = x + rw / 2;
+  const cy = y + rd / 2;
+  if (isCeilingKind(f.kind)) {
+    const r = Math.min(rw, rd) / 2;
+    const q = r * 0.7;
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={r} fill="none" strokeDasharray="4 3" {...thin} />
+        <path d={`M${cx - q} ${cy - q}L${cx + q} ${cy + q}M${cx + q} ${cy - q}L${cx - q} ${cy + q}`} fill="none" {...thin} />
+      </g>
+    );
+  }
+  if (f.facing === undefined) {
+    return (
+      <>
+        <rect x={x} y={y} width={rw} height={rd} fill="#e8dcc6" {...thin} />
+        <path d={`M${x} ${y}L${x + rw} ${y + rd}M${x + rw} ${y}L${x} ${y + rd}`} strokeOpacity={0.45} fill="none" {...thin} />
+      </>
+    );
+  }
+  // Local frame: width along x, depth along y, back at −d/2, front at +d/2.
+  const side = f.facing === 90 || f.facing === 270;
+  const w = side ? rd : rw;
+  const d = side ? rw : rd;
+  const body = <rect x={-w / 2} y={-d / 2} width={w} height={d} fill="#f1ebe0" {...thin} />;
+  let glyph: React.ReactNode = null;
+  switch (f.kind) {
+    case "kitchen_run": {
+      const k = f.kitchen ?? { sink: true, hob: true, oven: true, wallUnits: true };
+      const slots = kitchenSlots(w, { sink: k.sink, cooker: k.hob || k.oven });
+      glyph = (
+        <>
+          {slots.slice(1).map((sl, i) => (
+            <line key={i} x1={sl.from - w / 2} y1={-d / 2} x2={sl.from - w / 2} y2={d / 2} strokeOpacity={0.4} {...thin} />
+          ))}
+          {slots.map((sl, i) => {
+            const mx = (sl.from + sl.to) / 2 - w / 2;
+            if (sl.unit === "sink") return <rect key={`u${i}`} x={mx - 22} y={-d / 2 + 10} width={44} height={36} rx={6} fill="none" {...thin} />;
+            if (sl.unit === "cooker")
+              return (
+                <g key={`u${i}`}>
+                  {[-1, 1].flatMap((a) => [-1, 1].map((b) => <circle key={`${a}${b}`} cx={mx + a * 12} cy={b * 12} r={7} fill="none" {...thin} />))}
+                </g>
+              );
+            return null;
+          })}
+        </>
+      );
+      break;
+    }
+    case "fridge":
+      glyph = <path d={`M${-w / 2} ${-d / 2}L${w / 2} ${d / 2}`} fill="none" {...thin} />;
+      break;
+    case "wc":
+      glyph = (
+        <>
+          <rect x={-w / 2} y={-d / 2} width={w} height={16} fill="#f1ebe0" {...thin} />
+          <ellipse cx={0} cy={6} rx={w / 2 - 3} ry={d / 2 - 8} fill="none" {...thin} />
+        </>
+      );
+      break;
+    case "basin":
+      glyph = <ellipse cx={0} cy={3} rx={w / 2 - 6} ry={d / 2 - 8} fill="none" {...thin} />;
+      break;
+    case "shower":
+      glyph = (
+        <>
+          <path d={`M${-w / 2} ${-d / 2}L${w / 2} ${d / 2}M${w / 2} ${-d / 2}L${-w / 2} ${d / 2}`} strokeOpacity={0.5} fill="none" {...thin} />
+          <circle cx={0} cy={0} r={3} fill={INK} />
+        </>
+      );
+      break;
+    case "bathtub":
+      glyph = (
+        <>
+          <rect x={-w / 2 + 6} y={-d / 2 + 6} width={w - 12} height={d - 12} rx={Math.min(20, d / 3)} fill="none" {...thin} />
+          <circle cx={-w / 2 + 22} cy={0} r={2.5} fill={INK} />
+        </>
+      );
+      break;
+  }
+  return (
+    <g transform={`translate(${cx} ${cy}) rotate(${f.facing - 180})`}>
+      {body}
+      {glyph}
+    </g>
+  );
+}
+
+/** Invisible hit areas for fixed elements, with the selection outline. */
+export function FixedHits({ room, onDown, selectedId }: { room: Room; onDown: (f: FixedElement, e: React.PointerEvent) => void; selectedId: string | null }) {
+  return (
+    <g>
+      {room.fixedElements.map((f) => (
+        <g key={f.id} data-testid={`fixed-${f.id}`} onPointerDown={(e) => onDown(f, e)} style={{ cursor: "pointer" }}>
+          <rect x={f.rect.x} y={f.rect.y} width={f.rect.w} height={f.rect.d} fill="transparent" />
+          {f.id === selectedId && (
+            <rect x={f.rect.x - 5} y={f.rect.y - 5} width={f.rect.w + 10} height={f.rect.d + 10} fill="none" stroke={CLAY} strokeWidth={1.3} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" />
+          )}
+        </g>
+      ))}
+    </g>
+  );
 }
 
 /** One swinging leaf: the leaf itself and its dashed swing arc. Glazed leaves are drawn hollow; a bifold shows its fold. */

@@ -7,7 +7,7 @@ import type { ValidationIssue } from "../schemas/validation-issue";
 import { bedAccessRule, diningRule } from "./rules/bed-dining";
 import { boundsRule } from "./rules/bounds";
 import { budgetRule, longevityRule, mustKeepRule, paletteRule, renterRule } from "./rules/budget-style";
-import { doorsRule, fixedElementsRule, radiatorsRule, windowsRule } from "./rules/openings";
+import { doorsRule, fixedElementsRule, fixtureClearanceRule, radiatorsRule, windowsRule } from "./rules/openings";
 import { overlapRule } from "./rules/overlap";
 import { referencesRule } from "./rules/references";
 import { walkwayRule } from "./rules/walkway";
@@ -25,6 +25,7 @@ export const RULES: readonly Rule[] = [
   windowsRule,
   radiatorsRule,
   fixedElementsRule,
+  fixtureClearanceRule,
   wallItemsRule,
   walkwayRule,
   bedAccessRule,
@@ -44,6 +45,7 @@ export const LAYOUT_RULES: readonly Rule[] = [
   windowsRule,
   radiatorsRule,
   fixedElementsRule,
+  fixtureClearanceRule,
   wallItemsRule,
   walkwayRule,
   bedAccessRule,

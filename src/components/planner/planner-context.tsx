@@ -369,7 +369,9 @@ export function removeSelected(p: Plan, sel: NonNullable<PlannerState["selection
         ? r
         : sel.kind === "item"
           ? { ...r, furniture: r.furniture.filter((f) => f.id !== sel.id) }
-          : { ...r, room: { ...r.room, openings: r.room.openings.filter((o) => o.id !== sel.id) } },
+          : sel.kind === "fixed"
+            ? { ...r, room: { ...r.room, fixedElements: r.room.fixedElements.filter((f) => f.id !== sel.id) } }
+            : { ...r, room: { ...r.room, openings: r.room.openings.filter((o) => o.id !== sel.id) } },
     ),
   };
 }

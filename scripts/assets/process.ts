@@ -1,5 +1,8 @@
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
+import { type Node, NodeIO } from "@gltf-transform/core";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import { clearNodeParent, prune } from "@gltf-transform/functions";
 import sharp from "sharp";
 import type { MapName } from "../../src/domain/assets/manifest.ts";
 import { bytesOf, PUBLIC, writeFile } from "./io.ts";
@@ -13,6 +16,31 @@ export function optimizeModel(src: string, out: string, textureSize: number): vo
   execFileSync("npx", [...GLTF_TRANSFORM, "optimize", src, out,
     "--compress", "meshopt", "--texture-compress", "webp", "--texture-size", String(textureSize)],
     { stdio: "ignore", ...SHELL });
+}
+
+/**
+ * Writes a copy of `src` holding only the nodes whose name matches `pattern`
+ * (the outermost match of each branch), keeping their world placement.
+ */
+export async function extractNodes(src: string, out: string, pattern: string): Promise<void> {
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+  const doc = await io.read(src);
+  const root = doc.getRoot();
+  const re = new RegExp(pattern);
+  const matches = root.listNodes().filter((n) => re.test(n.getName()));
+  const isInside = (n: Node) => {
+    for (let p = n.getParentNode(); p; p = p.getParentNode()) if (matches.includes(p)) return true;
+    return false;
+  };
+  const keep = matches.filter((n) => !isInside(n));
+  if (!keep.length) throw new Error(`no node matches ${pattern}: ${root.listNodes().map((n) => n.getName()).filter(Boolean).slice(0, 40).join(", ")}`);
+  for (const n of keep) clearNodeParent(n);
+  for (const scene of root.listScenes()) {
+    for (const child of scene.listChildren()) if (!keep.includes(child)) scene.removeChild(child);
+    for (const n of keep) scene.addChild(n);
+  }
+  await doc.transform(prune());
+  await io.write(out, doc);
 }
 
 /** Scene bounds from `gltf-transform inspect`, in cm, as [width x, height y, depth z]. */

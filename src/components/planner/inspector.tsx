@@ -11,6 +11,7 @@ import type { Opening } from "@/domain/schemas/room";
 import { DesignerTab } from "./designer-tab";
 import { removeSelected, usePlanner } from "./planner-context";
 import { OpeningStyleFields } from "./fit-out-controls";
+import { FixedBlock, FixturePicker } from "./fixture-controls";
 import { BASIC_LAYERS, type LayerId, LAYERS, mapItem, mapRoom } from "./state";
 
 const LAYER_ICON: Record<LayerId, LucideIcon> = {
@@ -42,6 +43,7 @@ export function Inspector2D() {
       <div className="pl-pane" role="tabpanel">
         {s.tab2d === "plan" ? (
           <>
+            {s.tool === "fixture" && <FixturePicker />}
             <SelectionBlock />
             <LayersBlock />
           </>
@@ -68,6 +70,10 @@ export function SelectionBlock() {
     const o = room.room.openings.find((x) => x.id === sel.id);
     if (o) return <OpeningBlock roomId={room.room.id} o={o} wallLength={wallsOf(room.room.polygon)[o.wallIndex]?.length ?? 0} ceiling={room.room.ceilingHeight} />;
   }
+  if (sel?.kind === "fixed" && room) {
+    const f = room.room.fixedElements.find((x) => x.id === sel.id);
+    if (f) return <FixedBlock roomId={room.room.id} f={f} ceiling={room.room.ceilingHeight} />;
+  }
   return (
     <div className="pl-blk" data-empty="">
       <div className="pl-empty">
@@ -83,7 +89,7 @@ export function SelectionBlock() {
   );
 }
 
-function NumField({ label, value, unit, min, max, onChange, testId }: { label: string; value: number; unit: string; min?: number; max?: number; onChange: (v: number) => void; testId?: string }) {
+export function NumField({ label, value, unit, min, max, onChange, testId }: { label: string; value: number; unit: string; min?: number; max?: number; onChange: (v: number) => void; testId?: string }) {
   const [text, setText] = useState(String(Math.round(value)));
   const [prev, setPrev] = useState(value);
   if (prev !== value) {
@@ -235,6 +241,15 @@ function OpeningBlock({ roomId, o, wallLength, ceiling }: { roomId: string; o: O
           {(["power", "tv", "network"] as const).map((st) => (
             <button key={st} type="button" role="radio" aria-checked={o.socketType === st} style={{ flex: 1 }} onClick={() => set({ socketType: st })}>
               {tst(st)}
+            </button>
+          ))}
+        </div>
+      )}
+      {o.kind === "switch" && (
+        <div className="pl-tg" role="radiogroup" aria-label={t("gangs")}>
+          {([1, 2, 3] as const).map((g) => (
+            <button key={g} type="button" role="radio" aria-checked={o.gangs === g} style={{ flex: 1 }} onClick={() => set({ gangs: g, width: 8 * g })}>
+              {g}
             </button>
           ))}
         </div>

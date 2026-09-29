@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Box, BrickWall, Columns2, DoorClosed, DoorOpen, Hand, Heater, MousePointer2, MoveHorizontal, PlugZap, Ruler, Square, StickyNote, Type, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bath, Box, BrickWall, Columns2, DoorClosed, DoorOpen, Hand, Heater, MousePointer2, MoveHorizontal, PlugZap, Ruler, Square, StickyNote, ToggleLeft, Type, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ const ICON: Record<Tool, LucideIcon> = {
   pass: DoorClosed,
   radiator: Heater,
   socket: PlugZap,
+  switch: ToggleLeft,
+  fixture: Bath,
   measure: Ruler,
   dimension: MoveHorizontal,
   label: Type,
@@ -25,11 +27,11 @@ const ICON: Record<Tool, LucideIcon> = {
 };
 
 /** Tools the Simple view hides behind "More tools". */
-const ADVANCED: ReadonlySet<Tool> = new Set(["pass", "radiator", "socket", "measure", "dimension", "label", "note"]);
+const ADVANCED: ReadonlySet<Tool> = new Set(["pass", "radiator", "socket", "switch", "measure", "dimension", "label", "note"]);
 
 const GROUPS: readonly { n: string; key: "group1" | "group2" | "group4"; tools: readonly Tool[] }[] = [
   { n: "01", key: "group1", tools: ["wall", "room"] },
-  { n: "02", key: "group2", tools: ["door", "window", "pass", "radiator", "socket"] },
+  { n: "02", key: "group2", tools: ["door", "window", "pass", "radiator", "socket", "switch", "fixture"] },
   { n: "04", key: "group4", tools: ["measure", "dimension", "label", "note"] },
 ];
 

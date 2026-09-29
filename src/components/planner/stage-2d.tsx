@@ -11,19 +11,20 @@ import { distance, sub, type Vec } from "@/domain/geometry/vec";
 import { nearestWall, wallsOf } from "@/domain/geometry/walls";
 import { newPlannerItem, snapTo, SYMBOL_OF, turn } from "@/domain/planner/items";
 import { roomsBounds } from "@/domain/planner/layout";
+import { FIXTURE_SPEC, placeCeilingFixture, placeFixture } from "@/domain/room/fixtures";
 import { clampOffset, newOpening, newPassThrough, nextId, withFitOutStyle } from "@/domain/room/openings-edit";
 import type { FurnitureItem } from "@/domain/schemas/design";
-import type { Opening, OpeningKind } from "@/domain/schemas/room";
+import type { FixedElement, Opening, OpeningKind } from "@/domain/schemas/room";
 import { createRoomAction } from "@/server/actions/rooms";
 import { PX_PER_CM, removeSelected, roomBox, SNAP_CM, usePlanner, useView, ZOOM_MAX, ZOOM_MIN } from "./planner-context";
-import { FloorPattern, OpeningHits, RoomDimensions, RoomLabel, RoomShell, WallGrip } from "./plan-room";
+import { FixedHits, FloorPattern, OpeningHits, RoomDimensions, RoomLabel, RoomShell, WallGrip } from "./plan-room";
 import { inScope, mapItem, mapRoom, type Plan, type PlanRoom, type Tool } from "./state";
 import { PieceSymbol } from "./symbols";
 
 const CLAY = "#c8794a";
 const CLAY_DARK = "#8e4f2f";
 const FIT_PAD_CM = 85;
-const OPENING_TOOLS: Partial<Record<Tool, OpeningKind | "pass">> = { door: "door", window: "window", pass: "pass", radiator: "radiator", socket: "socket" };
+const OPENING_TOOLS: Partial<Record<Tool, OpeningKind | "pass">> = { door: "door", window: "window", pass: "pass", radiator: "radiator", socket: "socket", switch: "switch" };
 
 type Drag =
   | { kind: "pan"; start: Vec; pan0: Vec; moved: boolean }
@@ -31,7 +32,9 @@ type Drag =
   | { kind: "rotate"; roomId: string; id: string; center: Vec }
   | { kind: "opening"; roomId: string; id: string; start: Vec; offset0: number; moved: boolean }
   | { kind: "room"; roomId: string; start: Vec; origin0: Vec; moved: boolean }
-  | { kind: "rect"; start: Vec; cur: Vec };
+  | { kind: "rect"; start: Vec; cur: Vec }
+  /** A press that only selected something; its pointer-up must not clear the selection. */
+  | { kind: "press" };
 
 interface Popover {
   kind: "label" | "note";
@@ -44,6 +47,7 @@ interface Popover {
 export function Stage2D() {
   const t = useTranslations("Planner");
   const tk = useTranslations("OpeningKind");
+  const tf = useTranslations("Fixture");
   const { s, dispatch, data, len, unit, pieces, pieceName, toast } = usePlanner();
   const { v, setV, stage } = useView();
   const paper = useRef<HTMLDivElement>(null);
@@ -188,6 +192,30 @@ export function Stage2D() {
     dispatch({ type: "select", selection: { kind: "opening", roomId: room.room.id, id } });
   };
 
+  /** Kitchen and bath fixtures stand against the clicked wall; lights hang where clicked. */
+  const addFixture = (w: Vec) => {
+    const kind = s.fixtureKind;
+    const label = tf(`kind_${kind}`);
+    if (FIXTURE_SPEC[kind].mount === "ceiling") {
+      const target = roomAt(w);
+      if (!target) return toast(t("placeInside"));
+      const id = nextId(kind, target.room.fixedElements.map((f) => f.id));
+      const fixed = placeCeilingFixture(kind as "pendant" | "chandelier", id, label, snapV(local(target.room.id, w)));
+      return commitFixed(target.room.id, fixed);
+    }
+    const hit = wallHit(w);
+    if (!hit) return toast(t("clickWall"));
+    const { room, hit: h } = hit;
+    const id = nextId(kind, room.room.fixedElements.map((f) => f.id));
+    const fixed = placeFixture(room.room, kind, id, label, h.wall.index, h.offset);
+    if (!fixed) return toast(t("fixtureSlanted"));
+    commitFixed(room.room.id, fixed);
+  };
+  const commitFixed = (roomId: string, fixed: FixedElement) => {
+    dispatch({ type: "edit", fn: (pl) => mapRoom(pl, roomId, (r) => ({ ...r, room: { ...r.room, fixedElements: [...r.room.fixedElements, fixed] } })) });
+    dispatch({ type: "select", selection: { kind: "fixed", roomId, id: fixed.id } });
+  };
+
   const createRoom = async (polygonWorld: Vec[]) => {
     const poly = toClockwise(polygonWorld.map(snapV));
     const b = bbox(poly);
@@ -310,6 +338,7 @@ export function Stage2D() {
     setPanning(false);
     if (paper.current?.hasPointerCapture(e.pointerId)) paper.current.releasePointerCapture(e.pointerId);
     const w = toWorld(eventPoint(e));
+    if (d?.kind === "press") return;
     if (d && d.kind !== "pan" && d.kind !== "rect") {
       dispatch({ type: "gesture-end" });
       return;
@@ -328,6 +357,7 @@ export function Stage2D() {
     // A click on the paper.
     const kind = OPENING_TOOLS[tool];
     if (kind) return addOpening(w, kind);
+    if (tool === "fixture") return addFixture(w);
     switch (tool) {
       case "select":
       case "pan":
@@ -398,6 +428,14 @@ export function Stage2D() {
     select({ kind: "opening", roomId: r.room.id, id: o.id });
     dispatch({ type: "gesture-start" });
     drag.current = { kind: "opening", roomId: r.room.id, id: o.id, start: toWorld(eventPoint(e)), offset0: o.offset, moved: false };
+  };
+
+  const startFixedDown = (r: PlanRoom, f: FixedElement, e: React.PointerEvent) => {
+    if (tool !== "select" || e.button !== 0) return;
+    e.stopPropagation();
+    paper.current?.setPointerCapture(e.pointerId);
+    select({ kind: "fixed", roomId: r.room.id, id: f.id });
+    drag.current = { kind: "press" };
   };
 
   const startRoomDrag = (r: PlanRoom, e: React.PointerEvent) => {
@@ -531,7 +569,7 @@ export function Stage2D() {
             {reference && bounds && !hidden.has("reference") && (
               <image href={reference} x={bounds.x} y={bounds.y} width={bounds.w} height={bounds.d} opacity={0.45} preserveAspectRatio="xMidYMid meet" />
             )}
-            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} />
+            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onFixedDown={startFixedDown} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} />
             {suggestions.map(({ roomId, sg }) => {
               const o = plan.origins[roomId] ?? { x: 0, y: 0 };
               const f = sg.item!;
@@ -738,6 +776,7 @@ interface RoomsLayerProps {
   onItemDown: (r: PlanRoom, f: FurnitureItem, e: React.PointerEvent) => void;
   onRotateDown: (r: PlanRoom, f: FurnitureItem, e: React.PointerEvent) => void;
   onOpeningDown: (r: PlanRoom, o: Opening, e: React.PointerEvent) => void;
+  onFixedDown: (r: PlanRoom, f: FixedElement, e: React.PointerEvent) => void;
   onRoomDown: (r: PlanRoom, e: React.PointerEvent) => void;
   len: (cm: number) => string;
   kindLabel: (o: Opening) => string;
@@ -746,7 +785,7 @@ interface RoomsLayerProps {
 const LAYER_ORDER: Record<FurnitureItem["placement"], number> = { floor_covering: 0, floor: 1, wall: 2, ceiling: 3 };
 
 /** Every room: shell, furniture, labels, dimensions and the selection box. */
-const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onRoomDown, len, kindLabel }: RoomsLayerProps) {
+const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onRoomDown, len, kindLabel }: RoomsLayerProps) {
   const off = new Set(hidden);
   const layers = { walls: !off.has("walls"), openings: !off.has("openings"), electrical: !off.has("electrical"), floor: !off.has("floor") };
   return (
@@ -757,6 +796,10 @@ const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection,
         return (
           <g key={r.room.id} transform={`translate(${o.x} ${o.y})`} data-room={r.room.id}>
             <RoomShell room={r.room} layers={layers} dim={!active} />
+            {/* Under the furniture, so a piece standing over a fixture still gets the click. */}
+            {active && tool === "select" && (
+              <FixedHits room={r.room} onDown={(f, e) => onFixedDown(r, f, e)} selectedId={selection?.kind === "fixed" && selection.roomId === r.room.id ? selection.id : null} />
+            )}
             {!off.has("furniture") &&
               [...r.furniture]
                 .sort((a, b) => LAYER_ORDER[a.placement] - LAYER_ORDER[b.placement])

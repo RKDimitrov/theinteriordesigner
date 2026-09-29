@@ -27,6 +27,9 @@ export function sketchfabThumb(m: SketchfabModel): string | undefined {
   return (images.find((i) => i.width >= 256) ?? images.at(-1))?.url;
 }
 
+/** Packs feed several manifest entries (see `node`); download each model once per run. */
+const downloads = new Map<string, Promise<{ glb: Uint8Array } | { files: Record<string, Uint8Array> }>>();
+
 export const sketchfab: Adapter = {
   async model(e, tmp) {
     const token = secret("SKETCHFAB_TOKEN");
@@ -36,15 +39,24 @@ export const sketchfab: Adapter = {
     // Stop before downloading anything we could not ship.
     if (!licence) throw new Error(`${e.ref}: licence "${meta.license?.slug ?? "none"}" may not be shipped`);
     if (!meta.isDownloadable) throw new Error(`${e.ref} is not downloadable`);
-    const dl = await getJson<Download>(`${API}/models/${e.ref}/download`, { Authorization: `Token ${token}` });
     const thumbUrl = sketchfabThumb(meta);
-    if (dl.glb) {
+    if (!downloads.has(e.ref)) {
+      downloads.set(
+        e.ref,
+        getJson<Download>(`${API}/models/${e.ref}/download`, { Authorization: `Token ${token}` }).then(async (dl) => {
+          if (dl.glb) return { glb: await getBytes(dl.glb.url) };
+          if (!dl.gltf) throw new Error(`${e.ref} offers no glTF download`);
+          return { files: unzip(await getBytes(dl.gltf.url)) };
+        }),
+      );
+    }
+    const got = await downloads.get(e.ref)!;
+    if ("glb" in got) {
       const file = join(tmp, "model.glb");
-      writeFile(file, await getBytes(dl.glb.url));
+      writeFile(file, got.glb);
       return { file, licence, thumbUrl };
     }
-    if (!dl.gltf) throw new Error(`${e.ref} offers no glTF download`);
-    const files = unzip(await getBytes(dl.gltf.url));
+    const { files } = got;
     for (const [name, data] of Object.entries(files)) writeFile(join(tmp, name), data);
     const main = pickOne(Object.keys(files), new RegExp(e.pick ?? "\\.gl(b|tf)$", "i"), "glTF");
     return { file: join(tmp, main), licence, thumbUrl };

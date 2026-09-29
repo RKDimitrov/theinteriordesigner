@@ -122,3 +122,24 @@ export const fixedElementsRule: Rule = ({ zones, floorItems, footprints, room })
   }
   return issues;
 };
+
+/** Kitchen and bathroom fixtures need their activity space in front kept free (a WC 70 cm, a kitchen run 100 cm). */
+export const fixtureClearanceRule: Rule = ({ zones, floorItems, footprints, room }) => {
+  const issues: ValidationIssue[] = [];
+  for (const z of zones) {
+    if (z.kind !== "fixture_front") continue;
+    const label = room.fixedElements.find((e) => e.id === z.refId)?.label ?? z.refId;
+    for (const f of floorItems) {
+      const o = convexOverlap(footprints.get(f.id)!, z.polygon);
+      if (!o) continue;
+      issues.push({
+        code: "FIXTURE_CLEARANCE",
+        severity: "error",
+        itemIds: [f.id],
+        message: `${f.name} stands in the space needed in front of ${label}`,
+        hint: moveHint(f.name, o),
+      });
+    }
+  }
+  return issues;
+};

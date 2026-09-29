@@ -65,6 +65,13 @@ export const Door = z.object({
   finish: DoorFinish.optional(),
 });
 
+/** Curtains or blinds on a window, open or closed. */
+export const WindowTreatment = z.object({
+  kind: z.enum(["curtains", "roller", "venetian"]),
+  closed: z.boolean().default(false),
+});
+export type WindowTreatment = z.infer<typeof WindowTreatment>;
+
 export const Window = z.object({
   ...OnWall,
   kind: z.literal("window"),
@@ -73,6 +80,7 @@ export const Window = z.object({
   openable: z.boolean().default(true),
   style: WindowStyle.optional(),
   design: WindowDesign.optional(),
+  treatment: WindowTreatment.optional(),
   /** Frame finish; overrides the apartment default. */
   finish: FrameFinish.optional(),
 });
@@ -93,21 +101,52 @@ export const Socket = z.object({
   socketType: z.enum(["power", "tv", "network"]).default("power"),
 });
 
-export const Opening = z.discriminatedUnion("kind", [Door, Window, Radiator, Socket]);
+/** A light switch; `gangs` is how many rockers it has. */
+export const Switch = z.object({
+  ...OnWall,
+  kind: z.literal("switch"),
+  height: Cm.default(105),
+  gangs: z.number().int().min(1).max(3).default(1),
+});
+
+export const Opening = z.discriminatedUnion("kind", [Door, Window, Radiator, Socket, Switch]);
 export type Opening = z.infer<typeof Opening>;
 export type Door = z.infer<typeof Door>;
 export type Window = z.infer<typeof Window>;
 export type Radiator = z.infer<typeof Radiator>;
 export type Socket = z.infer<typeof Socket>;
+export type Switch = z.infer<typeof Switch>;
 export type OpeningKind = Opening["kind"];
+
+/**
+ * Fixed elements the design must work around. The first five are structure;
+ * the rest are kitchen and bathroom fixtures and ceiling lights, placed in
+ * the planner (see src/domain/room/fixtures.ts).
+ */
+export const FixedKind = z.enum(["chimney", "built_in", "column", "kitchen_run", "other", "fridge", "wc", "basin", "shower", "bathtub", "pendant", "chandelier"]);
+export type FixedKind = z.infer<typeof FixedKind>;
+
+/** What a kitchen run holds besides base units. */
+export const KitchenOptions = z.object({
+  sink: z.boolean().default(true),
+  hob: z.boolean().default(true),
+  oven: z.boolean().default(true),
+  wallUnits: z.boolean().default(true),
+});
+export type KitchenOptions = z.infer<typeof KitchenOptions>;
 
 export const FixedElement = z.object({
   id: Id,
   label: z.string().trim().min(1).max(60),
-  kind: z.enum(["chimney", "built_in", "column", "kitchen_run", "other"]),
+  kind: FixedKind,
   /** Axis-aligned footprint in room coordinates. */
   rect: z.object({ x: z.number(), y: z.number(), w: PositiveCm, d: PositiveCm }),
   height: PositiveCm,
+  /** Plan angle the fixture's front faces (clockwise from plan up), for fixtures placed against a wall. */
+  facing: z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]).optional(),
+  kitchen: KitchenOptions.optional(),
+  /** Asset id of the model chosen for this fixture; a default is used when unset. */
+  model: z.string().max(80).optional(),
 });
 export type FixedElement = z.infer<typeof FixedElement>;
 

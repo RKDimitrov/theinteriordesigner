@@ -145,6 +145,22 @@ export function OpeningStyleFields({ o, ceiling, set }: { o: Opening; ceiling: n
       <>
         <StylePicker label={t("type")} value={windowStyle(o)} options={WindowStyle.options} name={(v) => t(`window_${v}`)} onPick={(v) => set(applyWindowStyle(o, v, ceiling))} />
         <StylePicker label={t("design")} value={windowDesign(o, s.fitOut)} options={WindowDesign.options} name={(v) => t(`windowDesign_${v}`)} onPick={(design) => set({ ...o, design })} />
+        <StylePicker
+          label={t("treatment")}
+          value={o.treatment?.kind ?? "none"}
+          options={["none", "curtains", "roller", "venetian"] as const}
+          name={(v) => t(`treatment_${v}`)}
+          onPick={(kind) => set({ ...o, treatment: kind === "none" ? undefined : { kind, closed: o.treatment?.closed ?? false } })}
+        />
+        {o.treatment && (
+          <div className="pl-field pl-tg" role="radiogroup" aria-label={t("treatment")}>
+            {([false, true] as const).map((closed) => (
+              <button key={String(closed)} type="button" role="radio" aria-checked={o.treatment?.closed === closed} style={{ flex: 1 }} onClick={() => o.treatment && set({ ...o, treatment: { ...o.treatment, closed } })}>
+                {t(closed ? "treatmentClosed" : "treatmentOpen")}
+              </button>
+            ))}
+          </div>
+        )}
         <FinishPicker label={t("frame")} value={o.finish} looks={FRAME_LOOK} name={(v) => t(`frameFinish_${v}`)} fallback={s.fitOut.windows.finish} onPick={(finish) => set({ ...o, finish })} />
       </>
     );

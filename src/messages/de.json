@@ -156,7 +156,8 @@
     "door": "Tür",
     "window": "Fenster",
     "radiator": "Heizkörper",
-    "socket": "Steckdose"
+    "socket": "Steckdose",
+    "switch": "Lichtschalter"
   },
   "SocketType": {
     "power": "Strom",
@@ -857,7 +858,13 @@
     "realistic": "Realistische Materialien",
     "ceilingLights": "Deckenlicht an",
     "pieceLabels": "Namen der Stücke zeigen",
-    "foldWalls": "Nahe Wände wegklappen"
+    "foldWalls": "Nahe Wände wegklappen",
+    "tool_switch": "Schalter",
+    "hint_switch": "Auf eine Wand klicken, um einen Lichtschalter zu setzen",
+    "tool_fixture": "Einbau",
+    "hint_fixture": "Auf eine Wand klicken, um das rechts gewählte Element zu setzen; Leuchten gehen überall im Raum",
+    "fixtureSlanted": "Einbauten stehen nur an geraden Wänden (parallel zum Plan)",
+    "gangs": "Wippen"
   },
   "FitOut": {
     "title": "Türen & Fenster",
@@ -925,7 +932,14 @@
     "handle_knob": "Knauf",
     "trim_square": "Kantig",
     "trim_bevel": "Abgeschrägt",
-    "trim_ogee": "Karnies"
+    "trim_ogee": "Karnies",
+    "treatment": "Vorhänge & Rollos",
+    "treatment_none": "Keine",
+    "treatment_curtains": "Vorhänge",
+    "treatment_roller": "Rollo",
+    "treatment_venetian": "Jalousie",
+    "treatmentOpen": "Offen",
+    "treatmentClosed": "Geschlossen"
   },
   "Credits": {
     "eyebrow": "Credits",
@@ -940,5 +954,27 @@
     "publicDomainHint": "Veröffentlicht als CC0. Eine Nennung ist nicht nötig, erfolgt aber gern.",
     "fromSource": "{count, plural, one {# Asset} other {# Assets}} von {source}",
     "authors": "Erstellt von {authors}"
+  },
+  "Fixture": {
+    "title": "Küche, Bad & Leuchten",
+    "pick": "Was setzen",
+    "fixedHint": "Bleibt an seinem Platz; Entwürfe planen darum herum.",
+    "clearance": "{cm} cm davor bleiben frei",
+    "model": "Modell",
+    "sink": "Spüle",
+    "cooker": "Herd",
+    "wallUnits": "Hängeschränke",
+    "kind_kitchen_run": "Küchenzeile",
+    "kind_fridge": "Kühlschrank",
+    "kind_wc": "WC",
+    "kind_basin": "Waschbecken",
+    "kind_shower": "Dusche",
+    "kind_bathtub": "Badewanne",
+    "kind_pendant": "Pendelleuchte",
+    "kind_chandelier": "Kronleuchter",
+    "kind_chimney": "Kamin",
+    "kind_built_in": "Einbau",
+    "kind_column": "Säule",
+    "kind_other": "Sonstiges"
   }
 }

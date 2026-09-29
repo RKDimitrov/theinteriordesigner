@@ -10,6 +10,7 @@ import { FinishMat, GlassMat, Ink } from "./finish-materials";
 import { GLAZING_BEAD, SASH, WINDOW_BOARD, WINDOW_FRAME } from "./profiles";
 import { rectPath } from "./sweep";
 import { Board, Swept } from "./swept";
+import { Treatment3D } from "./treatments3d";
 
 /*
  * Windows from real profiles: a rebated frame and sloped sashes swept round
@@ -63,6 +64,7 @@ export function Window3D({ win, ceiling, fitOut, realistic, side }: { win: Windo
         ))}
       </group>
       {y0 > 0 && <Sills w={win.width} realistic={realistic} />}
+      <Treatment3D win={win} h={h} ceiling={ceiling} realistic={realistic} />
     </group>
   );
 }

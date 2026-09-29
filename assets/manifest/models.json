@@ -232,5 +232,309 @@
     "tags": [
       "hardware.radiator_valve"
     ]
+  },
+  {
+    "id": "kitchen_fridge_mora",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "ee914a843e1a4b4cb8bfe3e512a73b68",
+    "title": "Kitchen Modular: fridge",
+    "author": "Mora",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.fridge"
+    ],
+    "node": "^MSH_Fridge$"
+  },
+  {
+    "id": "kitchen_stove_mora",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "ee914a843e1a4b4cb8bfe3e512a73b68",
+    "title": "Kitchen Modular: stove",
+    "author": "Mora",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.hob_unit"
+    ],
+    "node": "^MSH_Stove$"
+  },
+  {
+    "id": "kitchen_base_mora",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "ee914a843e1a4b4cb8bfe3e512a73b68",
+    "title": "Kitchen Modular: base cupboard",
+    "author": "Mora",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.base_unit"
+    ],
+    "node": "^MSH_Cupboard$"
+  },
+  {
+    "id": "kitchen_sink_mora",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "ee914a843e1a4b4cb8bfe3e512a73b68",
+    "title": "Kitchen Modular: sink unit",
+    "author": "Mora",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.sink_unit"
+    ],
+    "node": "^MSH_Sink$"
+  },
+  {
+    "id": "kitchen_wall_mora",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "ee914a843e1a4b4cb8bfe3e512a73b68",
+    "title": "Kitchen Modular: wall cupboard",
+    "author": "Mora",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.wall_unit"
+    ],
+    "node": "^MSH_Cupboar_Small$"
+  },
+  {
+    "id": "fridge_grey_glowbox",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "2071bda681b642218b6829b82e4fd93b",
+    "title": "Refrigerator - Grey Polished Metal",
+    "author": "Glowbox 3D",
+    "sourceUrl": "https://sketchfab.com/3d-models/refrigerator-grey-polished-metal-2071bda681b642218b6829b82e4fd93b",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.fridge"
+    ]
+  },
+  {
+    "id": "oven_builtin_domino",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "50be70931dcb4a838b906382233a28f1",
+    "title": "Built-in oven",
+    "author": "3DDomino",
+    "sourceUrl": "https://sketchfab.com/3d-models/built-in-oven-50be70931dcb4a838b906382233a28f1",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.oven"
+    ]
+  },
+  {
+    "id": "hood_chimney_ge",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "e7408d63175b4d76b8e7b2ca7435fc10",
+    "title": "GE Stainless Steel Chimney Style Range Hood",
+    "author": "allenbranch",
+    "sourceUrl": "https://sketchfab.com/3d-models/ge-stainless-steel-chimney-stylerange-hood-e7408d63175b4d76b8e7b2ca7435fc10",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.hood"
+    ]
+  },
+  {
+    "id": "faucet_renend",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "5398e5f2d94a41a6a39be9c27ff4ce54",
+    "title": "Faucet",
+    "author": "Renend Studio",
+    "sourceUrl": "https://sketchfab.com/3d-models/faucet-5398e5f2d94a41a6a39be9c27ff4ce54",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.faucet"
+    ]
+  },
+  {
+    "id": "toilet_hippostance",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "132a8ee2af3a40d39d270fbed3d3666c",
+    "title": "Toilet",
+    "author": "HippoStance",
+    "sourceUrl": "https://sketchfab.com/3d-models/toilet-132a8ee2af3a40d39d270fbed3d3666c",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.wc"
+    ]
+  },
+  {
+    "id": "vanity_blendffnike",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "e7c2bddaebe94dd0a28fd89981de5195",
+    "title": "Sink with Faucet",
+    "author": "blendffnike",
+    "sourceUrl": "https://sketchfab.com/3d-models/sink-with-faucet-e7c2bddaebe94dd0a28fd89981de5195",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.basin"
+    ]
+  },
+  {
+    "id": "basin_stand_renviro",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "b02727808f1f46468e071edfd291060e",
+    "title": "Wash Basin Stand",
+    "author": "Ren Viro Store",
+    "sourceUrl": "https://sketchfab.com/3d-models/wash-basin-stand-b02727808f1f46468e071edfd291060e",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.basin"
+    ]
+  },
+  {
+    "id": "bathtub_3ddominator",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "3350f81025974c53808a2efd2b31d4fd",
+    "title": "Bathtub",
+    "author": "3ddominator",
+    "sourceUrl": "https://sketchfab.com/3d-models/bathtub-3350f81025974c53808a2efd2b31d4fd",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.bathtub"
+    ]
+  },
+  {
+    "id": "bathtub_igrium",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "ba60ba7d0a4a4b6899021741f450395b",
+    "title": "Photorealistic Bathtub",
+    "author": "Igrium",
+    "sourceUrl": "https://sketchfab.com/3d-models/photorealistic-bathtub-ba60ba7d0a4a4b6899021741f450395b",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.bathtub"
+    ]
+  },
+  {
+    "id": "shower_enclosure_binhnham",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "785061877f824d04bb86ad0018e9e4d8",
+    "title": "Shower Enclosure",
+    "author": "binhnham",
+    "sourceUrl": "https://sketchfab.com/3d-models/shower_-enclosure_-sket_0111081910_texture_fbx-785061877f824d04bb86ad0018e9e4d8",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.shower"
+    ]
+  },
+  {
+    "id": "curtains_communicationnode",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "e5b01c717dbd4244b861168eddd67375",
+    "title": "Curtains",
+    "author": "CommunicationNode",
+    "sourceUrl": "https://sketchfab.com/3d-models/curtains-e5b01c717dbd4244b861168eddd67375",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "treatment.curtains"
+    ]
+  },
+  {
+    "id": "curtain_milaink",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "6f0e27c3b4734b99ae6ed051899a1453",
+    "title": "Curtain",
+    "author": "milaink",
+    "sourceUrl": "https://sketchfab.com/3d-models/curtain-6f0e27c3b4734b99ae6ed051899a1453",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "treatment.curtains"
+    ]
+  },
+  {
+    "id": "blinds_venetian_akstudio",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "642df0acc18f45d2af8eaa698bdccff7",
+    "title": "Window Blinds Low poly 3D model",
+    "author": "AK STUDIO",
+    "sourceUrl": "https://sketchfab.com/3d-models/window-blinds-low-poly-3d-model-642df0acc18f45d2af8eaa698bdccff7",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "treatment.venetian"
+    ]
+  },
+  {
+    "id": "switch_avot",
+    "kind": "model",
+    "source": "sketchfab",
+    "ref": "808c3de4dd874fc1b67ff15cd2645555",
+    "title": "Light Switch",
+    "author": "Avot",
+    "sourceUrl": "https://sketchfab.com/3d-models/light-switch-808c3de4dd874fc1b67ff15cd2645555",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.switch"
+    ]
+  },
+  {
+    "id": "modern_ceiling_lamp_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "modern_ceiling_lamp_01",
+    "title": "Modern Ceiling Lamp 01",
+    "author": "James Ray Cock",
+    "sourceUrl": "https://polyhaven.com/a/modern_ceiling_lamp_01",
+    "licence": "cc0",
+    "tags": [
+      "fixture.ceiling_light"
+    ]
+  },
+  {
+    "id": "hanging_industrial_lamp",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "hanging_industrial_lamp",
+    "title": "Hanging Industrial Lamp",
+    "author": "Kuutti Siitonen",
+    "sourceUrl": "https://polyhaven.com/a/hanging_industrial_lamp",
+    "licence": "cc0",
+    "tags": [
+      "fixture.pendant"
+    ]
+  },
+  {
+    "id": "chandelier_02",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "Chandelier_02",
+    "title": "Chandelier 02",
+    "author": "Kirill Sannikov",
+    "sourceUrl": "https://polyhaven.com/a/Chandelier_02",
+    "licence": "cc0",
+    "tags": [
+      "fixture.pendant"
+    ]
+  },
+  {
+    "id": "lantern_chandelier_01",
+    "kind": "model",
+    "source": "polyhaven",
+    "ref": "lantern_chandelier_01",
+    "title": "Lantern Chandelier 01",
+    "author": "Kirill Sannikov",
+    "sourceUrl": "https://polyhaven.com/a/lantern_chandelier_01",
+    "licence": "cc0",
+    "tags": [
+      "fixture.pendant"
+    ]
   }
 ]

@@ -1,4 +1,5 @@
 import { doorStyle, radiatorStyle, windowStyle } from "../room/fit-out";
+import { frontZone, isCeilingKind } from "../room/fixtures";
 import type { FixedElement, Opening, RoomShape } from "../schemas/room";
 import { doorSwings, openingSpan, slideRun } from "./openings";
 import { rectPolygon } from "./polygon";
@@ -8,7 +9,7 @@ import { wallsOf } from "./walls";
 
 /** Keep-clear areas derived from the room. Shared by the validator and the prompt facts. */
 export interface KeepClearZone {
-  kind: "door_swing" | "door_path" | "door_slide" | "window" | "radiator" | "fixed";
+  kind: "door_swing" | "door_path" | "door_slide" | "window" | "radiator" | "fixed" | "fixture_front";
   /** Opening or fixed element id. */
   refId: string;
   polygon: Vec[];
@@ -55,7 +56,13 @@ export function keepClearZones(room: Pick<RoomShape, "polygon" | "openings" | "f
       if (z) zones.push({ kind: "radiator", refId: o.id, polygon: z, spanLength: o.width });
     }
   }
-  for (const f of room.fixedElements) zones.push({ kind: "fixed", refId: f.id, polygon: fixedPolygon(f) });
+  for (const f of room.fixedElements) {
+    // Ceiling lights hang above the furniture.
+    if (isCeilingKind(f.kind)) continue;
+    zones.push({ kind: "fixed", refId: f.id, polygon: fixedPolygon(f) });
+    const front = frontZone(f);
+    if (front) zones.push({ kind: "fixture_front", refId: f.id, polygon: front });
+  }
   return zones;
 }
 

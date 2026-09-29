@@ -1,5 +1,6 @@
 import type { Vec } from "@/domain/geometry/vec";
 import { DEFAULT_FIT_OUT, type FitOut } from "@/domain/room/fit-out";
+import type { FixtureKind } from "@/domain/room/fixtures";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room } from "@/domain/schemas/room";
 
@@ -7,7 +8,7 @@ export type Mode = "2d" | "3d";
 export type Units = "cm" | "in";
 export type PlannerView = "calm" | "quiet" | "full";
 
-export const TOOLS = ["select", "pan", "wall", "room", "door", "window", "pass", "radiator", "socket", "measure", "dimension", "label", "note"] as const;
+export const TOOLS = ["select", "pan", "wall", "room", "door", "window", "pass", "radiator", "socket", "switch", "fixture", "measure", "dimension", "label", "note"] as const;
 export type Tool = (typeof TOOLS)[number];
 
 /** Keyboard shortcut per tool. */
@@ -21,6 +22,8 @@ export const TOOL_KEY: Readonly<Record<Tool, string>> = {
   pass: "P",
   radiator: "J",
   socket: "K",
+  switch: "S",
+  fixture: "F",
   measure: "M",
   dimension: "I",
   label: "L",
@@ -54,7 +57,7 @@ export interface Plan {
   annotations: Annotation[];
 }
 
-export type Selection = { kind: "item"; roomId: string; id: string } | { kind: "opening"; roomId: string; id: string } | null;
+export type Selection = { kind: "item" | "opening" | "fixed"; roomId: string; id: string } | null;
 
 export interface Camera {
   eyeHeight: number;
@@ -113,6 +116,8 @@ export interface PlannerState {
   armed: string | null;
   /** Item the next catalogue pick replaces ("Swap"). */
   swapFor: string | null;
+  /** What the fixture tool places: kitchen run, WC, pendant light … */
+  fixtureKind: FixtureKind;
   selection: Selection;
   hidden: LayerId[];
   /** null = automatic: open on wide screens, closed below 1200 px (decided by CSS, so SSR matches). */
@@ -166,6 +171,7 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     tool: "select",
     armed: null,
     swapFor: null,
+    fixtureKind: "kitchen_run",
     selection: null,
     hidden: ["reference"],
     drawerOpen,

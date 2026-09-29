@@ -48,12 +48,13 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     ceilingHeight: 280,
     openings: [
       { id: "door-1", kind: "door", wallIndex: 2, offset: 30, width: 90, height: 210, hinge: "start", swing: "in" },
-      { id: "window-1", kind: "window", wallIndex: 0, offset: 60, width: 120, height: 150, sillHeight: 80, openable: true },
-      { id: "window-2", kind: "window", wallIndex: 0, offset: 240, width: 120, height: 150, sillHeight: 80, openable: true },
+      { id: "window-1", kind: "window", wallIndex: 0, offset: 60, width: 120, height: 150, sillHeight: 80, openable: true, treatment: { kind: "curtains", closed: false } },
+      { id: "window-2", kind: "window", wallIndex: 0, offset: 240, width: 120, height: 150, sillHeight: 80, openable: true, treatment: { kind: "curtains", closed: false } },
       { id: "radiator-1", kind: "radiator", wallIndex: 0, offset: 70, width: 100, height: 60, depth: 10 },
       { id: "socket-1", kind: "socket", wallIndex: 1, offset: 180, width: 10, height: 30, socketType: "tv" },
+      { id: "switch-1", kind: "switch", wallIndex: 2, offset: 130, width: 8, height: 105, gangs: 2 },
     ],
-    fixedElements: [],
+    fixedElements: [{ id: "pendant-1", label: "Pendant light", kind: "pendant", rect: { x: 190, y: 170, w: 40, d: 40 }, height: 90 }],
     wallOrientationOverrides: {},
   },
   {
@@ -87,13 +88,36 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
   {
     name: "Kitchen",
     type: "kitchen",
-    polygon: rect(320, 280),
+    polygon: rect(380, 320),
     ceilingHeight: 280,
     openings: [
       { id: "door-1", kind: "door", wallIndex: 3, offset: 20, width: 90, height: 210, hinge: "start", swing: "sliding" },
-      { id: "window-1", kind: "window", wallIndex: 1, offset: 90, width: 100, height: 130, sillHeight: 100, openable: true },
+      { id: "window-1", kind: "window", wallIndex: 1, offset: 90, width: 100, height: 130, sillHeight: 100, openable: true, treatment: { kind: "roller", closed: false } },
+      { id: "switch-1", kind: "switch", wallIndex: 3, offset: 115, width: 8, height: 105, gangs: 1 },
     ],
-    fixedElements: [{ id: "fixed-1", label: "Kitchen run", kind: "kitchen_run", rect: { x: 0, y: 0, w: 320, d: 60 }, height: 90 }],
+    fixedElements: [
+      { id: "kitchen_run-1", label: "Kitchen run", kind: "kitchen_run", rect: { x: 110, y: 0, w: 240, d: 60 }, height: 90, facing: 180, kitchen: { sink: true, hob: true, oven: true, wallUnits: true } },
+      { id: "fridge-1", label: "Fridge", kind: "fridge", rect: { x: 315, y: 250, w: 65, d: 60 }, height: 185, facing: 270 },
+      { id: "pendant-1", label: "Pendant light", kind: "pendant", rect: { x: 170, y: 200, w: 40, d: 40 }, height: 90 },
+    ],
+    wallOrientationOverrides: {},
+  },
+  {
+    name: "Bathroom",
+    type: "bath",
+    polygon: rect(260, 240),
+    ceilingHeight: 260,
+    openings: [
+      { id: "door-1", kind: "door", wallIndex: 2, offset: 20, width: 80, height: 200, hinge: "start", swing: "in" },
+      { id: "window-1", kind: "window", wallIndex: 0, offset: 90, width: 80, height: 100, sillHeight: 120, openable: true, treatment: { kind: "venetian", closed: false } },
+      { id: "switch-1", kind: "switch", wallIndex: 2, offset: 110, width: 8, height: 105, gangs: 1 },
+    ],
+    fixedElements: [
+      { id: "wc-1", label: "WC", kind: "wc", rect: { x: 200, y: 41, w: 60, d: 38 }, height: 80, facing: 270 },
+      { id: "basin-1", label: "Basin", kind: "basin", rect: { x: 90, y: 0, w: 60, d: 48 }, height: 85, facing: 180 },
+      { id: "bathtub-1", label: "Bathtub", kind: "bathtub", rect: { x: 0, y: 60, w: 75, d: 170 }, height: 58, facing: 90 },
+      { id: "pendant-1", label: "Ceiling light", kind: "pendant", rect: { x: 110, y: 110, w: 40, d: 40 }, height: 60 },
+    ],
     wallOrientationOverrides: {},
   },
 ];

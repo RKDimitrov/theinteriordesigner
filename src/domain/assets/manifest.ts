@@ -38,6 +38,11 @@ export const ModelEntry = Base.extend({
   pick: Pattern.optional(),
   /** Which image in that zip to use as the thumbnail. */
   thumbPick: Pattern.optional(),
+  /**
+   * Keep only the nodes whose name matches (and what they contain), for
+   * packs that model many pieces in one file. Their placement is kept.
+   */
+  node: Pattern.optional(),
 });
 
 export const MAP_NAMES = ["diff", "nor", "arm", "ao", "rough", "metal"] as const;

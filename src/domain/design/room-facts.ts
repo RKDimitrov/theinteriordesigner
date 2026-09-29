@@ -4,6 +4,7 @@ import type { Vec } from "../geometry/vec";
 import { backAgainstRotation, wallOrientations, wallsOf } from "../geometry/walls";
 import { keepClearZones } from "../geometry/zones";
 import { doorStyle, radiatorStyle, windowStyle } from "../room/fit-out";
+import { isCeilingKind } from "../room/fixtures";
 import type { Opening, RoomShape } from "../schemas/room";
 import { maxItems } from "./catalogue";
 import { freeFloorRect, wallSlots } from "./solver/slots";
@@ -79,13 +80,24 @@ export function roomFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
           return [{ ...base, heightCm: o.height, depthCm: o.depth }];
         case "socket":
           return [{ ...base, heightCm: o.height, socketType: o.socketType }];
+        case "switch":
+          return [{ ...base, heightCm: o.height }];
       }
     }),
     /** Free wall runs for pieces up to 60 cm deep and taller than window sills; usableDepth leaves an 80 cm walkway. */
     wallSlots: wallSlots(room).map(({ wallIndex, from, to, length, usableDepth }) => ({ wallIndex, from, to, length, usableDepth })),
     /** Largest open floor rectangle, clear of doors, radiators and fixed elements. */
     freeFloorRect: { x: r1(floor.x), y: r1(floor.y), w: r1(floor.w), d: r1(floor.d) },
-    fixedElements: room.fixedElements.map((f) => ({ id: f.id, label: f.label, kind: f.kind, rect: f.rect, heightCm: f.height })),
+    fixedElements: room.fixedElements.map((f) => ({
+      id: f.id,
+      label: f.label,
+      kind: f.kind,
+      rect: f.rect,
+      heightCm: f.height,
+      // Fixtures face into the room; ceiling lights hang above the furniture.
+      ...(f.facing !== undefined ? { facingDeg: f.facing } : {}),
+      ...(isCeilingKind(f.kind) ? { mountedOn: "ceiling" } : {}),
+    })),
     keepClear: keepClearZones(room).map((z) => ({
       kind: z.kind,
       refId: z.refId,

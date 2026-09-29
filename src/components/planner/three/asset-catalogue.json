@@ -18,6 +18,132 @@
       208
     ]
   },
+  "basin_stand_renviro": {
+    "title": "Wash Basin Stand",
+    "author": "Ren Viro Store",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/wash-basin-stand-b02727808f1f46468e071edfd291060e",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.basin"
+    ],
+    "bytes": 106276,
+    "thumb": "/thumbs/basin_stand_renviro.webp",
+    "kind": "model",
+    "size": [
+      48052.5,
+      62953.8,
+      47059.2
+    ]
+  },
+  "bathtub_3ddominator": {
+    "title": "Bathtub",
+    "author": "3ddominator",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/bathtub-3350f81025974c53808a2efd2b31d4fd",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.bathtub"
+    ],
+    "bytes": 155200,
+    "thumb": "/thumbs/bathtub_3ddominator.webp",
+    "kind": "model",
+    "size": [
+      18615.2,
+      7136,
+      8928.9
+    ]
+  },
+  "bathtub_igrium": {
+    "title": "Photorealistic Bathtub",
+    "author": "Igrium",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/photorealistic-bathtub-ba60ba7d0a4a4b6899021741f450395b",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.bathtub"
+    ],
+    "bytes": 324572,
+    "thumb": "/thumbs/bathtub_igrium.webp",
+    "kind": "model",
+    "size": [
+      251.7,
+      95.5,
+      100.7
+    ]
+  },
+  "blinds_venetian_akstudio": {
+    "title": "Window Blinds Low poly 3D model",
+    "author": "AK STUDIO",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/window-blinds-low-poly-3d-model-642df0acc18f45d2af8eaa698bdccff7",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "treatment.venetian"
+    ],
+    "bytes": 96660,
+    "thumb": "/thumbs/blinds_venetian_akstudio.webp",
+    "kind": "model",
+    "size": [
+      1070,
+      19791.3,
+      20868.9
+    ]
+  },
+  "chandelier_02": {
+    "title": "Chandelier 02",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/Chandelier_02",
+    "licence": "cc0",
+    "tags": [
+      "fixture.pendant"
+    ],
+    "bytes": 455504,
+    "thumb": "/thumbs/chandelier_02.webp",
+    "kind": "model",
+    "size": [
+      67.9,
+      84.8,
+      61.9
+    ]
+  },
+  "curtain_milaink": {
+    "title": "Curtain",
+    "author": "milaink",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/curtain-6f0e27c3b4734b99ae6ed051899a1453",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "treatment.curtains"
+    ],
+    "bytes": 100496,
+    "thumb": "/thumbs/curtain_milaink.webp",
+    "kind": "model",
+    "size": [
+      438,
+      254,
+      48.8
+    ]
+  },
+  "curtains_communicationnode": {
+    "title": "Curtains",
+    "author": "CommunicationNode",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/curtains-e5b01c717dbd4244b861168eddd67375",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "treatment.curtains"
+    ],
+    "bytes": 313712,
+    "thumb": "/thumbs/curtains_communicationnode.webp",
+    "kind": "model",
+    "size": [
+      35.4,
+      5.7,
+      35.4
+    ]
+  },
   "dining_chair_02": {
     "title": "Dining Chair 02",
     "author": "James Ray Cock",
@@ -53,6 +179,42 @@
       9699.9,
       20600,
       2606
+    ]
+  },
+  "faucet_renend": {
+    "title": "Faucet",
+    "author": "Renend Studio",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/faucet-5398e5f2d94a41a6a39be9c27ff4ce54",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.faucet"
+    ],
+    "bytes": 33536,
+    "thumb": "/thumbs/faucet_renend.webp",
+    "kind": "model",
+    "size": [
+      69.1,
+      104.9,
+      23.4
+    ]
+  },
+  "fridge_grey_glowbox": {
+    "title": "Refrigerator - Grey Polished Metal",
+    "author": "Glowbox 3D",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/refrigerator-grey-polished-metal-2071bda681b642218b6829b82e4fd93b",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.fridge"
+    ],
+    "bytes": 80852,
+    "thumb": "/thumbs/fridge_grey_glowbox.webp",
+    "kind": "model",
+    "size": [
+      395.7,
+      795.2,
+      341.6
     ]
   },
   "handle_knob": {
@@ -93,7 +255,6 @@
     ]
   },
   "handle_lever_modern": {
-    "kind": "model",
     "title": "CC0 - Door Handle 3",
     "author": "plaggy",
     "source": "sketchfab",
@@ -104,12 +265,13 @@
       "style.modern"
     ],
     "bytes": 57404,
+    "thumb": "/thumbs/handle_lever_modern.webp",
+    "kind": "model",
     "size": [
       15.4,
       5.3,
       4.7
-    ],
-    "thumb": "/thumbs/handle_lever_modern.webp"
+    ]
   },
   "handle_pull": {
     "title": "Door Handle",
@@ -127,6 +289,24 @@
       1549.1,
       5500,
       1500.1
+    ]
+  },
+  "hanging_industrial_lamp": {
+    "title": "Hanging Industrial Lamp",
+    "author": "Kuutti Siitonen",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/hanging_industrial_lamp",
+    "licence": "cc0",
+    "tags": [
+      "fixture.pendant"
+    ],
+    "bytes": 503316,
+    "thumb": "/thumbs/hanging_industrial_lamp.webp",
+    "kind": "model",
+    "size": [
+      55,
+      135.5,
+      55
     ]
   },
   "hanging_picture_frame_02": {
@@ -147,6 +327,24 @@
       3.3
     ]
   },
+  "hood_chimney_ge": {
+    "title": "GE Stainless Steel Chimney Style Range Hood",
+    "author": "allenbranch",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/ge-stainless-steel-chimney-stylerange-hood-e7408d63175b4d76b8e7b2ca7435fc10",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.hood"
+    ],
+    "bytes": 43016,
+    "thumb": "/thumbs/hood_chimney_ge.webp",
+    "kind": "model",
+    "size": [
+      7363.7,
+      8392.7,
+      11105.9
+    ]
+  },
   "kenney_toilet": {
     "title": "Toilet (Furniture Kit)",
     "author": "Kenney",
@@ -164,6 +362,96 @@
       31.3,
       45.1,
       47.7
+    ]
+  },
+  "kitchen_base_mora": {
+    "title": "Kitchen Modular: base cupboard",
+    "author": "Mora",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.base_unit"
+    ],
+    "bytes": 14900,
+    "thumb": "/thumbs/kitchen_base_mora.webp",
+    "kind": "model",
+    "size": [
+      16512.3,
+      11944.2,
+      10843.6
+    ]
+  },
+  "kitchen_fridge_mora": {
+    "title": "Kitchen Modular: fridge",
+    "author": "Mora",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.fridge"
+    ],
+    "bytes": 17220,
+    "thumb": "/thumbs/kitchen_fridge_mora.webp",
+    "kind": "model",
+    "size": [
+      9139.9,
+      20388.5,
+      9050.3
+    ]
+  },
+  "kitchen_sink_mora": {
+    "title": "Kitchen Modular: sink unit",
+    "author": "Mora",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.sink_unit"
+    ],
+    "bytes": 24172,
+    "thumb": "/thumbs/kitchen_sink_mora.webp",
+    "kind": "model",
+    "size": [
+      10843.6,
+      15742.3,
+      16512.3
+    ]
+  },
+  "kitchen_stove_mora": {
+    "title": "Kitchen Modular: stove",
+    "author": "Mora",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.hob_unit"
+    ],
+    "bytes": 30332,
+    "thumb": "/thumbs/kitchen_stove_mora.webp",
+    "kind": "model",
+    "size": [
+      10037.5,
+      12012.8,
+      10917.4
+    ]
+  },
+  "kitchen_wall_mora": {
+    "title": "Kitchen Modular: wall cupboard",
+    "author": "Mora",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/kitchen-modular-ee914a843e1a4b4cb8bfe3e512a73b68",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.wall_unit"
+    ],
+    "bytes": 12904,
+    "thumb": "/thumbs/kitchen_wall_mora.webp",
+    "kind": "model",
+    "size": [
+      10433.1,
+      11943.6,
+      10395.2
     ]
   },
   "kloofendal_48d_partly_cloudy_puresky": {
@@ -198,6 +486,24 @@
       99
     ]
   },
+  "lantern_chandelier_01": {
+    "title": "Lantern Chandelier 01",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/lantern_chandelier_01",
+    "licence": "cc0",
+    "tags": [
+      "fixture.pendant"
+    ],
+    "bytes": 800668,
+    "thumb": "/thumbs/lantern_chandelier_01.webp",
+    "kind": "model",
+    "size": [
+      57.9,
+      87.8,
+      57.5
+    ]
+  },
   "modern_arm_chair_01": {
     "title": "Modern Arm Chair 01",
     "author": "Vibrant Nordic",
@@ -215,6 +521,24 @@
       82,
       102.3,
       98.7
+    ]
+  },
+  "modern_ceiling_lamp_01": {
+    "title": "Modern Ceiling Lamp 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/modern_ceiling_lamp_01",
+    "licence": "cc0",
+    "tags": [
+      "fixture.ceiling_light"
+    ],
+    "bytes": 157440,
+    "thumb": "/thumbs/modern_ceiling_lamp_01.webp",
+    "kind": "model",
+    "size": [
+      43.2,
+      95.2,
+      43.2
     ]
   },
   "modern_coffee_table_01": {
@@ -272,6 +596,24 @@
       161,
       126,
       87
+    ]
+  },
+  "oven_builtin_domino": {
+    "title": "Built-in oven",
+    "author": "3DDomino",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/built-in-oven-50be70931dcb4a838b906382233a28f1",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.kitchen.oven"
+    ],
+    "bytes": 61884,
+    "thumb": "/thumbs/oven_builtin_domino.webp",
+    "kind": "model",
+    "size": [
+      60392.1,
+      58644.9,
+      58696.5
     ]
   },
   "painted_wooden_chair_01": {
@@ -404,6 +746,24 @@
       92.3
     ]
   },
+  "shower_enclosure_binhnham": {
+    "title": "Shower Enclosure",
+    "author": "binhnham",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/shower_-enclosure_-sket_0111081910_texture_fbx-785061877f824d04bb86ad0018e9e4d8",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.shower"
+    ],
+    "bytes": 162144,
+    "thumb": "/thumbs/shower_enclosure_binhnham.webp",
+    "kind": "model",
+    "size": [
+      122.5,
+      202.2,
+      118.9
+    ]
+  },
   "side_table_01": {
     "title": "Side Table 01",
     "author": "James Ray Cock",
@@ -423,6 +783,24 @@
       45
     ]
   },
+  "switch_avot": {
+    "title": "Light Switch",
+    "author": "Avot",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/light-switch-808c3de4dd874fc1b67ff15cd2645555",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.switch"
+    ],
+    "bytes": 141408,
+    "thumb": "/thumbs/switch_avot.webp",
+    "kind": "model",
+    "size": [
+      1.5,
+      11.4,
+      7
+    ]
+  },
   "terracotta_floor_tiles": {
     "title": "Terracotta Floor Tiles",
     "author": "Dimitrios Savva",
@@ -440,6 +818,42 @@
       77,
       39,
       26
+    ]
+  },
+  "toilet_hippostance": {
+    "title": "Toilet",
+    "author": "HippoStance",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/toilet-132a8ee2af3a40d39d270fbed3d3666c",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.wc"
+    ],
+    "bytes": 227456,
+    "thumb": "/thumbs/toilet_hippostance.webp",
+    "kind": "model",
+    "size": [
+      47.8,
+      74.4,
+      60.7
+    ]
+  },
+  "vanity_blendffnike": {
+    "title": "Sink with Faucet",
+    "author": "blendffnike",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/sink-with-faucet-e7c2bddaebe94dd0a28fd89981de5195",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "fixture.basin"
+    ],
+    "bytes": 78172,
+    "thumb": "/thumbs/vanity_blendffnike.webp",
+    "kind": "model",
+    "size": [
+      60,
+      94.1,
+      45
     ]
   },
   "wood_floor": {
