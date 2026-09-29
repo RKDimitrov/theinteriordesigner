@@ -45,6 +45,7 @@ const room = (id: string, openings: Room["openings"] = []): Room => ({
   fixedElements: [],
   wallOrientationOverrides: {},
   finishes: { wallOverrides: {} },
+  wallOutlooks: {},
 });
 
 describe("walkthrough collision", () => {

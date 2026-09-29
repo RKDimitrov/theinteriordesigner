@@ -22,6 +22,7 @@ function toDomain(row: ApartmentRow): Apartment {
     lat: row.lat,
     lng: row.lng,
     fitOut: row.fitOut,
+    surroundings: row.surroundings,
   });
 }
 

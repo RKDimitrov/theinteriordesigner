@@ -58,7 +58,11 @@ export const TextureEntry = Base.extend({
   maps: z.partialRecord(z.enum(MAP_NAMES), Pattern).optional(),
 }).refine((e) => e.source === "polyhaven" || e.tileCm !== undefined, { message: "tileCm is required unless the source reports it", path: ["tileCm"] });
 
-export const HdriEntry = Base.extend({ kind: z.literal("hdri") });
+export const HdriEntry = Base.extend({
+  kind: z.literal("hdri"),
+  /** A 2K tonemapped JPG to show as the view outside, instead of a 1K HDR for lighting. */
+  backplate: z.boolean().optional(),
+});
 
 export const ManifestEntry = z.discriminatedUnion("kind", [ModelEntry, TextureEntry, HdriEntry]);
 export type ManifestEntry = z.infer<typeof ManifestEntry>;

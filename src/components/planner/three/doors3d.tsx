@@ -132,6 +132,7 @@ export function Door3D({ door, ceiling, fitOut, realistic, side, open = false, o
     <group onClick={click}>
       <Lining x0={x0} x1={x1} h={h} side={side} look={trim} realistic={realistic} stop={swings ? (door.swing !== "out" ? 1 : -1) : 0} />
       <Architraves x0={x0} x1={x1} h={h} side={side} profile={fitOut.trim.profile} look={trim} realistic={realistic} />
+      {style === "balcony" && <Balcony x0={x0} x1={x1} side={side} realistic={realistic} />}
       {leaves}
     </group>
   );
@@ -337,6 +338,47 @@ function GlassLeaf({ w, h, realistic }: { w: number; h: number; realistic: boole
 }
 
 /* ---------------- small parts built in code ---------------- */
+
+const BALCONY_DEPTH = 140;
+const RAIL_H = 105;
+
+/**
+ * A concrete balcony slab outside a balcony door, with a glass balustrade and
+ * a steel handrail on its three open sides. Built in code: a simple slab.
+ */
+function Balcony({ x0, x1, side, realistic }: { x0: number; x1: number; side: number; realistic: boolean }) {
+  const w = x1 - x0 + 120;
+  const cx = (x0 + x1) / 2;
+  // In the wall's frame scaled so +z is the room: the balcony runs from the outer face (−W) outwards.
+  const zOut = -W - BALCONY_DEPTH;
+  const zMid = -W - BALCONY_DEPTH / 2;
+  const glass = <GlassMat realistic={realistic} />;
+  const steel = <meshStandardMaterial color="#3a3b3d" metalness={0.8} roughness={0.35} />;
+  return (
+    <group scale-z={side}>
+      <Board r={{ x0: cx - w / 2, y0: -18, x1: cx + w / 2, y1: 0 }} t={BALCONY_DEPTH} z={zMid} round={0.5}>
+        <meshStandardMaterial color="#c9c4bb" roughness={0.9} />
+      </Board>
+      {/* Front and side glass panels, with a handrail on top. */}
+      <Board r={{ x0: cx - w / 2, y0: 4, x1: cx + w / 2, y1: RAIL_H - 4 }} t={1.2} z={zOut + 3} round={0}>
+        {glass}
+      </Board>
+      {[-1, 1].map((s) => (
+        <group key={s}>
+          <Board r={{ x0: cx + s * (w / 2) - 0.6, y0: 4, x1: cx + s * (w / 2) + 0.6, y1: RAIL_H - 4 }} t={BALCONY_DEPTH - 6} z={zMid - 1} round={0}>
+            {glass}
+          </Board>
+          <Board r={{ x0: cx + s * (w / 2) - 2, y0: RAIL_H - 4, x1: cx + s * (w / 2) + 2, y1: RAIL_H }} t={BALCONY_DEPTH} z={zMid} round={0.8}>
+            {steel}
+          </Board>
+        </group>
+      ))}
+      <Board r={{ x0: cx - w / 2, y0: RAIL_H - 4, x1: cx + w / 2, y1: RAIL_H }} t={4} z={zOut + 2} round={0.8}>
+        {steel}
+      </Board>
+    </group>
+  );
+}
 
 /** Three barrel hinges on the hinge edge (too small to be worth a model). */
 function Hinges({ x, h, realistic }: { x: number; h: number; realistic: boolean }) {

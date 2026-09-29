@@ -2,10 +2,10 @@ import { assetPaths, type Catalogue } from "../../src/domain/assets/catalogue.ts
 import type { ManifestEntry } from "../../src/domain/assets/manifest.ts";
 
 /** Public paths an entry's processing produces (thumbnail aside). */
-export function outputsOf(e: Pick<ManifestEntry, "id" | "kind">): string[] {
+export function outputsOf(e: Pick<ManifestEntry, "id" | "kind"> & { backplate?: boolean }): string[] {
   if (e.kind === "model") return [assetPaths.model(e.id)];
   if (e.kind === "texture") return assetPaths.texture(e.id);
-  return [assetPaths.hdri(e.id)];
+  return [e.kind === "hdri" && "backplate" in e && e.backplate ? assetPaths.backplate(e.id) : assetPaths.hdri(e.id)];
 }
 
 /** Public asset files that no manifest entry produces. */

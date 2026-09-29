@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Surroundings } from "../context/outside";
 import { FitOut } from "../room/fit-out";
 import { Degrees, Id } from "./common";
 
@@ -21,6 +22,8 @@ export const ApartmentInput = z.object({
   yearBuilt: z.number().int().min(1500).max(2100).nullable(),
   /** Direction of north, clockwise degrees from plan "up". 0 = north is up. */
   northAngleDeg: Degrees,
+  /** The kind of area around the building, for the view outside the windows. */
+  surroundings: Surroundings.default({ kind: "urban", waterfront: false, mountains: false }),
 });
 export type ApartmentInput = z.infer<typeof ApartmentInput>;
 

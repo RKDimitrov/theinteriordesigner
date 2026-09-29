@@ -1,6 +1,7 @@
 import "server-only";
 import type { Room as RoomRow } from "@/generated/prisma/client";
 import type { RoomInput } from "@/domain/room/check-room";
+import type { WallOutlooks } from "@/domain/context/outside";
 import type { RoomFinishes } from "@/domain/materials/library";
 import { Room } from "@/domain/schemas/room";
 import { db } from "../db";
@@ -20,6 +21,7 @@ function toDomain(row: RoomRow): Room {
     fixedElements: row.fixedElements,
     wallOrientationOverrides: row.wallOrientationOverrides,
     finishes: row.finishes,
+    wallOutlooks: row.wallOutlooks,
   });
 }
 
@@ -65,6 +67,13 @@ export async function updateRoom(userId: string, roomId: string, room: RoomInput
 
 export async function deleteRoom(userId: string, roomId: string): Promise<boolean> {
   const { count } = await db.room.deleteMany({ where: { id: roomId, apartment: { userId } } });
+  return count > 0;
+}
+
+/** Store what each wall looks onto. */
+export async function setRoomOutlooks(userId: string, roomId: string, outlooks: WallOutlooks): Promise<boolean> {
+  if (!isUuid(roomId)) return false;
+  const { count } = await db.room.updateMany({ where: { id: roomId, apartment: { userId } }, data: { wallOutlooks: toJson(outlooks) } });
   return count > 0;
 }
 

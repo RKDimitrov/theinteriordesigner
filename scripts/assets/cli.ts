@@ -18,7 +18,7 @@ import { Catalogue, CatalogueEntry, MODEL_BUDGET_BYTES, assetPaths } from "../..
 import { Manifest, manifestIssues, type ManifestEntry } from "../../src/domain/assets/manifest.ts";
 import { bytesOf, exists, getBytes, kb, PUBLIC, ROOT } from "./io.ts";
 import { idsModule, mergeCatalogue, orphans, outputsOf } from "./plan.ts";
-import { extractNodes, measureModel, meanColour, optimizeModel, writeHdri, writeTexture, writeThumb } from "./process.ts";
+import { extractNodes, measureModel, meanColour, optimizeModel, writeBackplate, writeHdri, writeTexture, writeThumb } from "./process.ts";
 import { ADAPTERS } from "./sources/index.ts";
 
 const THREE_DIR = join(ROOT, "src", "components", "planner", "three");
@@ -116,7 +116,8 @@ async function build(e: ManifestEntry): Promise<CatalogueEntry> {
   if (!adapter.hdri) throw new Error(`${e.source} has no HDRIs`);
   const raw = await adapter.hdri(e);
   verify(raw.licence);
-  return { kind: "hdri", ...common, bytes: writeHdri(e.id, raw.hdr), thumb: await thumb(raw) };
+  const bytes = e.backplate ? await writeBackplate(e.id, raw.hdr) : writeHdri(e.id, raw.hdr);
+  return { kind: "hdri", ...common, ...(e.backplate ? { backplate: true } : {}), bytes, thumb: await thumb(raw) };
 }
 
 /**

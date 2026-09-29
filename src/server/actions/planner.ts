@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { WallOutlooks } from "@/domain/context/outside";
 import { renterRules } from "@/domain/context/renter-rules";
 import { RoomFinishes } from "@/domain/materials/library";
 import { FitOut } from "@/domain/room/fit-out";
@@ -14,7 +15,7 @@ import { requireUserId } from "../auth";
 import { getApartment, setApartmentFitOut } from "../repo/apartments";
 import { createDesign, type DesignStatus, getDesign, updateDesign } from "../repo/designs";
 import { getProfile } from "../repo/profiles";
-import { getRoom, setRoomFinishes } from "../repo/rooms";
+import { getRoom, setRoomFinishes, setRoomOutlooks } from "../repo/rooms";
 
 const FitOutInput = z.object({ apartmentId: z.uuid(), fitOut: FitOut });
 
@@ -40,6 +41,18 @@ export async function saveRoomFinishesAction(input: unknown): Promise<ActionResu
   if (!parsed.success) return fail("Invalid finishes");
   const saved = await Promise.all(parsed.data.rooms.map((r) => setRoomFinishes(userId, r.roomId, r.finishes)));
   if (saved.some((s) => !s)) return fail("Room not found");
+  revalidatePath(`/apartments/${parsed.data.apartmentId}/planner`);
+  return ok(null);
+}
+
+const OutlooksInput = z.object({ apartmentId: z.uuid(), roomId: z.uuid(), outlooks: WallOutlooks });
+
+/** Save what each wall of a room looks onto (street, courtyard, garden, open). */
+export async function saveRoomOutlooksAction(input: unknown): Promise<ActionResult<null>> {
+  const userId = await requireUserId();
+  const parsed = OutlooksInput.safeParse(input);
+  if (!parsed.success) return fail("Invalid outlooks");
+  if (!(await setRoomOutlooks(userId, parsed.data.roomId, parsed.data.outlooks))) return fail("Room not found");
   revalidatePath(`/apartments/${parsed.data.apartmentId}/planner`);
   return ok(null);
 }

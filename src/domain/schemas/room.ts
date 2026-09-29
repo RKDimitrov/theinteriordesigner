@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { WallOutlooks } from "../context/outside";
 import { RoomFinishes } from "../materials/library";
 import { Cm, Id, Polygon, PositiveCm } from "./common";
 
@@ -170,5 +171,7 @@ export const Room = RoomShape.extend({
   sortOrder: z.number().int(),
   /** Floor, wall and ceiling materials, saved from the planner's Finishes tab. */
   finishes: RoomFinishes.default({ wallOverrides: {} }),
+  /** What each wall looks onto (street, courtyard …); unset walls take the area's default. */
+  wallOutlooks: WallOutlooks.default({}),
 });
 export type Room = z.infer<typeof Room>;

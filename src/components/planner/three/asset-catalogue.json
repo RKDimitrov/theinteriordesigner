@@ -1,6 +1,5 @@
 {
   "acg_bricks_085": {
-    "kind": "texture",
     "title": "Bricks 085",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -10,16 +9,16 @@
       "wall.brick"
     ],
     "bytes": 342956,
+    "thumb": "/thumbs/acg_bricks_085.webp",
+    "kind": "texture",
     "tileCm": 100,
     "mean": [
       149,
       117,
       99
-    ],
-    "thumb": "/thumbs/acg_bricks_085.webp"
+    ]
   },
   "acg_carpet_012": {
-    "kind": "texture",
     "title": "Carpet 012",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -29,16 +28,16 @@
       "floor.carpet"
     ],
     "bytes": 1539138,
+    "thumb": "/thumbs/acg_carpet_012.webp",
+    "kind": "texture",
     "tileCm": 100,
     "mean": [
       52,
       59,
       73
-    ],
-    "thumb": "/thumbs/acg_carpet_012.webp"
+    ]
   },
   "acg_carpet_016": {
-    "kind": "texture",
     "title": "Carpet 016",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -48,13 +47,14 @@
       "floor.carpet"
     ],
     "bytes": 759806,
+    "thumb": "/thumbs/acg_carpet_016.webp",
+    "kind": "texture",
     "tileCm": 100,
     "mean": [
       187,
       176,
       148
-    ],
-    "thumb": "/thumbs/acg_carpet_016.webp"
+    ]
   },
   "acg_plaster_001": {
     "title": "Plaster 001",
@@ -76,7 +76,6 @@
     ]
   },
   "acg_terrazzo_013": {
-    "kind": "texture",
     "title": "Terrazzo 013",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -86,16 +85,16 @@
       "floor.terrazzo"
     ],
     "bytes": 225862,
+    "thumb": "/thumbs/acg_terrazzo_013.webp",
+    "kind": "texture",
     "tileCm": 100,
     "mean": [
       208,
       205,
       199
-    ],
-    "thumb": "/thumbs/acg_terrazzo_013.webp"
+    ]
   },
   "acg_tiles_107": {
-    "kind": "texture",
     "title": "Tiles 107",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -105,16 +104,16 @@
       "wall.tile"
     ],
     "bytes": 83298,
+    "thumb": "/thumbs/acg_tiles_107.webp",
+    "kind": "texture",
     "tileCm": 60,
     "mean": [
       248,
       248,
       248
-    ],
-    "thumb": "/thumbs/acg_tiles_107.webp"
+    ]
   },
   "acg_tiles_141": {
-    "kind": "texture",
     "title": "Tiles 141",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -125,16 +124,16 @@
       "floor.tile"
     ],
     "bytes": 261084,
+    "thumb": "/thumbs/acg_tiles_141.webp",
+    "kind": "texture",
     "tileCm": 120,
     "mean": [
       211,
       203,
       194
-    ],
-    "thumb": "/thumbs/acg_tiles_141.webp"
+    ]
   },
   "acg_wallpaper_001a": {
-    "kind": "texture",
     "title": "Wallpaper 001 A",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -144,16 +143,16 @@
       "wall.wallpaper"
     ],
     "bytes": 383484,
+    "thumb": "/thumbs/acg_wallpaper_001a.webp",
+    "kind": "texture",
     "tileCm": 100,
     "mean": [
       224,
       224,
       220
-    ],
-    "thumb": "/thumbs/acg_wallpaper_001a.webp"
+    ]
   },
   "acg_wood_floor_040": {
-    "kind": "texture",
     "title": "Wood Floor 040",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -163,16 +162,16 @@
       "floor.wood"
     ],
     "bytes": 228128,
+    "thumb": "/thumbs/acg_wood_floor_040.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       182,
       136,
       85
-    ],
-    "thumb": "/thumbs/acg_wood_floor_040.webp"
+    ]
   },
   "acg_wood_floor_064": {
-    "kind": "texture",
     "title": "Wood Floor 064",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -182,16 +181,16 @@
       "floor.vinyl"
     ],
     "bytes": 125168,
+    "thumb": "/thumbs/acg_wood_floor_064.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       108,
       67,
       19
-    ],
-    "thumb": "/thumbs/acg_wood_floor_064.webp"
+    ]
   },
   "acg_wood_siding_008": {
-    "kind": "texture",
     "title": "Wood Siding 008",
     "author": "Lennart Demes (ambientCG)",
     "source": "ambientcg",
@@ -202,13 +201,29 @@
       "ceiling.wood"
     ],
     "bytes": 447374,
+    "thumb": "/thumbs/acg_wood_siding_008.webp",
+    "kind": "texture",
     "tileCm": 150,
     "mean": [
       77,
       63,
       50
+    ]
+  },
+  "alps_field": {
+    "kind": "hdri",
+    "title": "Alps Field",
+    "author": "Andreas Mischok",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/alps_field",
+    "licence": "cc0",
+    "tags": [
+      "backplate.mountains.ground",
+      "backplate.mountains.low"
     ],
-    "thumb": "/thumbs/acg_wood_siding_008.webp"
+    "backplate": true,
+    "bytes": 390861,
+    "thumb": "/thumbs/alps_field.webp"
   },
   "basin_stand_renviro": {
     "title": "Wash Basin Stand",
@@ -264,6 +279,34 @@
       100.7
     ]
   },
+  "belfast_open_field": {
+    "kind": "hdri",
+    "title": "Belfast Open Field",
+    "author": "Dimitrios Savva, Jarod Guest",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/belfast_open_field",
+    "licence": "cc0",
+    "tags": [
+      "backplate.rural.low"
+    ],
+    "backplate": true,
+    "bytes": 318812,
+    "thumb": "/thumbs/belfast_open_field.webp"
+  },
+  "binnenalster": {
+    "kind": "hdri",
+    "title": "Binnenalster",
+    "author": "Greg Zaal",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/binnenalster",
+    "licence": "cc0",
+    "tags": [
+      "backplate.waterfront"
+    ],
+    "backplate": true,
+    "bytes": 240822,
+    "thumb": "/thumbs/binnenalster.webp"
+  },
   "blinds_venetian_akstudio": {
     "title": "Window Blinds Low poly 3D model",
     "author": "AK STUDIO",
@@ -283,7 +326,6 @@
     ]
   },
   "brick_wall_02": {
-    "kind": "texture",
     "title": "Brick Wall 02",
     "author": "Dimitrios Savva",
     "source": "polyhaven",
@@ -293,13 +335,14 @@
       "wall.brick"
     ],
     "bytes": 924264,
+    "thumb": "/thumbs/brick_wall_02.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       162,
       143,
       118
-    ],
-    "thumb": "/thumbs/brick_wall_02.webp"
+    ]
   },
   "chandelier_02": {
     "title": "Chandelier 02",
@@ -320,7 +363,6 @@
     ]
   },
   "clay_plaster": {
-    "kind": "texture",
     "title": "Clay Plaster",
     "author": "Amal Kumar",
     "source": "polyhaven",
@@ -330,16 +372,16 @@
       "wall.plaster"
     ],
     "bytes": 247998,
+    "thumb": "/thumbs/clay_plaster.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       114,
       90,
       60
-    ],
-    "thumb": "/thumbs/clay_plaster.webp"
+    ]
   },
   "concrete_floor_02": {
-    "kind": "texture",
     "title": "Concrete Floor 02",
     "author": "Rob Tuytel",
     "source": "polyhaven",
@@ -349,16 +391,16 @@
       "floor.concrete"
     ],
     "bytes": 712984,
+    "thumb": "/thumbs/concrete_floor_02.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       120,
       110,
       91
-    ],
-    "thumb": "/thumbs/concrete_floor_02.webp"
+    ]
   },
   "concrete_wall_004": {
-    "kind": "texture",
     "title": "Concrete Wall 004",
     "author": "Dario Barresi, Charlotte Baglioni",
     "source": "polyhaven",
@@ -368,13 +410,14 @@
       "wall.concrete"
     ],
     "bytes": 692122,
+    "thumb": "/thumbs/concrete_wall_004.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       117,
       115,
       99
-    ],
-    "thumb": "/thumbs/concrete_wall_004.webp"
+    ]
   },
   "curtain_milaink": {
     "title": "Curtain",
@@ -413,7 +456,6 @@
     ]
   },
   "dark_wooden_planks": {
-    "kind": "texture",
     "title": "Dark Wooden Planks",
     "author": "Amal Kumar",
     "source": "polyhaven",
@@ -423,16 +465,16 @@
       "floor.wood"
     ],
     "bytes": 451948,
+    "thumb": "/thumbs/dark_wooden_planks.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       83,
       74,
       62
-    ],
-    "thumb": "/thumbs/dark_wooden_planks.webp"
+    ]
   },
   "diagonal_parquet": {
-    "kind": "texture",
     "title": "Diagonal Parquet",
     "author": "Jenelle van Heerden, Sergej Majboroda",
     "source": "polyhaven",
@@ -443,13 +485,14 @@
       "floor.parquet"
     ],
     "bytes": 147940,
+    "thumb": "/thumbs/diagonal_parquet.webp",
+    "kind": "texture",
     "tileCm": 236,
     "mean": [
       165,
       102,
       54
-    ],
-    "thumb": "/thumbs/diagonal_parquet.webp"
+    ]
   },
   "dining_chair_02": {
     "title": "Dining Chair 02",
@@ -488,6 +531,20 @@
       2606
     ]
   },
+  "farm_field": {
+    "kind": "hdri",
+    "title": "Farm Field",
+    "author": "Dimitrios Savva, Jarod Guest",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/farm_field",
+    "licence": "cc0",
+    "tags": [
+      "backplate.rural.ground"
+    ],
+    "backplate": true,
+    "bytes": 264562,
+    "thumb": "/thumbs/farm_field.webp"
+  },
   "faucet_renend": {
     "title": "Faucet",
     "author": "Renend Studio",
@@ -507,7 +564,6 @@
     ]
   },
   "floor_tiles_06": {
-    "kind": "texture",
     "title": "Floor Tiles 06",
     "author": "Rob Tuytel",
     "source": "polyhaven",
@@ -517,13 +573,28 @@
       "floor.tile"
     ],
     "bytes": 114378,
+    "thumb": "/thumbs/floor_tiles_06.webp",
+    "kind": "texture",
     "tileCm": 300,
     "mean": [
       121,
       112,
       107
+    ]
+  },
+  "fouriesburg_mountain_lookout": {
+    "kind": "hdri",
+    "title": "Fouriesburg Mountain Lookout",
+    "author": "Dimitrios Savva, Jarod Guest",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/fouriesburg_mountain_lookout",
+    "licence": "cc0",
+    "tags": [
+      "backplate.mountains.high"
     ],
-    "thumb": "/thumbs/floor_tiles_06.webp"
+    "backplate": true,
+    "bytes": 212139,
+    "thumb": "/thumbs/fouriesburg_mountain_lookout.webp"
   },
   "fridge_grey_glowbox": {
     "title": "Refrigerator - Grey Polished Metal",
@@ -542,6 +613,20 @@
       795.2,
       341.6
     ]
+  },
+  "hamburg_canal": {
+    "kind": "hdri",
+    "title": "Hamburg Canal",
+    "author": "Greg Zaal",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/hamburg_canal",
+    "licence": "cc0",
+    "tags": [
+      "backplate.city_centre.low"
+    ],
+    "backplate": true,
+    "bytes": 316480,
+    "thumb": "/thumbs/hamburg_canal.webp"
   },
   "handle_knob": {
     "title": "Door Knob",
@@ -654,7 +739,6 @@
     ]
   },
   "herringbone_parquet": {
-    "kind": "texture",
     "title": "Herringbone Parquet",
     "author": "Jenelle van Heerden, Sergej Majboroda",
     "source": "polyhaven",
@@ -665,13 +749,28 @@
       "floor.parquet"
     ],
     "bytes": 264256,
+    "thumb": "/thumbs/herringbone_parquet.webp",
+    "kind": "texture",
     "tileCm": 340,
     "mean": [
       147,
       112,
       77
+    ]
+  },
+  "homecoming_center_rooftop": {
+    "kind": "hdri",
+    "title": "Homecoming Center Rooftop",
+    "author": "Dario Barresi",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/homecoming_center_rooftop",
+    "licence": "cc0",
+    "tags": [
+      "backplate.urban.high"
     ],
-    "thumb": "/thumbs/herringbone_parquet.webp"
+    "backplate": true,
+    "bytes": 223037,
+    "thumb": "/thumbs/homecoming_center_rooftop.webp"
   },
   "hood_chimney_ge": {
     "title": "GE Stainless Steel Chimney Style Range Hood",
@@ -690,6 +789,20 @@
       8392.7,
       11105.9
     ]
+  },
+  "hotel_rooftop_balcony": {
+    "kind": "hdri",
+    "title": "Hotel Rooftop Balcony",
+    "author": "Dimitrios Savva, Jarod Guest",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/hotel_rooftop_balcony",
+    "licence": "cc0",
+    "tags": [
+      "backplate.city_centre.high"
+    ],
+    "backplate": true,
+    "bytes": 139245,
+    "thumb": "/thumbs/hotel_rooftop_balcony.webp"
   },
   "kenney_toilet": {
     "title": "Toilet (Furniture Kit)",
@@ -851,7 +964,6 @@
     ]
   },
   "large_grey_tiles": {
-    "kind": "texture",
     "title": "Large Grey Tiles",
     "author": "Rob Tuytel",
     "source": "polyhaven",
@@ -861,16 +973,16 @@
       "floor.tile"
     ],
     "bytes": 435028,
+    "thumb": "/thumbs/large_grey_tiles.webp",
+    "kind": "texture",
     "tileCm": 300,
     "mean": [
       132,
       127,
       114
-    ],
-    "thumb": "/thumbs/large_grey_tiles.webp"
+    ]
   },
   "long_white_tiles": {
-    "kind": "texture",
     "title": "Long White Tiles",
     "author": "Jenelle van Heerden, Sergej Majboroda",
     "source": "polyhaven",
@@ -880,16 +992,16 @@
       "wall.tile"
     ],
     "bytes": 296778,
+    "thumb": "/thumbs/long_white_tiles.webp",
+    "kind": "texture",
     "tileCm": 127,
     "mean": [
       206,
       198,
       182
-    ],
-    "thumb": "/thumbs/long_white_tiles.webp"
+    ]
   },
   "marble_01": {
-    "kind": "texture",
     "title": "Marble 01",
     "author": "Rob Tuytel",
     "source": "polyhaven",
@@ -899,13 +1011,14 @@
       "floor.stone"
     ],
     "bytes": 100424,
+    "thumb": "/thumbs/marble_01.webp",
+    "kind": "texture",
     "tileCm": 150,
     "mean": [
       177,
       157,
       121
-    ],
-    "thumb": "/thumbs/marble_01.webp"
+    ]
   },
   "modern_arm_chair_01": {
     "title": "Modern Arm Chair 01",
@@ -1002,7 +1115,6 @@
     ]
   },
   "oak_wood_planks": {
-    "kind": "texture",
     "title": "Oak Wood Planks",
     "author": "Dimitrios Savva",
     "source": "polyhaven",
@@ -1012,13 +1124,14 @@
       "floor.wood"
     ],
     "bytes": 486492,
+    "thumb": "/thumbs/oak_wood_planks.webp",
+    "kind": "texture",
     "tileCm": 120,
     "mean": [
       162,
       118,
       84
-    ],
-    "thumb": "/thumbs/oak_wood_planks.webp"
+    ]
   },
   "oven_builtin_domino": {
     "title": "Built-in oven",
@@ -1039,7 +1152,6 @@
     ]
   },
   "painted_plaster_wall": {
-    "kind": "texture",
     "title": "Painted Plaster Wall",
     "author": "Amal Kumar",
     "source": "polyhaven",
@@ -1050,13 +1162,14 @@
       "wall.limewash"
     ],
     "bytes": 517280,
+    "thumb": "/thumbs/painted_plaster_wall.webp",
+    "kind": "texture",
     "tileCm": 200,
     "mean": [
       171,
       163,
       160
-    ],
-    "thumb": "/thumbs/painted_plaster_wall.webp"
+    ]
   },
   "painted_wooden_chair_01": {
     "title": "Painted Wooden Chair 01",
@@ -1115,6 +1228,20 @@
       113
     ]
   },
+  "potsdamer_platz": {
+    "kind": "hdri",
+    "title": "Potsdamer Platz",
+    "author": "Greg Zaal",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/potsdamer_platz",
+    "licence": "cc0",
+    "tags": [
+      "backplate.city_centre.ground"
+    ],
+    "backplate": true,
+    "bytes": 155742,
+    "thumb": "/thumbs/potsdamer_platz.webp"
+  },
   "potted_plant_01": {
     "title": "Potted Plant 01",
     "author": "Rico Cilliers",
@@ -1168,6 +1295,34 @@
       35.6,
       9.1
     ]
+  },
+  "residential_garden": {
+    "kind": "hdri",
+    "title": "Residential Garden",
+    "author": "Greg Zaal, Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/residential_garden",
+    "licence": "cc0",
+    "tags": [
+      "backplate.garden"
+    ],
+    "backplate": true,
+    "bytes": 261057,
+    "thumb": "/thumbs/residential_garden.webp"
+  },
+  "rolling_hills": {
+    "kind": "hdri",
+    "title": "Rolling Hills",
+    "author": "Dimitrios Savva, Jarod Guest",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/rolling_hills",
+    "licence": "cc0",
+    "tags": [
+      "backplate.rural.high"
+    ],
+    "backplate": true,
+    "bytes": 281166,
+    "thumb": "/thumbs/rolling_hills.webp"
   },
   "sheen_wood_leather_sofa": {
     "title": "Sheen Wood Leather Sofa",
@@ -1225,6 +1380,48 @@
       45
     ]
   },
+  "stuttgart_hillside": {
+    "kind": "hdri",
+    "title": "Stuttgart Hillside",
+    "author": "Andreas Mischok",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/stuttgart_hillside",
+    "licence": "cc0",
+    "tags": [
+      "backplate.suburban.high"
+    ],
+    "backplate": true,
+    "bytes": 297000,
+    "thumb": "/thumbs/stuttgart_hillside.webp"
+  },
+  "stuttgart_suburbs": {
+    "kind": "hdri",
+    "title": "Stuttgart Suburbs",
+    "author": "Andreas Mischok",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/stuttgart_suburbs",
+    "licence": "cc0",
+    "tags": [
+      "backplate.suburban.low"
+    ],
+    "backplate": true,
+    "bytes": 273464,
+    "thumb": "/thumbs/stuttgart_suburbs.webp"
+  },
+  "suburban_garden": {
+    "kind": "hdri",
+    "title": "Suburban Garden",
+    "author": "Dimitrios Savva, Jarod Guest",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/suburban_garden",
+    "licence": "cc0",
+    "tags": [
+      "backplate.suburban.ground"
+    ],
+    "backplate": true,
+    "bytes": 334633,
+    "thumb": "/thumbs/suburban_garden.webp"
+  },
   "switch_avot": {
     "title": "Light Switch",
     "author": "Avot",
@@ -1279,6 +1476,48 @@
       74.4,
       60.7
     ]
+  },
+  "urban_courtyard": {
+    "kind": "hdri",
+    "title": "Urban Courtyard",
+    "author": "Greg Zaal, Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/urban_courtyard",
+    "licence": "cc0",
+    "tags": [
+      "backplate.courtyard"
+    ],
+    "backplate": true,
+    "bytes": 285327,
+    "thumb": "/thumbs/urban_courtyard.webp"
+  },
+  "urban_street_01": {
+    "kind": "hdri",
+    "title": "Urban Street 01",
+    "author": "Andreas Mischok",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/urban_street_01",
+    "licence": "cc0",
+    "tags": [
+      "backplate.urban.ground"
+    ],
+    "backplate": true,
+    "bytes": 525721,
+    "thumb": "/thumbs/urban_street_01.webp"
+  },
+  "urban_street_03": {
+    "kind": "hdri",
+    "title": "Urban Street 03",
+    "author": "Andreas Mischok",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/urban_street_03",
+    "licence": "cc0",
+    "tags": [
+      "backplate.urban.low"
+    ],
+    "backplate": true,
+    "bytes": 211293,
+    "thumb": "/thumbs/urban_street_03.webp"
   },
   "vanity_blendffnike": {
     "title": "Sink with Faucet",

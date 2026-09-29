@@ -8,6 +8,7 @@ const room: Room = {
   id: "r1",
   apartmentId: "a1",
   finishes: { wallOverrides: {} },
+  wallOutlooks: {},
   sortOrder: 0,
   name: "Living",
   type: "living",

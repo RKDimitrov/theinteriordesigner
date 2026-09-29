@@ -30,6 +30,8 @@ model Apartment {
   northAngleDeg Float    @default(0)
   /// FitOut: default door/window/radiator styles and finishes, see src/domain/room/fit-out.ts
   fitOut        Json     @default("{}")
+  /// Surroundings: kind of area, waterfront, mountains (src/domain/context/outside.ts)
+  surroundings  Json     @default("{}")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   rooms         Room[]
@@ -56,6 +58,8 @@ model Room {
   wallOrientationOverrides Json      @default("{}")
   /// RoomFinishes: floor, walls, ceiling and accent walls (src/domain/materials/library.ts)
   finishes                 Json      @default("{}")
+  /// Record<wallIndex, Outlook>: what each wall looks onto (src/domain/context/outside.ts)
+  wallOutlooks             Json      @default("{}")
   sortOrder                Int       @default(0)
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt

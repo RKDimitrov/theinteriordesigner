@@ -106,6 +106,14 @@ export async function meanColour(path: string): Promise<[number, number, number]
   return [0, 1, 2].map((i) => Math.round(channels[i]!.mean)) as [number, number, number];
 }
 
+/** A 2048 × 1024 equirectangular JPG for the view outside the windows. */
+export async function writeBackplate(id: string, image: Uint8Array): Promise<number> {
+  const jpg = await sharp(image, { limitInputPixels: false }).resize(2048, 1024, { fit: "fill" }).jpeg({ quality: 82, mozjpeg: true }).toBuffer();
+  const out = join(PUBLIC, "hdris", `${id}.jpg`);
+  writeFile(out, jpg);
+  return jpg.length;
+}
+
 export function writeHdri(id: string, hdr: Uint8Array): number {
   const out = join(PUBLIC, "hdris", `${id}.hdr`);
   writeFile(out, hdr);

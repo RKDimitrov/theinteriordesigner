@@ -36,7 +36,7 @@ export const CatalogueEntry = z.discriminatedUnion("kind", [
     /** Mean sRGB colour of the diffuse map, for tinting. */
     mean: Rgb,
   }),
-  Common.extend({ kind: z.literal("hdri") }),
+  Common.extend({ kind: z.literal("hdri"), backplate: z.boolean().optional() }),
 ]);
 export type CatalogueEntry = z.infer<typeof CatalogueEntry>;
 
@@ -51,5 +51,6 @@ export const assetPaths = {
   model: (id: string) => `/models/${id}.glb`,
   texture: (id: string) => ["diff", "nor", "arm"].map((m) => `/textures/${id}/${m}.webp`),
   hdri: (id: string) => `/hdris/${id}.hdr`,
+  backplate: (id: string) => `/hdris/${id}.jpg`,
   thumb: (id: string) => `/thumbs/${id}.webp`,
 };

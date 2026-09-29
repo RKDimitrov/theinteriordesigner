@@ -81,7 +81,15 @@
     "north": "Wo ist Norden auf Ihrem Grundriss?",
     "northHint": "Ziehen Sie den Pfeil oder geben Sie einen Winkel ein. 0° bedeutet: Norden ist oben im Plan.",
     "submitCreate": "Wohnung anlegen",
-    "submitEdit": "Änderungen speichern"
+    "submitEdit": "Änderungen speichern",
+    "surroundings": "Umgebung",
+    "surroundingsHint": "Worauf die Fenster blicken; die 3D-Ansicht zeigt es.",
+    "surroundings_city_centre": "Innenstadt",
+    "surroundings_urban": "Städtisches Wohngebiet",
+    "surroundings_suburban": "Vorort",
+    "surroundings_rural": "Ländlich",
+    "waterfront": "Am Wasser",
+    "mountains": "Berge in Sicht"
   },
   "Overview": {
     "details": "Details",
@@ -1034,5 +1042,18 @@
     "terrazzo": "Terrazzo",
     "carpet": "Teppich",
     "beams": "Balken"
+  },
+  "Outside": {
+    "title": "Draußen",
+    "hint": "Aussicht und Gebäude um die Wohnung folgen Stockwerk und Umgebung der Wohnung.",
+    "floor": "{n}. Stock",
+    "outlook": "Ausblick",
+    "outlook_street": "Straße",
+    "outlook_courtyard": "Innenhof",
+    "outlook_garden": "Garten",
+    "outlook_open": "Freies Land",
+    "outlookDefault": "Wie die Umgebung",
+    "saveFailed": "Der Ausblick konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "wallN": "Wand {n}"
   }
 }

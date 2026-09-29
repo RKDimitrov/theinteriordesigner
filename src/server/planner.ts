@@ -47,7 +47,7 @@ export interface PlannerRoom {
 }
 
 export interface PlannerData {
-  apartment: Pick<Apartment, "id" | "name" | "northAngleDeg" | "country" | "tenure" | "lat" | "fitOut">;
+  apartment: Pick<Apartment, "id" | "name" | "northAngleDeg" | "country" | "tenure" | "lat" | "fitOut" | "floorLevel" | "surroundings">;
   projectCode: string;
   rooms: PlannerRoom[];
   mustKeep: MustKeepItem[];
@@ -83,6 +83,8 @@ export async function plannerData(userId: string, apartmentId: string): Promise<
       tenure: apartment.tenure,
       lat: apartment.lat,
       fitOut: apartment.fitOut,
+      floorLevel: apartment.floorLevel,
+      surroundings: apartment.surroundings,
     },
     projectCode: projectCode(apartment),
     rooms: rooms.map((room, i) => {

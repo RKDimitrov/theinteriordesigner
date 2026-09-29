@@ -67,7 +67,7 @@ describe("asset catalogue", () => {
   });
 
   it.each(entries)("%s has its files and a thumbnail", (id, e) => {
-    const files = e.kind === "model" ? [assetPaths.model(id)] : e.kind === "texture" ? assetPaths.texture(id) : [assetPaths.hdri(id)];
+    const files = e.kind === "model" ? [assetPaths.model(id)] : e.kind === "texture" ? assetPaths.texture(id) : [e.backplate ? assetPaths.backplate(id) : assetPaths.hdri(id)];
     for (const f of files) expect(onDisk(f), f).toBe(true);
     expect(e.thumb && onDisk(e.thumb), "thumbnail").toBeTruthy();
   });

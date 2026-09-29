@@ -10,6 +10,7 @@ import { FitOutBlock } from "./fit-out-controls";
 import { SelectionBlock } from "./inspector";
 import { usePlanner } from "./planner-context";
 import { FinishesBlock } from "./finishes-controls";
+import { OutsideBlock } from "./outside-controls";
 import { type Camera, CAMERA_PRESETS, type CameraPreset } from "./state";
 
 const PRESETS: readonly CameraPreset[] = ["eye", "architect", "bird", "plan"];
@@ -300,6 +301,7 @@ function Scene() {
         />
         <p className="pl-hint">{t("timeHint")}</p>
       </div>
+      <OutsideBlock />
       <div className="pl-blk">
         {(
           [

@@ -12,6 +12,7 @@ describe("outputsOf", () => {
     expect(outputsOf(entry("chair", "model"))).toEqual(["/models/chair.glb"]);
     expect(outputsOf(entry("oak", "texture"))).toEqual(["/textures/oak/diff.webp", "/textures/oak/nor.webp", "/textures/oak/arm.webp"]);
     expect(outputsOf(entry("sky", "hdri"))).toEqual(["/hdris/sky.hdr"]);
+    expect(outputsOf({ ...entry("street", "hdri"), backplate: true })).toEqual(["/hdris/street.jpg"]);
   });
 });
 

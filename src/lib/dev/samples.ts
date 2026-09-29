@@ -21,6 +21,7 @@ export const SAMPLE_APARTMENTS: readonly ApartmentInput[] = [
     totalAreaM2: 68,
     yearBuilt: 1905,
     northAngleDeg: 20,
+    surroundings: { kind: "urban", waterfront: false, mountains: false },
   },
   {
     name: "Lozenets flat",
@@ -32,6 +33,20 @@ export const SAMPLE_APARTMENTS: readonly ApartmentInput[] = [
     totalAreaM2: 82,
     yearBuilt: 2012,
     northAngleDeg: 0,
+    // Vitosha rises behind the suburb.
+    surroundings: { kind: "suburban", waterfront: false, mountains: true },
+  },
+  {
+    name: "HafenCity loft",
+    address: "Am Sandtorkai 60",
+    city: "Hamburg",
+    country: "DE",
+    floorLevel: 9,
+    tenure: "own",
+    totalAreaM2: 96,
+    yearBuilt: 2014,
+    northAngleDeg: 340,
+    surroundings: { kind: "city_centre", waterfront: true, mountains: false },
   },
 ];
 

@@ -46,6 +46,12 @@ export const polyhaven: Adapter = {
 
   async hdri(e) {
     const [i, f] = await Promise.all([info(e.ref), files(e.ref)]);
+    if (e.backplate) {
+      // The full-size tonemapped JPG; process.ts scales it to 2K.
+      const tone = (f as unknown as { tonemapped?: { url: string } }).tonemapped;
+      if (!tone) throw new Error(`no tonemapped JPG for ${e.ref}`);
+      return { hdr: await getBytes(tone.url), licence: "cc0", thumbUrl: i.thumbnail_url };
+    }
     const ref = f["hdri"]?.["1k"]?.["hdr"];
     if (!ref) throw new Error(`no 1k HDR for ${e.ref}`);
     return { hdr: await getBytes(ref.url), licence: "cc0", thumbUrl: i.thumbnail_url };

@@ -21,6 +21,7 @@ export interface RawTexture extends Raw {
 }
 
 export interface RawHdri extends Raw {
+  /** The HDR for lighting, or the tonemapped JPG for a backplate. */
   hdr: Uint8Array;
 }
 
