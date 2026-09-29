@@ -10,6 +10,7 @@ import { FitOutBlock } from "./fit-out-controls";
 import { SelectionBlock } from "./inspector";
 import { usePlanner } from "./planner-context";
 import { FinishesBlock } from "./finishes-controls";
+import { LightsBlock } from "./lights-controls";
 import { OutsideBlock } from "./outside-controls";
 import { type Camera, CAMERA_PRESETS, type CameraPreset } from "./state";
 
@@ -291,8 +292,8 @@ function Scene() {
         </h3>
         <input
           type="range"
-          min={7}
-          max={21}
+          min={5}
+          max={23}
           step={1}
           value={s.scene.hour}
           aria-label={t("timeOfDay")}
@@ -301,12 +302,12 @@ function Scene() {
         />
         <p className="pl-hint">{t("timeHint")}</p>
       </div>
+      <LightsBlock />
       <OutsideBlock />
       <div className="pl-blk">
         {(
           [
             ["realistic", t("realistic")],
-            ["ceilingLights", t("ceilingLights")],
             ["labels", t("pieceLabels")],
             ["foldWalls", t("foldWalls")],
           ] as const

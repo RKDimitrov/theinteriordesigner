@@ -855,7 +855,6 @@
     "timeOfDay": "Time of day",
     "timeHint": "The sun follows the apartment's north and latitude.",
     "realistic": "Realistic materials",
-    "ceilingLights": "Ceiling lights on",
     "pieceLabels": "Show piece labels",
     "foldWalls": "Fold away near walls",
     "tool_switch": "Switch",
@@ -872,7 +871,17 @@
     "searchMaterials": "Search materials",
     "noMaterials": "No material matches.",
     "finishesSaved": "Saved to the room.",
-    "finishesSaveFailed": "Couldn't save the finishes. Try again."
+    "finishesSaveFailed": "Couldn't save the finishes. Try again.",
+    "lights": "Lights",
+    "lightsIn": "Lights in {room}",
+    "lightColour": "Light colour",
+    "kelvin_2700": "Warm 2700 K",
+    "kelvin_3000": "Soft 3000 K",
+    "kelvin_4000": "Neutral 4000 K",
+    "lightsHint": "Lights come on by themselves after dark. In the walkthrough, click a light switch to flip a room's lights.",
+    "photo": "Photo",
+    "photoSaved": "High-quality photo saved.",
+    "photoRendering": "Rendering photo…"
   },
   "FitOut": {
     "title": "Doors & windows",

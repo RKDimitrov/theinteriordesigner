@@ -855,7 +855,6 @@
     "timeOfDay": "Tageszeit",
     "timeHint": "Die Sonne folgt der Nordrichtung und dem Breitengrad der Wohnung.",
     "realistic": "Realistische Materialien",
-    "ceilingLights": "Deckenlicht an",
     "pieceLabels": "Namen der Stücke zeigen",
     "foldWalls": "Nahe Wände wegklappen",
     "tool_switch": "Schalter",
@@ -872,7 +871,17 @@
     "searchMaterials": "Materialien suchen",
     "noMaterials": "Kein Material passt.",
     "finishesSaved": "Im Raum gespeichert.",
-    "finishesSaveFailed": "Die Oberflächen konnten nicht gespeichert werden. Bitte erneut versuchen."
+    "finishesSaveFailed": "Die Oberflächen konnten nicht gespeichert werden. Bitte erneut versuchen.",
+    "lights": "Licht",
+    "lightsIn": "Licht in {room}",
+    "lightColour": "Lichtfarbe",
+    "kelvin_2700": "Warm 2700 K",
+    "kelvin_3000": "Sanft 3000 K",
+    "kelvin_4000": "Neutral 4000 K",
+    "lightsHint": "Nach Einbruch der Dunkelheit geht das Licht von selbst an. Im Rundgang schaltet ein Klick auf einen Lichtschalter das Licht im Raum.",
+    "photo": "Foto",
+    "photoSaved": "Hochwertiges Foto gespeichert.",
+    "photoRendering": "Foto wird berechnet …"
   },
   "FitOut": {
     "title": "Türen & Fenster",

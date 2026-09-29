@@ -27,13 +27,13 @@ const WALL_UNIT_Y = 150;
 const WALL_UNIT_H = 70;
 const WALL_UNIT_D = 35;
 
-export function Fixed3D({ f, ceiling, realistic }: { f: FixedElement; ceiling: number; realistic: boolean }) {
+export function Fixed3D({ f, ceiling, realistic, lit = false }: { f: FixedElement; ceiling: number; realistic: boolean; lit?: boolean }) {
   const block = <Block f={f} ceiling={ceiling} realistic={realistic} />;
   if (!realistic || !isFixtureKind(f.kind)) return block;
   return (
     <AssetBoundary fallback={block}>
       <Suspense fallback={block}>
-        <Fixture f={f} ceiling={ceiling} />
+        <Fixture f={f} ceiling={ceiling} lit={lit} />
       </Suspense>
     </AssetBoundary>
   );
@@ -53,13 +53,13 @@ function Block({ f, ceiling, realistic }: { f: FixedElement; ceiling: number; re
   );
 }
 
-function Fixture({ f, ceiling }: { f: FixedElement; ceiling: number }) {
+function Fixture({ f, ceiling, lit }: { f: FixedElement; ceiling: number; lit: boolean }) {
   const cx = f.rect.x + f.rect.w / 2;
   const cz = f.rect.y + f.rect.d / 2;
   if (f.kind === "pendant" || f.kind === "chandelier") {
     return (
       <group position={[cx, ceiling, cz]}>
-        <Hanging v={fixtureModel(f.kind, f.model)} w={f.rect.w} drop={f.height} />
+        <Hanging v={fixtureModel(f.kind, f.model)} w={f.rect.w} drop={f.height} lit={lit} />
       </group>
     );
   }
@@ -137,13 +137,34 @@ export function Fitted({ v, w, h, d }: { v: ModelVariant; w: number; h: number; 
   return <primitive object={object} />;
 }
 
-/** A light hanging from y = 0 (the ceiling), scaled evenly to width `w`; its drop is capped at `drop`. */
-function Hanging({ v, w, drop }: { v: ModelVariant; w: number; drop: number }) {
+/** Parts of a lamp that glow when it is on: glass, globes, bulbs and shades. */
+const GLOWS = /glass|globe|bulb|shade|_lamp$/i;
+
+/**
+ * A light hanging from y = 0 (the ceiling), scaled evenly to width `w`; its
+ * drop is capped at `drop`. Lit, its glass and bulbs glow warm; unlit, even
+ * the model's own emissive maps are off.
+ */
+function Hanging({ v, w, drop, lit }: { v: ModelVariant; w: number; drop: number; lit: boolean }) {
   const { scene } = useGLTF(assetPaths.model(v.id), false, true);
   const object = useMemo(() => {
     const copy = cloneSkinned(scene);
     copy.traverse((o) => {
-      if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      mesh.castShadow = !lit;
+      // Own copies, so switching one lamp does not light every lamp sharing the model.
+      const mats = (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).map((m) => {
+        const c = (m as THREE.MeshStandardMaterial).clone();
+        const glows = GLOWS.test(c.name) || c.emissiveMap !== null;
+        if (glows && lit) {
+          if (!c.emissiveMap) c.emissive.set("#ffd49a");
+          c.emissiveIntensity = 2.2;
+          c.toneMapped = false;
+        } else c.emissiveIntensity = 0;
+        return c;
+      });
+      mesh.material = Array.isArray(mesh.material) ? mats : mats[0]!;
     });
     const box = new THREE.Box3().setFromObject(copy);
     const size = box.getSize(new THREE.Vector3());
@@ -153,6 +174,6 @@ function Hanging({ v, w, drop }: { v: ModelVariant; w: number; drop: number }) {
     root.add(copy);
     root.scale.setScalar(k);
     return root;
-  }, [scene, w, drop]);
+  }, [scene, w, drop, lit]);
   return <primitive object={object} />;
 }

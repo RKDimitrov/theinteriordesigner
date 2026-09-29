@@ -80,9 +80,10 @@ export type CameraPreset = keyof typeof CAMERA_PRESETS;
 export interface SceneSettings {
   /** Real models and PBR textures; off shows the drafting look (boxes with ink edges). */
   realistic: boolean;
-  /** Hour of day, 7–21. */
+  /** Hour of day, 5–23. */
   hour: number;
-  ceilingLights: boolean;
+  /** Colour temperature of the lamps, in kelvin. */
+  lightKelvin: number;
   labels: boolean;
   foldWalls: boolean;
 }
@@ -127,6 +128,8 @@ export interface PlannerState {
   finishes: Record<string, RoomFinishes>;
   /** What each wall looks onto, per room id (saved to Room.wallOutlooks). */
   outlooks: Record<string, WallOutlooks>;
+  /** Rooms whose lights were switched by hand (on or off); others follow the time of day. */
+  lightsSwitched: Record<string, boolean>;
   scene: SceneSettings;
   /** Door open state by "roomId:openingId", shared by orbit and walkthrough. */
   doorsOpen: Record<string, boolean>;
@@ -179,7 +182,8 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     preset: "architect",
     finishes: Object.fromEntries(plan.rooms.map((r) => [r.room.id, r.room.finishes])),
     outlooks: Object.fromEntries(plan.rooms.map((r) => [r.room.id, r.room.wallOutlooks])),
-    scene: { realistic: true, hour: 16, ceilingLights: false, labels: false, foldWalls: true },
+    scene: { realistic: true, hour: 16, lightKelvin: 2700, labels: false, foldWalls: true },
+    lightsSwitched: {},
     doorsOpen: {},
     savedViews: [],
     walking: false,

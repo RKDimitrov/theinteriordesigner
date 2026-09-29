@@ -33,7 +33,7 @@ export interface OutsideRoom {
   outlooks: WallOutlooks;
 }
 
-export function Outside({ rooms, surroundings, floorLevel, hour }: { rooms: readonly OutsideRoom[]; surroundings: Surroundings; floorLevel: number; hour: number }) {
+export function Outside({ rooms, surroundings, floorLevel, sky }: { rooms: readonly OutsideRoom[]; surroundings: Surroundings; floorLevel: number; sky: { light: number; tint: string } }) {
   const below = groundBelowCm(floorLevel);
   const bounds = useMemo(() => apartmentBounds(rooms), [rooms]);
   const sides = useMemo(() => windowSides(rooms, surroundings), [rooms, surroundings]);
@@ -42,22 +42,23 @@ export function Outside({ rooms, surroundings, floorLevel, hour }: { rooms: read
     defaultOutlook(surroundings.kind),
   );
   const panorama = backplateFor(surroundings, heightBand(floorLevel), outlook);
-  // Until phase E adds night skies, dim the photograph after dusk.
-  const light = hour >= 21 || hour <= 5 ? 0.18 : hour >= 20 || hour <= 6 ? 0.45 : 1;
   const opposite = storeysOpposite(surroundings);
+  const night = sky.light < 0.5;
+  // Facades take the light of the sky: warm at a low sun, blue-grey after dusk.
+  const facade = useMemo(() => dimmed(facadeOf(surroundings), sky), [surroundings, sky]);
   const m = BUILDING_MARGIN_CM;
 
   return (
     <group>
-      <Panorama id={panorama} groundY={-below} center={bounds.center} light={light} />
+      <Panorama id={panorama} groundY={-below} center={bounds.center} light={sky.light} tint={sky.tint} />
       <ShadowCatcher y={-below} center={bounds.center} />
-      {below > 0 && <Block x0={bounds.x0 - m} x1={bounds.x1 + m} z0={bounds.z0 - m} z1={bounds.z1 + m} y0={-below} y1={-1} facade={facadeOf(surroundings)} windows />}
+      {below > 0 && <Block x0={bounds.x0 - m} x1={bounds.x1 + m} z0={bounds.z0 - m} z1={bounds.z1 + m} y0={-below} y1={-1} facade={facade} night={night} />}
       {sides.map((s) => {
         const d = OPPOSITE_DISTANCE_CM[s.outlook];
         if (d === null) return null;
         // A courtyard is closed in by the same building, as high as the flat's own floor plus the roof storey.
         const height = (s.outlook === "courtyard" ? Math.max(floorLevel + 1, 3) : opposite) * STOREY_CM;
-        return <Opposite key={s.dir} dir={s.dir} bounds={bounds} distance={d + m} y0={-below} height={height} facade={facadeOf(surroundings)} />;
+        return <Opposite key={s.dir} dir={s.dir} bounds={bounds} distance={d + m} y0={-below} height={height} facade={facade} night={night} />;
       })}
     </group>
   );
@@ -65,7 +66,8 @@ export function Outside({ rooms, surroundings, floorLevel, hour }: { rooms: read
 
 /* ---------------- panorama ---------------- */
 
-function Panorama({ id, groundY, center, light }: { id: string; groundY: number; center: THREE.Vector3; light: number }) {
+/** The panorama follows the sun: warm and dimmer at a low sun, dark blue after dusk. */
+function Panorama({ id, groundY, center, light, tint }: { id: string; groundY: number; center: THREE.Vector3; light: number; tint: string }) {
   // Set up once, when the texture loads (textures are cached per URL).
   const map = useTexture(assetPaths.backplate(id), (t) => {
     const tex = t as THREE.Texture;
@@ -86,8 +88,8 @@ function Panorama({ id, groundY, center, light }: { id: string; groundY: number;
   }, [map]);
   useEffect(() => () => sky.geometry.dispose(), [sky]);
   useEffect(() => {
-    (sky.material as THREE.MeshBasicMaterial).color.setScalar(light);
-  }, [sky, light]);
+    (sky.material as THREE.MeshBasicMaterial).color.set(tint).multiplyScalar(light);
+  }, [sky, light, tint]);
   return <primitive object={sky} position={[center.x, groundY + CAPTURE_CM, center.z]} />;
 }
 
@@ -168,8 +170,14 @@ function facadeOf(s: Surroundings): Material {
   return { id: "facade", surfaces: ["wall"], group: "plaster", texture: "painted_plaster_wall", tint };
 }
 
+/** The facade material in the light of the sky. */
+function dimmed(m: Material, sky: { light: number; tint: string }): Material {
+  const c = new THREE.Color(m.tint).multiply(new THREE.Color(sky.tint)).multiplyScalar(Math.max(0.12, sky.light));
+  return { ...m, tint: `#${c.getHexString()}` };
+}
+
 /** A building across the street or courtyard, facing the apartment, running well past it on both sides. */
-function Opposite({ dir, bounds, distance, y0, height, facade }: { dir: Dir; bounds: Bounds; distance: number; y0: number; height: number; facade: Material }) {
+function Opposite({ dir, bounds, distance, y0, height, facade, night }: { dir: Dir; bounds: Bounds; distance: number; y0: number; height: number; facade: Material; night: boolean }) {
   const depth = 1200;
   const extra = 2500;
   const b = bounds;
@@ -181,11 +189,11 @@ function Opposite({ dir, bounds, distance, y0, height, facade }: { dir: Dir; bou
         : dir === "s"
           ? { x0: b.x0 - extra, x1: b.x1 + extra, z0: b.z1 + distance, z1: b.z1 + distance + depth }
           : { x0: b.x0 - extra, x1: b.x1 + extra, z0: b.z0 - distance - depth, z1: b.z0 - distance };
-  return <Block {...box} y0={y0} y1={y0 + height} facade={facade} windows />;
+  return <Block {...box} y0={y0} y1={y0 + height} facade={facade} night={night} />;
 }
 
 /** A rendered block with rows of windows on every side, one row per storey. */
-function Block({ x0, x1, z0, z1, y0, y1, facade, windows }: { x0: number; x1: number; z0: number; z1: number; y0: number; y1: number; facade: Material; windows: boolean }) {
+function Block({ x0, x1, z0, z1, y0, y1, facade, night }: { x0: number; x1: number; z0: number; z1: number; y0: number; y1: number; facade: Material; night: boolean }) {
   const geo = useMemo(() => cmUV(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)), [x0, x1, y0, y1, z0, z1]);
   useEffect(() => () => geo.dispose(), [geo]);
   return (
@@ -193,15 +201,20 @@ function Block({ x0, x1, z0, z1, y0, y1, facade, windows }: { x0: number; x1: nu
       <mesh geometry={geo} castShadow receiveShadow raycast={() => {}}>
         <RealSurface m={facade} />
       </mesh>
-      {windows && <WindowGrid x0={x0} x1={x1} z0={z0} z1={z1} y0={y0} y1={y1} />}
+      <WindowGrid x0={x0} x1={x1} z0={z0} z1={z1} y0={y0} y1={y1} night={night} />
     </group>
   );
 }
 
 const PANE = { w: 120, h: 150, sill: 90, pitch: 300 };
+const DARK = new THREE.Color("#2d343a");
+const LIT = new THREE.Color("#ffc983");
 
-/** Dark window panes in pale frames on all four faces, instanced. */
-function WindowGrid({ x0, x1, z0, z1, y0, y1 }: { x0: number; x1: number; z0: number; z1: number; y0: number; y1: number }) {
+/** About a third of the neighbours' windows are lit at night; fixed per window, so they do not flicker. */
+const litAtNight = (i: number) => ((i * 2654435761) >>> 0) % 100 < 35;
+
+/** Dark window panes in pale frames on all four faces, instanced; at night some glow warm. */
+function WindowGrid({ x0, x1, z0, z1, y0, y1, night }: { x0: number; x1: number; z0: number; z1: number; y0: number; y1: number; night: boolean }) {
   const glass = useRef<THREE.InstancedMesh>(null);
   const frame = useRef<THREE.InstancedMesh>(null);
   const slots = useMemo(() => {
@@ -234,10 +247,14 @@ function WindowGrid({ x0, x1, z0, z1, y0, y1 }: { x0: number; x1: number; z0: nu
       m.compose(new THREE.Vector3(p.x, p.y, p.z), q, one);
       glass.current?.setMatrixAt(i, m);
       frame.current?.setMatrixAt(i, m);
+      glass.current?.setColorAt(i, night && litAtNight(i) ? LIT : DARK);
     });
-    if (glass.current) glass.current.instanceMatrix.needsUpdate = true;
+    if (glass.current) {
+      glass.current.instanceMatrix.needsUpdate = true;
+      if (glass.current.instanceColor) glass.current.instanceColor.needsUpdate = true;
+    }
     if (frame.current) frame.current.instanceMatrix.needsUpdate = true;
-  }, [slots]);
+  }, [slots, night]);
   return (
     <>
       <instancedMesh key={`f${slots.length}`} ref={frame} args={[undefined, undefined, slots.length]} raycast={() => {}}>
@@ -246,7 +263,12 @@ function WindowGrid({ x0, x1, z0, z1, y0, y1 }: { x0: number; x1: number; z0: nu
       </instancedMesh>
       <instancedMesh key={`g${slots.length}`} ref={glass} args={[undefined, undefined, slots.length]} position-y={0} raycast={() => {}}>
         <planeGeometry args={[PANE.w, PANE.h]} />
-        <meshStandardMaterial color="#2d343a" metalness={0.4} roughness={0.15} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-1} />
+        {/* Instance colours: dark glass by day, some warm and glowing at night (unlit material so they shine). */}
+        {night ? (
+          <meshBasicMaterial side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-1} toneMapped={false} />
+        ) : (
+          <meshStandardMaterial metalness={0.4} roughness={0.15} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={-1} />
+        )}
       </instancedMesh>
     </>
   );

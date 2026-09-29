@@ -63,7 +63,14 @@ function OpeningBody(p: OpeningProps & { side: number }) {
     const plate = 8.5;
     const w = plate * o.gangs;
     return (
-      <group position={[o.offset + o.width / 2, o.height - 6, 0]} scale-z={p.side}>
+      <group
+        position={[o.offset + o.width / 2, o.height - 6, 0]}
+        scale-z={p.side}
+        onClick={(e) => {
+          e.stopPropagation();
+          p.onToggle?.();
+        }}
+      >
         {p.realistic ? (
           <Suspense fallback={null}>
             {Array.from({ length: o.gangs }, (_, i) => (

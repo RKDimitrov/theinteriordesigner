@@ -3,9 +3,9 @@
 import apartmentHdri from "@pmndrs/assets/hdri/apartment.exr";
 import { Edges, Environment, Html, OrbitControls, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { EffectComposer, N8AO, ToneMapping } from "@react-three/postprocessing";
+import { Bloom, EffectComposer, N8AO, ToneMapping } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
-import { Camera as CameraIcon, DoorOpen, Footprints, X } from "lucide-react";
+import { Aperture, Camera as CameraIcon, DoorOpen, Footprints, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPosition } from "suncalc";
@@ -20,6 +20,7 @@ import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { fixtureWall } from "@/domain/room/fixtures";
 import { type Material, resolveFinishes } from "@/domain/materials/library";
+import { roomLit, skyLight } from "@/domain/planner/lighting";
 import { skirtingPieces } from "@/domain/room/opening-parts";
 import { canStand, roomAt, startSpot, type WalkRoom, wallPieces } from "@/domain/planner/walls3d";
 import type { FurnitureItem } from "@/domain/schemas/design";
@@ -32,6 +33,8 @@ import { FlatSurface, RealSurface } from "./three/surface-materials";
 import { Opening3D, sideSign } from "./three/openings3d";
 import { Fixed3D } from "./three/fixtures3d";
 import { Outside } from "./three/outside3d";
+import { RoomLights } from "./three/lights3d";
+import { PhotoCapture, type PhotoApi } from "./three/photo";
 import { SkirtingBoard } from "./three/trim3d";
 import { RealPiece } from "./three/pieces";
 
@@ -102,6 +105,18 @@ export default function Stage3D() {
     toast(t("screenshotSaved"));
   };
 
+  const photoApi = useRef<PhotoApi | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const photo = async () => {
+    const url = await photoApi.current?.capture();
+    if (!url) return;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data.projectCode}-photo.png`;
+    a.click();
+    toast(t("photoSaved"));
+  };
+
   const startWalk = () => dispatch({ type: "set", patch: { walking: true } });
   const stopWalk = () => {
     if (document.pointerLockElement) document.exitPointerLock();
@@ -126,7 +141,8 @@ export default function Stage3D() {
         {!empty && (
           <Canvas
             shadows="percentage"
-            dpr={[1, 1.5]}
+            // Photo mode renders at twice the pixel density.
+            dpr={photoBusy ? 2 : [1, 1.5]}
             gl={{ preserveDrawingBuffer: true, antialias: true }}
             camera={{ fov: fovOf(s.camera.lens), near: 5, far: 40000, position: [bounds.cx + 800, 700, bounds.cz + 800] }}
             onCreated={(state) => {
@@ -138,10 +154,22 @@ export default function Stage3D() {
           >
             <PerformanceMonitor onDecline={() => setAo(false)} />
             <SceneContents placed={placed} sun={sun} />
+            <PhotoCapture apiRef={photoApi} onBusy={setPhotoBusy} />
             <EffectComposer multisampling={4}>
-              {/* Scene units are cm: occlusion reaches ~40 cm from contact. */}
-              <N8AO enabled={ao} aoRadius={40} distanceFalloff={1} intensity={2.5} quality="medium" halfRes />
-              <ToneMapping mode={ToneMappingMode.NEUTRAL} />
+              {/* Scene units are cm: occlusion reaches ~40 cm from contact. Photo mode renders it at full quality. */}
+              <N8AO enabled={ao || photoBusy} aoRadius={40} distanceFalloff={1} intensity={2.5} quality={photoBusy ? "high" : "medium"} halfRes={!photoBusy} />
+              {/* A soft glow round lit lamps and bright windows. */}
+              <Bloom mipmapBlur intensity={0.3} luminanceThreshold={0.92} luminanceSmoothing={0.2} />
+              {/* Walking, the eye adapts: a dim room brightens, a bright window does not blow out. */}
+              <ToneMapping
+                key={s.walking ? "adaptive" : "neutral"}
+                mode={s.walking ? ToneMappingMode.REINHARD2_ADAPTIVE : ToneMappingMode.NEUTRAL}
+                resolution={256}
+                middleGrey={0.62}
+                maxLuminance={14}
+                averageLuminance={1}
+                adaptationRate={1.2}
+              />
             </EffectComposer>
             {s.walking ? (
               <WalkControls placed={placed} onLocation={setLocation} apiRef={walkApiRef} coarse={!!coarse} onExit={stopWalk} />
@@ -157,6 +185,9 @@ export default function Stage3D() {
             <div className="pl-cam-bar">
               <Button size="sm" variant="outline" onClick={screenshot} disabled={empty}>
                 <CameraIcon /> {t("screenshot")}
+              </Button>
+              <Button size="sm" variant="outline" onClick={photo} disabled={empty || photoBusy} data-testid="planner-photo">
+                <Aperture /> {photoBusy ? t("photoRendering") : t("photo")}
               </Button>
               <Button size="sm" variant="outline" onClick={startWalk} disabled={empty} data-testid="planner-walkthrough">
                 <Footprints /> {t("walkthrough")}
@@ -234,6 +265,7 @@ function sunVector(hour: number, lat: number, northAngleDeg: number) {
   const at = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hour, 0));
   // suncalc 2.x: degrees, azimuth clockwise from north.
   const pos = getPosition(at, lat, 0);
+  const altitudeDeg = pos.altitude;
   const theta = ((northAngleDeg + pos.azimuth) * Math.PI) / 180; // plan angle, clockwise from up
   const alt = (Math.max(pos.altitude, 3) * Math.PI) / 180;
   const dir = new THREE.Vector3(Math.sin(theta) * Math.cos(alt), Math.sin(alt), -Math.cos(theta) * Math.cos(alt)).normalize();
@@ -245,6 +277,8 @@ function sunVector(hour: number, lat: number, northAngleDeg: number) {
     envIntensity: up ? (warm ? 0.45 : 0.6) : 0.2,
     color: warm ? "#ffd2a1" : "#fff4e2",
     sky: !up ? "#b9b3b8" : warm ? "#f1dcc6" : "#ece6d8",
+    /** Brightness and tint of the view outside. */
+    sky3d: skyLight(altitudeDeg),
   };
 }
 
@@ -297,7 +331,7 @@ const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Pla
             rooms={placed.map((p) => ({ room: p.r.room, origin: p.origin, outlooks: s.outlooks[p.r.room.id] ?? {} }))}
             surroundings={data.apartment.surroundings}
             floorLevel={data.apartment.floorLevel}
-            hour={s.scene.hour}
+            sky={sun.sky3d}
           />
         </Suspense>
       ) : (
@@ -309,11 +343,7 @@ const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Pla
       {placed.map((p) => (
         <Room3D key={p.r.room.id} placed={p} />
       ))}
-      {s.scene.ceilingLights &&
-        placed.map((p) => {
-          const b = bbox(p.r.room.polygon);
-          return <pointLight key={p.r.room.id} position={[p.origin.x + b.x + b.w / 2, p.r.room.ceilingHeight - 20, p.origin.y + b.y + b.d / 2]} intensity={1.4} distance={900} decay={0} color="#ffc98a" />;
-        })}
+      <RoomLights placed={placed} />
     </>
   );
 });
@@ -329,8 +359,8 @@ function Room3D({ placed }: { placed: Placed }) {
     g.rotateX(Math.PI / 2);
     return g;
   }, [room.polygon]);
-  const lamps = r.furniture.filter((f) => f.category === "floor_lamp").slice(0, 6);
   const trim = s.fitOut.trim;
+  const lit = roomLit(room.id, s.lightsSwitched, s.scene.hour);
   // Fixtures against a wall fold away with it in the cut-away view.
   const fixedWall = useMemo(() => {
     const m = new Map<string, number>();
@@ -354,7 +384,7 @@ function Room3D({ placed }: { placed: Placed }) {
           {room.fixedElements
             .filter((f) => fixedWall.get(f.id) === w.index)
             .map((f) => (
-              <Fixed3D key={f.id} f={f} ceiling={room.ceilingHeight} realistic={s.scene.realistic} />
+              <Fixed3D key={f.id} f={f} ceiling={room.ceilingHeight} realistic={s.scene.realistic} lit={lit} />
             ))}
           {skirting
             .filter((p) => p.wallIndex === w.index)
@@ -371,13 +401,10 @@ function Room3D({ placed }: { placed: Placed }) {
       {room.fixedElements
         .filter((f) => !fixedWall.has(f.id))
         .map((f) => (
-          <Fixed3D key={f.id} f={f} ceiling={room.ceilingHeight} realistic={s.scene.realistic} />
+          <Fixed3D key={f.id} f={f} ceiling={room.ceilingHeight} realistic={s.scene.realistic} lit={lit} />
         ))}
       {r.furniture.map((f) => (
         <Piece3D key={f.id} roomId={room.id} f={f} ceiling={room.ceilingHeight} showLabel={s.scene.labels} />
-      ))}
-      {lamps.map((f) => (
-        <pointLight key={f.id} position={[f.x, Math.max(80, f.h - 20), f.y]} intensity={s.scene.ceilingLights || s.scene.hour > 18 ? 1.1 : 0.35} distance={450} decay={0} color="#ffb46b" />
       ))}
     </group>
   );
@@ -485,7 +512,12 @@ function RoomOpening({ roomId, walls, o, ceiling }: { roomId: string; walls: rea
       fitOut={s.fitOut}
       realistic={s.scene.realistic}
       open={open}
-      onToggle={() => dispatch({ type: "set", patch: { doorsOpen: { ...s.doorsOpen, [key]: !open } } })}
+      onToggle={() =>
+        o.kind === "switch"
+          ? // A light switch flips its room's lights.
+            dispatch({ type: "set", patch: { lightsSwitched: { ...s.lightsSwitched, [roomId]: !roomLit(roomId, s.lightsSwitched, s.scene.hour) } } })
+          : dispatch({ type: "set", patch: { doorsOpen: { ...s.doorsOpen, [key]: !open } } })
+      }
     />
   );
 }
@@ -496,7 +528,7 @@ function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: Furnitu
   const rug = f.placement === "floor_covering";
   const h = rug ? 1 : Math.max(1, Math.min(f.h, ceiling));
   const y = f.placement === "wall" ? f.elevation + h / 2 : f.placement === "ceiling" ? ceiling - h / 2 : h / 2 + (rug ? 0.5 : 0);
-  const lit = s.scene.ceilingLights || s.scene.hour > 18;
+  const lit = roomLit(roomId, s.lightsSwitched, s.scene.hour);
   const box = (
     <mesh castShadow={!rug} receiveShadow>
       <boxGeometry args={[f.w, h, f.d]} />
@@ -614,6 +646,10 @@ function WalkControls({
   const gl = useThree((st) => st.gl);
   const rooms: WalkRoom[] = useMemo(() => placed.map((p) => ({ id: p.r.room.id, room: p.r.room, origin: p.origin, furniture: p.r.furniture })), [placed]);
   const doors = useRef(s.doorsOpen);
+  const lights = useRef({ switched: s.lightsSwitched, hour: s.scene.hour });
+  useEffect(() => {
+    lights.current = { switched: s.lightsSwitched, hour: s.scene.hour };
+  }, [s.lightsSwitched, s.scene.hour]);
   useEffect(() => {
     doors.current = s.doorsOpen;
   }, [s.doorsOpen]);
@@ -628,19 +664,23 @@ function WalkControls({
   const toggleNearestDoor = () => {
     const p = player.current;
     if (!p) return;
-    let best: { key: string; d: number } | null = null;
+    // The nearest door or light switch within reach.
+    let best: { key: string; roomId: string; kind: "door" | "switch"; d: number } | null = null;
     for (const r of rooms) {
       const walls = wallsOf(r.room.polygon);
       for (const o of r.room.openings) {
-        if (o.kind !== "door" || o.swing === "none") continue;
+        if (!(o.kind === "door" && o.swing !== "none") && o.kind !== "switch") continue;
         const span = openingSpan(walls, o);
         if (!span) continue;
         const c = { x: r.origin.x + (span.start.x + span.end.x) / 2, y: r.origin.y + (span.start.y + span.end.y) / 2 };
         const d = Math.hypot(c.x - p.x, c.y - p.y);
-        if (d < DOOR_REACH && (!best || d < best.d)) best = { key: doorKey(r.id, o.id), d };
+        if (d < DOOR_REACH && (!best || d < best.d)) best = { key: doorKey(r.id, o.id), roomId: r.id, kind: o.kind === "switch" ? "switch" : "door", d };
       }
     }
-    if (best) dispatch({ type: "set", patch: { doorsOpen: { ...doors.current, [best.key]: !doors.current[best.key] } } });
+    if (best?.kind === "switch") {
+      const { switched, hour } = lights.current;
+      dispatch({ type: "set", patch: { lightsSwitched: { ...switched, [best.roomId]: !roomLit(best.roomId, switched, hour) } } });
+    } else if (best) dispatch({ type: "set", patch: { doorsOpen: { ...doors.current, [best.key]: !doors.current[best.key] } } });
   };
 
   useEffect(() => {
