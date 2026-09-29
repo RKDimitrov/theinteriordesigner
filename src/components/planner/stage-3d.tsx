@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPosition } from "suncalc";
 import * as THREE from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { Button } from "@/components/ui/button";
 import { openingSpan } from "@/domain/geometry/openings";
 import { bbox } from "@/domain/geometry/polygon";
@@ -18,20 +19,20 @@ import type { Vec } from "@/domain/geometry/vec";
 import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { fixtureWall } from "@/domain/room/fixtures";
+import { type Material, resolveFinishes } from "@/domain/materials/library";
 import { skirtingPieces } from "@/domain/room/opening-parts";
 import { canStand, roomAt, startSpot, type WalkRoom, wallPieces } from "@/domain/planner/walls3d";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening, Room } from "@/domain/schemas/room";
 import { usePlanner } from "./planner-context";
-import { type Camera, DEFAULT_FINISH, type Finish, type PlanRoom } from "./state";
+import { type Camera, type PlanRoom } from "./state";
 import { AssetBoundary } from "./three/asset-boundary";
-import { FLOOR_TEXTURE } from "./three/assets";
-import { FLOOR_BASE, floorTexture, WALL_COLOR } from "./three/materials";
+import { cmUV } from "./three/geometry";
+import { FlatSurface, RealSurface } from "./three/surface-materials";
 import { Opening3D, sideSign } from "./three/openings3d";
 import { Fixed3D } from "./three/fixtures3d";
 import { SkirtingBoard } from "./three/trim3d";
 import { RealPiece } from "./three/pieces";
-import { tintFor, usePbr } from "./three/textures";
 
 const INK = "#2b2622";
 const CLAY = "#c8794a";
@@ -51,7 +52,7 @@ const doorKey = (roomId: string, id: string) => `${roomId}:${id}`;
 interface Placed {
   r: PlanRoom;
   origin: Vec;
-  finish: Finish;
+  finish: ReturnType<typeof resolveFinishes>;
 }
 
 export default function Stage3D() {
@@ -68,7 +69,7 @@ export default function Stage3D() {
     () =>
       s.plan.rooms
         .filter((r) => s.visible3d.includes(r.room.id))
-        .map((r) => ({ r, origin: s.plan.origins[r.room.id] ?? { x: 0, y: 0 }, finish: s.finishes[r.room.id] ?? DEFAULT_FINISH })),
+        .map((r) => ({ r, origin: s.plan.origins[r.room.id] ?? { x: 0, y: 0 }, finish: resolveFinishes(s.finishes[r.room.id]) })),
     [s.plan.rooms, s.plan.origins, s.visible3d, s.finishes],
   );
 
@@ -332,19 +333,12 @@ function Room3D({ placed }: { placed: Placed }) {
   return (
     <group position={[origin.x, 0, origin.y]}>
       <mesh geometry={floorGeo} receiveShadow>
-        {s.scene.realistic ? (
-          <AssetBoundary fallback={<DrawnFloor finish={finish.floor} />}>
-            <Suspense fallback={<DrawnFloor finish={finish.floor} />}>
-              <RealFloor finish={finish.floor} />
-            </Suspense>
-          </AssetBoundary>
-        ) : (
-          <DrawnFloor finish={finish.floor} />
-        )}
+        <Surface m={finish.floor} realistic={s.scene.realistic} side={THREE.DoubleSide} />
       </mesh>
+      {s.walking && <Ceiling room={room} m={finish.ceiling} realistic={s.scene.realistic} />}
       {walls.map((w) => (
         <FoldGroup key={w.index} wall={w} origin={origin}>
-          <Wall3D room={room} wall={w} color={WALL_COLOR[finish.walls]} />
+          <Wall3D room={room} wall={w} m={finish.wall(w.index)} realistic={s.scene.realistic} />
           {room.fixedElements
             .filter((f) => fixedWall.get(f.id) === w.index)
             .map((f) => (
@@ -377,17 +371,52 @@ function Room3D({ placed }: { placed: Placed }) {
   );
 }
 
-function DrawnFloor({ finish }: { finish: Finish["floor"] }) {
-  const tex = useMemo(() => floorTexture(finish), [finish]);
-  return <meshStandardMaterial map={tex} color={tex ? "#ffffff" : "#cfa77a"} roughness={0.8} side={THREE.DoubleSide} />;
+/** A wall, floor or ceiling material: photographed PBR when realistic (flat colour while it loads), else flat. */
+function Surface({ m, realistic, side }: { m: Material; realistic: boolean; side?: THREE.Side }) {
+  const flat = <FlatSurface m={m} side={side} />;
+  if (!realistic) return flat;
+  return (
+    <AssetBoundary fallback={flat}>
+      <Suspense fallback={flat}>
+        <RealSurface m={m} side={side} />
+      </Suspense>
+    </AssetBoundary>
+  );
 }
 
-/** Photographed PBR floor, tinted to the finish's swatch; the floor geometry's UVs are already in cm. */
-function RealFloor({ finish }: { finish: Finish["floor"] }) {
-  const id = FLOOR_TEXTURE[finish];
-  const t = usePbr(id);
-  const color = useMemo(() => tintFor(FLOOR_BASE[finish], id), [finish, id]);
-  return <meshStandardMaterial {...t} color={color} side={THREE.DoubleSide} />;
+/** The ceiling, seen from below while walking through. Exposed beams run across the shorter span. */
+function Ceiling({ room, m, realistic }: { room: Room; m: Material; realistic: boolean }) {
+  const geo = useMemo(() => {
+    const shape = new THREE.Shape(room.polygon.map((p) => new THREE.Vector2(p.x, p.y)));
+    const g = cmUV(new THREE.ShapeGeometry(shape));
+    g.rotateX(Math.PI / 2);
+    return g;
+  }, [room.polygon]);
+  const beams = m.group === "beams";
+  const b = useMemo(() => bbox(room.polygon), [room.polygon]);
+  const acrossX = b.w <= b.d;
+  const span = acrossX ? b.w : b.d;
+  const run = acrossX ? b.d : b.w;
+  const count = Math.max(1, Math.floor(run / 70));
+  return (
+    <group>
+      <mesh geometry={geo} position-y={room.ceilingHeight}>
+        {beams ? <meshStandardMaterial color="#f4f1ea" roughness={0.95} side={THREE.DoubleSide} /> : <Surface m={m} realistic={realistic} side={THREE.DoubleSide} />}
+      </mesh>
+      {beams &&
+        Array.from({ length: count }, (_, i) => {
+          const t = ((i + 0.5) * run) / count;
+          const x = acrossX ? b.x + b.w / 2 : b.x + t;
+          const z = acrossX ? b.y + t : b.y + b.d / 2;
+          return (
+            <mesh key={i} position={[x, room.ceilingHeight - 10, z]} castShadow>
+              <boxGeometry args={acrossX ? [span, 20, 12] : [12, 20, span]} />
+              <Surface m={m} realistic={realistic} />
+            </mesh>
+          );
+        })}
+    </group>
+  );
 }
 
 /** Hides its children while the camera is outside `wall` (dollhouse cutaway), unless folding is off or walking. */
@@ -405,19 +434,28 @@ function FoldGroup({ wall, origin, children }: { wall: Wall; origin: Vec; childr
   return <group ref={group}>{children}</group>;
 }
 
-/** One wall, split into solid boxes around its openings. */
-function Wall3D({ room, wall, color }: { room: Room; wall: Wall; color: string }) {
+/**
+ * One wall, split into solid boxes around its openings and merged into one
+ * mesh. UVs are in cm in the wall's own frame, so a brick or tile pattern
+ * runs on across the pieces above and below windows.
+ */
+function Wall3D({ room, wall, m, realistic }: { room: Room; wall: Wall; m: Material; realistic: boolean }) {
   const pieces = useMemo(() => wallPieces(wall.length, room.ceilingHeight, room.openings.filter((o) => o.wallIndex === wall.index)), [wall, room.ceilingHeight, room.openings]);
+  const side = sideSign(wall);
+  const geo = useMemo(() => {
+    const parts = pieces.map((p) => new THREE.BoxGeometry(p.to - p.from, p.y1 - p.y0, W).translate((p.from + p.to) / 2, (p.y0 + p.y1) / 2, (-W / 2) * side));
+    const merged = parts.length ? mergeGeometries(parts) : new THREE.BufferGeometry();
+    parts.forEach((g) => g.dispose());
+    return cmUV(merged);
+  }, [pieces, side]);
+  useEffect(() => () => geo.dispose(), [geo]);
   const angle = -Math.atan2(wall.dir.y, wall.dir.x);
   return (
     <group position={[wall.a.x, 0, wall.a.y]} rotation-y={angle}>
-      {pieces.map((p, i) => (
-        <mesh key={i} position={[(p.from + p.to) / 2, (p.y0 + p.y1) / 2, -W / 2 * sideSign(wall)]} castShadow receiveShadow>
-          <boxGeometry args={[p.to - p.from, p.y1 - p.y0, W]} />
-          <meshStandardMaterial color={color} roughness={0.95} />
-          <Edges color={INK} threshold={15} />
-        </mesh>
-      ))}
+      <mesh geometry={geo} castShadow receiveShadow>
+        <Surface m={m} realistic={realistic} />
+        {!realistic && <Edges color={INK} threshold={15} />}
+      </mesh>
     </group>
   );
 }

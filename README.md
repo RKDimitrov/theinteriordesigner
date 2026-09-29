@@ -84,6 +84,8 @@ Doors, windows, radiators and skirting are built from real joinery profiles, not
 
 Kitchen and bathroom fixtures (kitchen runs, fridges, WCs, basins, showers, bathtubs) and ceiling lights are fixed elements placed with the planner's Fixture tool (`F`); light switches use the Switch tool (`S`); curtains and blinds are set per window in the inspector. The designer works around fixtures and keeps their clearance free (`FIXTURE_CLEARANCE`). See `docs/superpowers/specs/2026-09-29-fixtures-b2-design.md`. A pack of models can feed several manifest entries with the `node` option, which keeps only the named nodes.
 
+Wall, floor and ceiling materials come from `src/domain/materials/library.ts` (one list for the 3D materials and the picker) and are saved per room in `Room.finishes`, with accent walls by wall index. See `docs/superpowers/specs/2026-09-29-materials-c-design.md`.
+
 ## Project layout
 
 ```

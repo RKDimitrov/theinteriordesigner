@@ -91,5 +91,319 @@
     "tags": [
       "wall.plaster"
     ]
+  },
+  {
+    "id": "painted_plaster_wall",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "painted_plaster_wall",
+    "title": "Painted Plaster Wall",
+    "author": "Amal Kumar",
+    "sourceUrl": "https://polyhaven.com/a/painted_plaster_wall",
+    "licence": "cc0",
+    "tags": [
+      "wall.plaster",
+      "wall.limewash"
+    ]
+  },
+  {
+    "id": "clay_plaster",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "clay_plaster",
+    "title": "Clay Plaster",
+    "author": "Amal Kumar",
+    "sourceUrl": "https://polyhaven.com/a/clay_plaster",
+    "licence": "cc0",
+    "tags": [
+      "wall.plaster"
+    ]
+  },
+  {
+    "id": "concrete_wall_004",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "concrete_wall_004",
+    "title": "Concrete Wall 004",
+    "author": "Dario Barresi, Charlotte Baglioni",
+    "sourceUrl": "https://polyhaven.com/a/concrete_wall_004",
+    "licence": "cc0",
+    "tags": [
+      "wall.concrete"
+    ]
+  },
+  {
+    "id": "brick_wall_02",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "brick_wall_02",
+    "title": "Brick Wall 02",
+    "author": "Dimitrios Savva",
+    "sourceUrl": "https://polyhaven.com/a/brick_wall_02",
+    "licence": "cc0",
+    "tags": [
+      "wall.brick"
+    ]
+  },
+  {
+    "id": "long_white_tiles",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "long_white_tiles",
+    "title": "Long White Tiles",
+    "author": "Jenelle van Heerden, Sergej Majboroda",
+    "sourceUrl": "https://polyhaven.com/a/long_white_tiles",
+    "licence": "cc0",
+    "tags": [
+      "wall.tile"
+    ]
+  },
+  {
+    "id": "herringbone_parquet",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "herringbone_parquet",
+    "title": "Herringbone Parquet",
+    "author": "Jenelle van Heerden, Sergej Majboroda",
+    "sourceUrl": "https://polyhaven.com/a/herringbone_parquet",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood",
+      "floor.parquet"
+    ]
+  },
+  {
+    "id": "diagonal_parquet",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "diagonal_parquet",
+    "title": "Diagonal Parquet",
+    "author": "Jenelle van Heerden, Sergej Majboroda",
+    "sourceUrl": "https://polyhaven.com/a/diagonal_parquet",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood",
+      "floor.parquet"
+    ]
+  },
+  {
+    "id": "oak_wood_planks",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "oak_wood_planks",
+    "title": "Oak Wood Planks",
+    "author": "Dimitrios Savva",
+    "sourceUrl": "https://polyhaven.com/a/oak_wood_planks",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood"
+    ]
+  },
+  {
+    "id": "dark_wooden_planks",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "dark_wooden_planks",
+    "title": "Dark Wooden Planks",
+    "author": "Amal Kumar",
+    "sourceUrl": "https://polyhaven.com/a/dark_wooden_planks",
+    "licence": "cc0",
+    "tags": [
+      "floor.wood"
+    ]
+  },
+  {
+    "id": "large_grey_tiles",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "large_grey_tiles",
+    "title": "Large Grey Tiles",
+    "author": "Rob Tuytel",
+    "sourceUrl": "https://polyhaven.com/a/large_grey_tiles",
+    "licence": "cc0",
+    "tags": [
+      "floor.tile"
+    ]
+  },
+  {
+    "id": "floor_tiles_06",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "floor_tiles_06",
+    "title": "Floor Tiles 06",
+    "author": "Rob Tuytel",
+    "sourceUrl": "https://polyhaven.com/a/floor_tiles_06",
+    "licence": "cc0",
+    "tags": [
+      "floor.tile"
+    ]
+  },
+  {
+    "id": "marble_01",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "marble_01",
+    "title": "Marble 01",
+    "author": "Rob Tuytel",
+    "sourceUrl": "https://polyhaven.com/a/marble_01",
+    "licence": "cc0",
+    "tags": [
+      "floor.stone"
+    ]
+  },
+  {
+    "id": "concrete_floor_02",
+    "kind": "texture",
+    "source": "polyhaven",
+    "ref": "concrete_floor_02",
+    "title": "Concrete Floor 02",
+    "author": "Rob Tuytel",
+    "sourceUrl": "https://polyhaven.com/a/concrete_floor_02",
+    "licence": "cc0",
+    "tags": [
+      "floor.concrete"
+    ]
+  },
+  {
+    "id": "acg_bricks_085",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Bricks085",
+    "title": "Bricks 085",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Bricks085",
+    "licence": "cc0",
+    "tileCm": 100,
+    "tags": [
+      "wall.brick"
+    ]
+  },
+  {
+    "id": "acg_wood_siding_008",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "WoodSiding008",
+    "title": "Wood Siding 008",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=WoodSiding008",
+    "licence": "cc0",
+    "tileCm": 150,
+    "tags": [
+      "wall.panelling",
+      "ceiling.wood"
+    ]
+  },
+  {
+    "id": "acg_wallpaper_001a",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Wallpaper001A",
+    "title": "Wallpaper 001 A",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Wallpaper001A",
+    "licence": "cc0",
+    "tileCm": 100,
+    "tags": [
+      "wall.wallpaper"
+    ]
+  },
+  {
+    "id": "acg_tiles_107",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Tiles107",
+    "title": "Tiles 107",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Tiles107",
+    "licence": "cc0",
+    "tileCm": 60,
+    "tags": [
+      "wall.tile"
+    ]
+  },
+  {
+    "id": "acg_tiles_141",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Tiles141",
+    "title": "Tiles 141",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Tiles141",
+    "licence": "cc0",
+    "tileCm": 120,
+    "tags": [
+      "wall.tile",
+      "floor.tile"
+    ]
+  },
+  {
+    "id": "acg_wood_floor_040",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "WoodFloor040",
+    "title": "Wood Floor 040",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=WoodFloor040",
+    "licence": "cc0",
+    "tileCm": 200,
+    "tags": [
+      "floor.wood"
+    ]
+  },
+  {
+    "id": "acg_wood_floor_064",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "WoodFloor064",
+    "title": "Wood Floor 064",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=WoodFloor064",
+    "licence": "cc0",
+    "tileCm": 200,
+    "tags": [
+      "floor.vinyl"
+    ]
+  },
+  {
+    "id": "acg_terrazzo_013",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Terrazzo013",
+    "title": "Terrazzo 013",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Terrazzo013",
+    "licence": "cc0",
+    "tileCm": 100,
+    "tags": [
+      "floor.terrazzo"
+    ]
+  },
+  {
+    "id": "acg_carpet_016",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Carpet016",
+    "title": "Carpet 016",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Carpet016",
+    "licence": "cc0",
+    "tileCm": 100,
+    "tags": [
+      "floor.carpet"
+    ]
+  },
+  {
+    "id": "acg_carpet_012",
+    "kind": "texture",
+    "source": "ambientcg",
+    "ref": "Carpet012",
+    "title": "Carpet 012",
+    "author": "Lennart Demes (ambientCG)",
+    "sourceUrl": "https://ambientcg.com/view?id=Carpet012",
+    "licence": "cc0",
+    "tileCm": 100,
+    "tags": [
+      "floor.carpet"
+    ]
   }
 ]

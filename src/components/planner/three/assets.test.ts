@@ -7,7 +7,8 @@ import { CATALOGUE } from "@/domain/design/catalogue";
 import type { FurnitureCategory } from "@/domain/schemas/design";
 import CATALOGUE_JSON from "./asset-catalogue.json";
 import { HDRI_IDS, MODEL_IDS, TEXTURE_IDS } from "./asset-ids";
-import { ASSET_CATALOGUE, FLOOR_TEXTURE, MODEL_SIZE, nativeFootprint, PIECE_ASSETS, pickVariant, TEXTURE_CM } from "./assets";
+import { MATERIALS } from "@/domain/materials/library";
+import { ASSET_CATALOGUE, MODEL_SIZE, nativeFootprint, PIECE_ASSETS, pickVariant, TEXTURE_CM, type TextureId } from "./assets";
 
 describe("pickVariant", () => {
   const tall = { id: "potted_plant_01" as const };
@@ -79,8 +80,8 @@ describe("asset catalogue", () => {
     expect(e.author.trim()).not.toBe("");
   });
 
-  it("has a tile size for every floor finish's texture", () => {
-    for (const id of Object.values(FLOOR_TEXTURE)) expect(TEXTURE_CM[id]).toBeGreaterThan(0);
+  it("has a tile size for every surface material's texture", () => {
+    for (const m of MATERIALS) expect(TEXTURE_CM[m.texture as TextureId], m.id).toBeGreaterThan(0);
   });
 
   /** Models tagged for a furniture category must face the way that category's pieces do. */

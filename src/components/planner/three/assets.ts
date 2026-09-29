@@ -1,6 +1,5 @@
 import type { Catalogue, CatalogueEntry } from "@/domain/assets/catalogue";
 import type { FurnitureCategory } from "@/domain/schemas/design";
-import type { FloorFinish } from "../state";
 import CATALOGUE_JSON from "./asset-catalogue.json";
 import { MODEL_IDS, TEXTURE_IDS } from "./asset-ids";
 
@@ -104,10 +103,3 @@ export const TEXTURE_CM = table(TEXTURE_IDS, "texture", (e) => e.tileCm);
 
 /** Mean sRGB colour of each diffuse map, so a tint can land on a target colour. */
 export const TEXTURE_MEAN = table(TEXTURE_IDS, "texture", (e): readonly [number, number, number] => e.mean);
-
-export const FLOOR_TEXTURE: Readonly<Record<FloorFinish, TextureId>> = {
-  oak: "wood_floor",
-  ash: "laminate_floor_02",
-  terracotta: "terracotta_floor_tiles",
-  microcement: "plastered_wall_04",
-};

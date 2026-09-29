@@ -1,5 +1,6 @@
 import type { Vec } from "@/domain/geometry/vec";
 import { DEFAULT_FIT_OUT, type FitOut } from "@/domain/room/fit-out";
+import type { RoomFinishes } from "@/domain/materials/library";
 import type { FixtureKind } from "@/domain/room/fixtures";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room } from "@/domain/schemas/room";
@@ -75,16 +76,6 @@ export const CAMERA_PRESETS = {
 } as const satisfies Record<string, Camera>;
 export type CameraPreset = keyof typeof CAMERA_PRESETS;
 
-export const FLOOR_FINISHES = ["oak", "ash", "terracotta", "microcement"] as const;
-export type FloorFinish = (typeof FLOOR_FINISHES)[number];
-export const WALL_FINISHES = ["limewash", "warmwhite", "clay", "sage"] as const;
-export type WallFinish = (typeof WALL_FINISHES)[number];
-export interface Finish {
-  floor: FloorFinish;
-  walls: WallFinish;
-}
-export const DEFAULT_FINISH: Finish = { floor: "oak", walls: "limewash" };
-
 export interface SceneSettings {
   /** Real models and PBR textures; off shows the drafting look (boxes with ink edges). */
   realistic: boolean;
@@ -131,8 +122,8 @@ export interface PlannerState {
   visible3d: string[];
   camera: Camera;
   preset: CameraPreset | null;
-  /** Kept on this device until finishes get a column. */
-  finishes: Record<string, Finish>;
+  /** Floor, wall and ceiling materials per room id (saved to Room.finishes). */
+  finishes: Record<string, RoomFinishes>;
   scene: SceneSettings;
   /** Door open state by "roomId:openingId", shared by orbit and walkthrough. */
   doorsOpen: Record<string, boolean>;
@@ -183,7 +174,7 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     visible3d: scope === "all" ? ids : ids.filter((id) => id === scope),
     camera: { ...CAMERA_PRESETS.architect },
     preset: "architect",
-    finishes: {},
+    finishes: Object.fromEntries(plan.rooms.map((r) => [r.room.id, r.room.finishes])),
     scene: { realistic: true, hour: 16, ceilingLights: false, labels: false, foldWalls: true },
     doorsOpen: {},
     savedViews: [],

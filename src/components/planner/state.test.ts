@@ -7,6 +7,7 @@ import { initialState, mapItem, type Plan, reducer } from "./state";
 const room: Room = {
   id: "r1",
   apartmentId: "a1",
+  finishes: { wallOverrides: {} },
   sortOrder: 0,
   name: "Living",
   type: "living",

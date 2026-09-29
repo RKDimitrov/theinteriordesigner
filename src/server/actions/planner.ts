@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { renterRules } from "@/domain/context/renter-rules";
+import { RoomFinishes } from "@/domain/materials/library";
 import { FitOut } from "@/domain/room/fit-out";
 import { blankDesign, PLANNER_SOURCE, withFurniture } from "@/domain/planner/items";
 import { FurnitureItem } from "@/domain/schemas/design";
@@ -13,7 +14,7 @@ import { requireUserId } from "../auth";
 import { getApartment, setApartmentFitOut } from "../repo/apartments";
 import { createDesign, type DesignStatus, getDesign, updateDesign } from "../repo/designs";
 import { getProfile } from "../repo/profiles";
-import { getRoom } from "../repo/rooms";
+import { getRoom, setRoomFinishes } from "../repo/rooms";
 
 const FitOutInput = z.object({ apartmentId: z.uuid(), fitOut: FitOut });
 
@@ -23,6 +24,22 @@ export async function saveFitOutAction(input: unknown): Promise<ActionResult<nul
   const parsed = FitOutInput.safeParse(input);
   if (!parsed.success) return fail("Invalid fit-out");
   if (!(await setApartmentFitOut(userId, parsed.data.apartmentId, parsed.data.fitOut))) return fail("Apartment not found");
+  revalidatePath(`/apartments/${parsed.data.apartmentId}/planner`);
+  return ok(null);
+}
+
+const FinishesInput = z.object({
+  apartmentId: z.uuid(),
+  rooms: z.array(z.object({ roomId: z.uuid(), finishes: RoomFinishes })).min(1).max(40),
+});
+
+/** Save floor, wall and ceiling materials for one or more rooms (the rooms in view). */
+export async function saveRoomFinishesAction(input: unknown): Promise<ActionResult<null>> {
+  const userId = await requireUserId();
+  const parsed = FinishesInput.safeParse(input);
+  if (!parsed.success) return fail("Invalid finishes");
+  const saved = await Promise.all(parsed.data.rooms.map((r) => setRoomFinishes(userId, r.roomId, r.finishes)));
+  if (saved.some((s) => !s)) return fail("Room not found");
   revalidatePath(`/apartments/${parsed.data.apartmentId}/planner`);
   return ok(null);
 }

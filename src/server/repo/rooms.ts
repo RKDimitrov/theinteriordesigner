@@ -1,6 +1,7 @@
 import "server-only";
 import type { Room as RoomRow } from "@/generated/prisma/client";
 import type { RoomInput } from "@/domain/room/check-room";
+import type { RoomFinishes } from "@/domain/materials/library";
 import { Room } from "@/domain/schemas/room";
 import { db } from "../db";
 import { isUuid } from "./ids";
@@ -18,6 +19,7 @@ function toDomain(row: RoomRow): Room {
     openings: row.openings,
     fixedElements: row.fixedElements,
     wallOrientationOverrides: row.wallOrientationOverrides,
+    finishes: row.finishes,
   });
 }
 
@@ -63,5 +65,12 @@ export async function updateRoom(userId: string, roomId: string, room: RoomInput
 
 export async function deleteRoom(userId: string, roomId: string): Promise<boolean> {
   const { count } = await db.room.deleteMany({ where: { id: roomId, apartment: { userId } } });
+  return count > 0;
+}
+
+/** Store the room's floor, wall and ceiling materials. */
+export async function setRoomFinishes(userId: string, roomId: string, finishes: RoomFinishes): Promise<boolean> {
+  if (!isUuid(roomId)) return false;
+  const { count } = await db.room.updateMany({ where: { id: roomId, apartment: { userId } }, data: { finishes: toJson(finishes) } });
   return count > 0;
 }

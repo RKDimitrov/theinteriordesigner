@@ -54,6 +54,8 @@ model Room {
   fixedElements            Json      @default("[]")
   /// Record<wallIndex, Cardinal>
   wallOrientationOverrides Json      @default("{}")
+  /// RoomFinishes: floor, walls, ceiling and accent walls (src/domain/materials/library.ts)
+  finishes                 Json      @default("{}")
   sortOrder                Int       @default(0)
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt

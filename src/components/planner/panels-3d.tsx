@@ -9,8 +9,8 @@ import { clamp } from "@/domain/geometry/units";
 import { FitOutBlock } from "./fit-out-controls";
 import { SelectionBlock } from "./inspector";
 import { usePlanner } from "./planner-context";
-import { type Camera, CAMERA_PRESETS, type CameraPreset, DEFAULT_FINISH, FLOOR_FINISHES, WALL_FINISHES } from "./state";
-import { FLOOR_SWATCH, WALL_COLOR } from "./three/materials";
+import { FinishesBlock } from "./finishes-controls";
+import { type Camera, CAMERA_PRESETS, type CameraPreset } from "./state";
 
 const PRESETS: readonly CameraPreset[] = ["eye", "architect", "bird", "plan"];
 
@@ -249,41 +249,13 @@ export function Inspector3D() {
 
 function Finishes() {
   const t = useTranslations("Planner");
-  const { s, dispatch, data } = usePlanner();
+  const { s, data } = usePlanner();
   const targets = s.visible3d.length > 0 ? s.visible3d : s.plan.rooms.map((r) => r.room.id);
-  const current = s.finishes[targets[0] ?? ""] ?? DEFAULT_FINISH;
-  const apply = (patch: Partial<typeof current>) =>
-    dispatch({
-      type: "set",
-      patch: { finishes: { ...s.finishes, ...Object.fromEntries(targets.map((id) => [id, { ...(s.finishes[id] ?? DEFAULT_FINISH), ...patch }])) } },
-    });
   const palette = data.rooms.find((r) => targets.includes(r.room.id) && r.design)?.design?.palette ?? [];
 
   return (
     <>
-      <div className="pl-blk">
-        <h3>
-          <span>{t("floor")}</span>
-          <span>{t(`floor_${current.floor}`)}</span>
-        </h3>
-        <div className="pl-sws" role="radiogroup" aria-label={t("floor")}>
-          {FLOOR_FINISHES.map((f) => (
-            <button key={f} type="button" role="radio" aria-checked={current.floor === f} aria-label={t(`floor_${f}`)} title={t(`floor_${f}`)} style={{ background: FLOOR_SWATCH[f] }} onClick={() => apply({ floor: f })} />
-          ))}
-        </div>
-      </div>
-      <div className="pl-blk">
-        <h3>
-          <span>{t("walls")}</span>
-          <span>{t(`wall_${current.walls}`)}</span>
-        </h3>
-        <div className="pl-sws" role="radiogroup" aria-label={t("walls")}>
-          {WALL_FINISHES.map((w) => (
-            <button key={w} type="button" role="radio" aria-checked={current.walls === w} aria-label={t(`wall_${w}`)} title={t(`wall_${w}`)} style={{ background: WALL_COLOR[w] }} onClick={() => apply({ walls: w })} />
-          ))}
-        </div>
-        <p className="pl-hint">{t("finishesLocal")}</p>
-      </div>
+      <FinishesBlock />
       <FitOutBlock />
       <div className="pl-blk">
         <h3>

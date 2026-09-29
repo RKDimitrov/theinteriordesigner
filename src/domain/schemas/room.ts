@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RoomFinishes } from "../materials/library";
 import { Cm, Id, Polygon, PositiveCm } from "./common";
 
 export const RoomType = z.enum([
@@ -163,5 +164,11 @@ export const RoomShape = z.object({
 });
 export type RoomShape = z.infer<typeof RoomShape>;
 
-export const Room = RoomShape.extend({ id: Id, apartmentId: Id, sortOrder: z.number().int() });
+export const Room = RoomShape.extend({
+  id: Id,
+  apartmentId: Id,
+  sortOrder: z.number().int(),
+  /** Floor, wall and ceiling materials, saved from the planner's Finishes tab. */
+  finishes: RoomFinishes.default({ wallOverrides: {} }),
+});
 export type Room = z.infer<typeof Room>;

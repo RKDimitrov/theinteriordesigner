@@ -6,16 +6,17 @@ import { area, bbox } from "@/domain/geometry/polygon";
 import { m2 } from "@/domain/geometry/units";
 import type { Vec } from "@/domain/geometry/vec";
 import { blankDesign, type CataloguePiece, cataloguePieces, withFurniture } from "@/domain/planner/items";
+import { fromLegacy } from "@/domain/materials/library";
 import { layoutRooms } from "@/domain/planner/layout";
 import { checkRoom, type RoomIssue } from "@/domain/room/check-room";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room, RoomShape } from "@/domain/schemas/room";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
 import { validateDesign } from "@/domain/validator";
-import { savePlannerRoomAction } from "@/server/actions/planner";
+import { saveRoomFinishesAction, savePlannerRoomAction } from "@/server/actions/planner";
 import { updateRoomAction } from "@/server/actions/rooms";
 import type { PlannerData } from "@/server/planner";
-import { type Action, type Annotation, type Finish, initialState, type SavedView, type Plan, type PlannerState, type PlannerView, reducer, TOOL_KEY, TOOLS, type Units } from "./state";
+import { type Action, type Annotation, initialState, type SavedView, type Plan, type PlannerState, type PlannerView, reducer, TOOL_KEY, TOOLS, type Units } from "./state";
 
 /* ---------- plan context ---------- */
 
@@ -93,7 +94,8 @@ export const SNAP_CM = 5;
 interface LocalPlan {
   origins?: Record<string, Vec>;
   annotations?: Annotation[];
-  finishes?: Record<string, Finish>;
+  /** Finishes were kept here before Room.finishes existed; read once and moved to the rooms. */
+  finishes?: Record<string, unknown>;
   savedViews?: SavedView[];
 }
 
@@ -155,7 +157,18 @@ export function PlannerProvider({
     if (restored.current) return;
     restored.current = true;
     const local = readLocal(data.apartment.id);
-    if (local.finishes || local.savedViews) dispatch({ type: "set", patch: { finishes: local.finishes ?? {}, savedViews: local.savedViews ?? [] } });
+    if (local.savedViews) dispatch({ type: "set", patch: { savedViews: local.savedViews } });
+    // Finishes chosen before they were saved to the room: move them to rooms that have none yet.
+    const legacy = Object.entries(local.finishes ?? {}).flatMap(([roomId, raw]) => {
+      const room = data.rooms.find((r) => r.room.id === roomId)?.room;
+      const f = fromLegacy(raw);
+      const unset = room && !room.finishes.floor && !room.finishes.walls && !room.finishes.ceiling;
+      return f && unset ? [{ roomId, finishes: f }] : [];
+    });
+    if (legacy.length) {
+      dispatch({ type: "set", patch: { finishes: { ...Object.fromEntries(data.rooms.map((r) => [r.room.id, r.room.finishes])), ...Object.fromEntries(legacy.map((l) => [l.roomId, l.finishes])) } } });
+      void saveRoomFinishesAction({ apartmentId: data.apartment.id, rooms: legacy }).catch(() => undefined);
+    }
     if (!local.origins && !local.annotations) return;
     dispatch({
       type: "edit",
@@ -167,12 +180,12 @@ export function PlannerProvider({
       },
     });
     stage.current?.fit();
-  }, [data.apartment.id]);
+  }, [data.apartment.id, data.rooms]);
 
   useEffect(() => {
     if (!restored.current) return;
-    writeLocal(data.apartment.id, { origins: s.plan.origins, annotations: s.plan.annotations, finishes: s.finishes, savedViews: s.savedViews });
-  }, [data.apartment.id, s.plan.origins, s.plan.annotations, s.finishes, s.savedViews]);
+    writeLocal(data.apartment.id, { origins: s.plan.origins, annotations: s.plan.annotations, savedViews: s.savedViews });
+  }, [data.apartment.id, s.plan.origins, s.plan.annotations, s.savedViews]);
 
   /* ---- live checks: the same rules the server runs ---- */
   const checks = useMemo(() => {
