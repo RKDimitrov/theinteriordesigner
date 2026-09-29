@@ -4,7 +4,7 @@ import { PLANNER_SOURCE } from "@/domain/planner/items";
 import type { Apartment } from "@/domain/schemas/apartment";
 import type { RenterRules } from "@/domain/schemas/context";
 import type { DesignContent, DroppedItem, FurnitureItem } from "@/domain/schemas/design";
-import type { MustKeepItem } from "@/domain/schemas/profile";
+import type { MustKeepItem, StyleScores } from "@/domain/schemas/profile";
 import type { Room } from "@/domain/schemas/room";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
 import { apartmentRevisedAt, getApartment } from "./repo/apartments";
@@ -55,6 +55,8 @@ export interface PlannerData {
   /** ISO time of the last saved change. */
   savedAt: string | null;
   hasProfile: boolean;
+  /** Style scores from the profile, which steer the default 3D models; null without a profile. */
+  styles: StyleScores | null;
 }
 
 /** Short drawing number, e.g. "NOV-3F2A" (same as the overview's title block). */
@@ -119,6 +121,7 @@ export async function plannerData(userId: string, apartmentId: string): Promise<
     renter: renterRules(apartment.country, apartment.tenure),
     savedAt: revisedAt?.toISOString() ?? null,
     hasProfile: profile !== null,
+    styles: profile?.scores ?? null,
   };
 }
 

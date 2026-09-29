@@ -523,7 +523,7 @@ function RoomOpening({ roomId, walls, o, ceiling }: { roomId: string; walls: rea
 }
 
 function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: FurnitureItem; ceiling: number; showLabel: boolean }) {
-  const { s, dispatch } = usePlanner();
+  const { s, data, dispatch } = usePlanner();
   const selected = s.selection?.kind === "item" && s.selection.id === f.id && s.selection.roomId === roomId;
   const rug = f.placement === "floor_covering";
   const h = rug ? 1 : Math.max(1, Math.min(f.h, ceiling));
@@ -550,7 +550,7 @@ function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: Furnitu
         <AssetBoundary fallback={box}>
           <Suspense fallback={box}>
             <group position-y={-h / 2}>
-              <RealPiece category={f.category} w={f.w} d={f.d} h={h} hex={f.colorHex} lit={lit} seed={f.id} />
+              <RealPiece category={f.category} modelId={f.modelId} styles={data.styles} w={f.w} d={f.d} h={h} hex={f.colorHex} lit={lit} seed={f.id} />
             </group>
             {selected && (
               <mesh>

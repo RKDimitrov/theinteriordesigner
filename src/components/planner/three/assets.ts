@@ -1,5 +1,6 @@
 import type { Catalogue, CatalogueEntry } from "@/domain/assets/catalogue";
-import type { FurnitureCategory } from "@/domain/schemas/design";
+import { chooseModel, distortion } from "@/domain/assets/choice";
+import { FurnitureCategory } from "@/domain/schemas/design";
 import CATALOGUE_JSON from "./asset-catalogue.json";
 import { MODEL_IDS, TEXTURE_IDS } from "./asset-ids";
 
@@ -25,77 +26,124 @@ function table<Id extends string, K extends CatalogueEntry["kind"], V>(ids: read
 /** Native size of each model in public/models, in cm as [w, h, d]. */
 export const MODEL_SIZE = table(MODEL_IDS, "model", (e): readonly [number, number, number] => e.size);
 
+/**
+ * Per-model settings the catalogue cannot know: the turn that makes its
+ * front face +z (checked by rendering each model), and which of its
+ * materials are upholstery, tinted to the piece's colour.
+ */
+const MODEL_TUNING: Partial<Record<ModelId, { turn?: number; fabric?: RegExp }>> = {
+  // Modelled with its long side front to back.
+  modern_coffee_table_01: { turn: 90 },
+  modern_arm_chair_01: { fabric: /pillow/ },
+  wooden_display_shelves_01: { turn: 90 },
+  bed_v1_mh: { turn: 180, fabric: /^Fabric/ },
+  bed_poliform_ramos: { fabric: /edredon/ },
+  dresser_sifonyer_renend: { turn: 90 },
+  office_chair_redfox: { fabric: /Cloth/ },
+  sideboard_teak_kung: { turn: 270 },
+  tv_unit_wood_slls: { turn: 270 },
+  bench_wooden_stano: { turn: 90 },
+  wall_shelf_simple_blender3d: { turn: 90 },
+  glam_velvet_sofa: { fabric: /fabric/ },
+  sheen_chair: { fabric: /^fabric/ },
+};
+
+export interface PieceModel extends ModelVariant {
+  /** Style keys from the manifest tags, e.g. "japandi". */
+  styles: readonly string[];
+  /** Material names that are upholstery, tinted to the piece's colour. */
+  fabric?: RegExp;
+}
+
+/**
+ * The real models for each catalogue category, from the manifest tags
+ * ("furniture.sofa", "style.japandi"). Files live in public/ and are fetched by
+ * scripts/fetch-assets.mjs. Every model is stretched to exactly the piece's
+ * w × h × d; chooseModel picks the default among several.
+ */
+export const PIECE_MODELS: Readonly<Record<FurnitureCategory, readonly PieceModel[]>> = (() => {
+  const out = Object.fromEntries(FurnitureCategory.options.map((c) => [c, [] as PieceModel[]])) as Record<FurnitureCategory, PieceModel[]>;
+  for (const id of MODEL_IDS) {
+    const tags = ASSET_CATALOGUE[id]!.tags;
+    const styles = tags.filter((t) => t.startsWith("style.")).map((t) => t.slice(6));
+    for (const t of tags) {
+      const c = FurnitureCategory.safeParse(t.replace(/^furniture\./, ""));
+      if (t.startsWith("furniture.") && c.success) out[c.data].push({ id, styles, ...MODEL_TUNING[id] });
+    }
+  }
+  return out;
+})();
+
+/**
+ * Categories that also have a version assembled in code from real PBR
+ * textures (three/pieces.tsx). It matches the size by construction and takes
+ * the piece's colour everywhere; categories without models always use it.
+ */
+export const BUILT_CATEGORIES: ReadonlySet<FurnitureCategory> = new Set([
+  "sofa",
+  "bed",
+  "wardrobe",
+  "dresser",
+  "storage",
+  "shoe_cabinet",
+  "bookshelf",
+  "desk",
+  "dining_table",
+  "bench",
+  "rug",
+  "floor_lamp",
+  "mirror",
+  "wall_shelf",
+  "coat_rack",
+  "other",
+]);
+
+/** `modelId` value that asks for the version built in code. */
+export const BUILT_MODEL = "built";
+
+/**
+ * How a piece is drawn: the model the user chose if it belongs to the
+ * category, "built" when they asked for it (or there is no model), else the
+ * model that fits the size and the style profile best.
+ */
+export function pieceModel(
+  category: FurnitureCategory,
+  modelId: string | undefined,
+  w: number,
+  d: number,
+  h: number,
+  scores: Readonly<Partial<Record<string, number>>> | null,
+): PieceModel | typeof BUILT_MODEL {
+  const options = PIECE_MODELS[category];
+  if (modelId === BUILT_MODEL && BUILT_CATEGORIES.has(category)) return BUILT_MODEL;
+  const chosen = options.find((o) => o.id === modelId);
+  if (chosen) return chosen;
+  if (options.length === 0) return BUILT_MODEL;
+  const best = chooseModel(
+    options.map((o) => ({ ...o, size: nativeFootprint(o) })),
+    w,
+    d,
+    h,
+    scores,
+  );
+  // A model this far from the piece's proportions would look squashed; the built version fits.
+  if (BUILT_CATEGORIES.has(category) && distortion(best.size, w, d, h) > MAX_DEFAULT_DISTORTION) return BUILT_MODEL;
+  return best;
+}
+
+/** About a 2.7× stretch between two axes: beyond it the default falls back to the built version. */
+export const MAX_DEFAULT_DISTORTION = 1;
+
 export interface ModelVariant {
   id: ModelId;
   /** Degrees to turn the model so its front faces +z (the piece's front). */
   turn?: number;
 }
 
-/**
- * How each catalogue category looks in the realistic 3D view. Files live in
- * public/ and are fetched by scripts/fetch-assets.mjs (see ASSET_CATALOGUE).
- *
- * - "models": glTFs stretched to exactly the piece's w × h × d; when there are
- *   several, the one needing the least distortion is used (see pickVariant).
- * - "built": assembled in code from real PBR textures (three/pieces.tsx), so
- *   it matches the size by construction and takes the piece's colour.
- */
-export type PieceAsset = { kind: "models"; variants: readonly [ModelVariant, ...ModelVariant[]] } | { kind: "built" };
-
-const models = (...variants: [ModelVariant, ...ModelVariant[]]): PieceAsset => ({ kind: "models", variants });
-const built: PieceAsset = { kind: "built" };
-
-export const PIECE_ASSETS: Readonly<Record<FurnitureCategory, PieceAsset>> = {
-  sofa: built,
-  armchair: models({ id: "modern_arm_chair_01" }),
-  // Modelled with its long side front to back.
-  coffee_table: models({ id: "modern_coffee_table_01", turn: 90 }),
-  side_table: models({ id: "side_table_01" }),
-  tv_unit: models({ id: "modern_wooden_cabinet" }),
-  bed: built,
-  nightstand: models({ id: "side_table_01" }),
-  wardrobe: built,
-  dresser: built,
-  desk: built,
-  office_chair: models({ id: "dining_chair_02" }),
-  dining_table: built,
-  dining_chair: models({ id: "painted_wooden_chair_01" }),
-  bookshelf: built,
-  sideboard: models({ id: "modern_wooden_cabinet" }),
-  storage: built,
-  floor_lamp: built,
-  plant: models({ id: "potted_plant_01" }, { id: "potted_plant_02" }),
-  rug: built,
-  mirror: built,
-  wall_shelf: built,
-  art: models({ id: "hanging_picture_frame_02" }),
-  bench: built,
-  shoe_cabinet: built,
-  coat_rack: built,
-  other: built,
-};
-
 /** A variant's native [w, h, d] after its turn (a quarter turn swaps width and depth). */
 export function nativeFootprint(v: ModelVariant): [number, number, number] {
   const [w, h, d] = MODEL_SIZE[v.id];
   return Math.round((v.turn ?? 0) / 90) % 2 ? [d, h, w] : [w, h, d];
-}
-
-/**
- * The variant that needs the least non-uniform stretching to fill w × d × h.
- * Distortion is the spread of the three log scale factors, so a uniformly
- * scaled copy counts as undistorted.
- */
-export function pickVariant<V extends ModelVariant>(variants: readonly V[], w: number, d: number, h: number): V {
-  let best = variants[0]!;
-  let bestCost = Infinity;
-  for (const v of variants) {
-    const [nw, nh, nd] = nativeFootprint(v);
-    const logs = [Math.log(w / nw), Math.log(h / nh), Math.log(d / nd)];
-    const cost = Math.max(...logs) - Math.min(...logs);
-    if (cost < bestCost) [best, bestCost] = [v, cost];
-  }
-  return best;
 }
 
 /** PBR texture sets in public/textures/<id>/: the real-world size one tile covers, in cm. */

@@ -1064,5 +1064,13 @@
     "outlookDefault": "Area default",
     "saveFailed": "Couldn't save the outlook. Try again.",
     "wallN": "Wall {n}"
+  },
+  "PieceModel": {
+    "title": "Model",
+    "colour": "Colour",
+    "auto": "Automatic",
+    "built": "Simple",
+    "builtHint": "Built to size, all in the piece's colour",
+    "vary": "Vary models"
   }
 }

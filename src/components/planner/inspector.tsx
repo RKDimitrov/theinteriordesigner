@@ -11,6 +11,7 @@ import type { Opening } from "@/domain/schemas/room";
 import { DesignerTab } from "./designer-tab";
 import { removeSelected, usePlanner } from "./planner-context";
 import { OpeningStyleFields } from "./fit-out-controls";
+import { PieceLook } from "./piece-model-controls";
 import { FixedBlock, FixturePicker } from "./fixture-controls";
 import { BASIC_LAYERS, type LayerId, LAYERS, mapItem, mapRoom } from "./state";
 
@@ -167,6 +168,7 @@ function ItemBlock({ roomId, f, calm }: { roomId: string; f: FurnitureItem; calm
           <NumField label={t("turn")} value={f.rotation} unit="°" min={0} max={359} onChange={(rotation) => set({ rotation })} />
         </div>
       )}
+      <PieceLook roomId={roomId} f={f} set={set} />
       <div className="pl-row">
         <Button size="sm" onClick={() => dispatch({ type: "set", patch: { swapFor: f.id, drawerOpen: true } })}>
           <Sparkles /> {t("swapPiece")}

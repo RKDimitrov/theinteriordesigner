@@ -211,7 +211,6 @@
     ]
   },
   "alps_field": {
-    "kind": "hdri",
     "title": "Alps Field",
     "author": "Andreas Mischok",
     "source": "polyhaven",
@@ -221,9 +220,49 @@
       "backplate.mountains.ground",
       "backplate.mountains.low"
     ],
-    "backplate": true,
     "bytes": 390861,
-    "thumb": "/thumbs/alps_field.webp"
+    "thumb": "/thumbs/alps_field.webp",
+    "kind": "hdri",
+    "backplate": true
+  },
+  "armchair_01": {
+    "title": "Arm Chair 01",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ArmChair_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.armchair",
+      "style.modern_classic"
+    ],
+    "bytes": 425480,
+    "thumb": "/thumbs/armchair_01.webp",
+    "kind": "model",
+    "size": [
+      84.8,
+      106.5,
+      76.6
+    ]
+  },
+  "armchair_lounger_kudrin": {
+    "title": "Lounger Armchair",
+    "author": "Nikolay Kudrin",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/lounger-armchair-e9d9d87c32f144e2873765e66814f727",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.armchair",
+      "style.minimal",
+      "style.scandinavian"
+    ],
+    "bytes": 406020,
+    "thumb": "/thumbs/armchair_lounger_kudrin.webp",
+    "kind": "model",
+    "size": [
+      98.3,
+      136.5,
+      116.2
+    ]
   },
   "basin_stand_renviro": {
     "title": "Wash Basin Stand",
@@ -279,8 +318,67 @@
       100.7
     ]
   },
+  "bed_double_branscombe": {
+    "title": "Game Ready - Double Bed",
+    "author": "Allan-Jay Branscombe",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/game-ready-double-bed-eeafb24592f249f08f9576c2511272d8",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.bed",
+      "style.modern_classic",
+      "style.mediterranean"
+    ],
+    "bytes": 164132,
+    "thumb": "/thumbs/bed_double_branscombe.webp",
+    "kind": "model",
+    "size": [
+      32767.9,
+      29489.8,
+      39886.6
+    ]
+  },
+  "bed_poliform_ramos": {
+    "title": "Poliform_Bed",
+    "author": "Alexis Ramos",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/poliform-bed-16070c2e6faa405391ab7ada8bb0aed6",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.bed",
+      "style.minimal",
+      "style.japandi"
+    ],
+    "bytes": 288072,
+    "thumb": "/thumbs/bed_poliform_ramos.webp",
+    "kind": "model",
+    "size": [
+      22203.2,
+      8107.5,
+      23993.9
+    ]
+  },
+  "bed_v1_mh": {
+    "title": "Bed - v1",
+    "author": "MH",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/bed-v1-27425c1e783c4210aec2be5ee61a73ad",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.bed",
+      "style.scandinavian",
+      "style.japandi"
+    ],
+    "bytes": 47012,
+    "thumb": "/thumbs/bed_v1_mh.webp",
+    "kind": "model",
+    "size": [
+      120,
+      92.4,
+      229.8
+    ]
+  },
   "belfast_open_field": {
-    "kind": "hdri",
     "title": "Belfast Open Field",
     "author": "Dimitrios Savva, Jarod Guest",
     "source": "polyhaven",
@@ -289,12 +387,32 @@
     "tags": [
       "backplate.rural.low"
     ],
-    "backplate": true,
     "bytes": 318812,
-    "thumb": "/thumbs/belfast_open_field.webp"
+    "thumb": "/thumbs/belfast_open_field.webp",
+    "kind": "hdri",
+    "backplate": true
+  },
+  "bench_wooden_stano": {
+    "title": "Wooden Bench",
+    "author": "JanStano",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/wooden-bench-ae8b77a05ba24f59ab910c157c4bcb78",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.bench",
+      "style.scandinavian",
+      "style.japandi"
+    ],
+    "bytes": 319128,
+    "thumb": "/thumbs/bench_wooden_stano.webp",
+    "kind": "model",
+    "size": [
+      200,
+      204.8,
+      589.7
+    ]
   },
   "binnenalster": {
-    "kind": "hdri",
     "title": "Binnenalster",
     "author": "Greg Zaal",
     "source": "polyhaven",
@@ -303,9 +421,10 @@
     "tags": [
       "backplate.waterfront"
     ],
-    "backplate": true,
     "bytes": 240822,
-    "thumb": "/thumbs/binnenalster.webp"
+    "thumb": "/thumbs/binnenalster.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "blinds_venetian_akstudio": {
     "title": "Window Blinds Low poly 3D model",
@@ -323,6 +442,25 @@
       1070,
       19791.3,
       20868.9
+    ]
+  },
+  "bookshelf_antique_drago": {
+    "title": "Antique wooden bookcase - Game model",
+    "author": "Lorenzo Drago",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/antique-wooden-bookcase-game-model-75aa9519195647d99cf1e2d4863dbe87",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.bookshelf",
+      "style.modern_classic"
+    ],
+    "bytes": 362004,
+    "thumb": "/thumbs/bookshelf_antique_drago.webp",
+    "kind": "model",
+    "size": [
+      383.5,
+      451.1,
+      67.8
     ]
   },
   "brick_wall_02": {
@@ -344,6 +482,26 @@
       118
     ]
   },
+  "chair_damask_purplegold": {
+    "title": "Chair Damask Purplegold",
+    "author": "Wayfair LLC",
+    "source": "khronos",
+    "sourceUrl": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/ChairDamaskPurplegold",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.armchair",
+      "style.modern_classic",
+      "style.boho"
+    ],
+    "bytes": 432560,
+    "thumb": "/thumbs/chair_damask_purplegold.webp",
+    "kind": "model",
+    "size": [
+      82.9,
+      68.7,
+      57.2
+    ]
+  },
   "chandelier_02": {
     "title": "Chandelier 02",
     "author": "Kirill Sannikov",
@@ -360,6 +518,44 @@
       67.9,
       84.8,
       61.9
+    ]
+  },
+  "classicconsole_01": {
+    "title": "Classic Console 01",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ClassicConsole_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.sideboard",
+      "style.modern_classic"
+    ],
+    "bytes": 341428,
+    "thumb": "/thumbs/classicconsole_01.webp",
+    "kind": "model",
+    "size": [
+      154.3,
+      94.9,
+      58.9
+    ]
+  },
+  "classicnightstand_01": {
+    "title": "Classic Nightstand 01",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ClassicNightstand_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.nightstand",
+      "style.modern_classic"
+    ],
+    "bytes": 161996,
+    "thumb": "/thumbs/classicnightstand_01.webp",
+    "kind": "model",
+    "size": [
+      56.8,
+      70,
+      42.4
     ]
   },
   "clay_plaster": {
@@ -379,6 +575,65 @@
       114,
       90,
       60
+    ]
+  },
+  "coffee_table_noguchi_kumagai": {
+    "title": "Noguchi Coffee Table",
+    "author": "Deborah Kumagai",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/noguchi-coffee-table-8f8a3dbd45534152b5771c36cc4742d9",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.coffee_table",
+      "style.mid_century",
+      "style.minimal"
+    ],
+    "bytes": 88756,
+    "thumb": "/thumbs/coffee_table_noguchi_kumagai.webp",
+    "kind": "model",
+    "size": [
+      131617.5,
+      40232.6,
+      94787.8
+    ]
+  },
+  "coffee_table_round_01": {
+    "title": "Coffee Table Round 01",
+    "author": "Ulan Cabanilla",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/coffee_table_round_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.coffee_table",
+      "style.scandinavian",
+      "style.japandi"
+    ],
+    "bytes": 192504,
+    "thumb": "/thumbs/coffee_table_round_01.webp",
+    "kind": "model",
+    "size": [
+      130.1,
+      49.1,
+      130.1
+    ]
+  },
+  "coffeetable_01": {
+    "title": "Coffee Table 01",
+    "author": "Fernando Quinn",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/CoffeeTable_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.coffee_table",
+      "style.modern_classic"
+    ],
+    "bytes": 364396,
+    "thumb": "/thumbs/coffeetable_01.webp",
+    "kind": "model",
+    "size": [
+      154,
+      52.3,
+      97.3
     ]
   },
   "concrete_floor_02": {
@@ -474,6 +729,46 @@
       62
     ]
   },
+  "desk_office_aleixo": {
+    "title": "Office Desk 140x60",
+    "author": "AleixoAlonso",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/office-desk-140x60-9262f311271c4c4390341e526d3fe103",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.desk",
+      "style.minimal",
+      "style.scandinavian"
+    ],
+    "bytes": 365852,
+    "thumb": "/thumbs/desk_office_aleixo.webp",
+    "kind": "model",
+    "size": [
+      140,
+      75.7,
+      60
+    ]
+  },
+  "desk_wooden_shahsavan": {
+    "title": "Desk Wooden Office - 18MB",
+    "author": "Mehdi Shahsavan",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/desk-wooden-office-18mb-f42e83fb46a74ac98602e6a2248f072d",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.desk",
+      "style.mid_century",
+      "style.japandi"
+    ],
+    "bytes": 193648,
+    "thumb": "/thumbs/desk_wooden_shahsavan.webp",
+    "kind": "model",
+    "size": [
+      128,
+      79.9,
+      64.1
+    ]
+  },
   "diagonal_parquet": {
     "title": "Diagonal Parquet",
     "author": "Jenelle van Heerden, Sergej Majboroda",
@@ -502,7 +797,8 @@
     "licence": "cc0",
     "tags": [
       "furniture.dining_chair",
-      "furniture.office_chair"
+      "furniture.office_chair",
+      "style.modern_classic"
     ],
     "bytes": 265040,
     "thumb": "/thumbs/dining_chair_02.webp",
@@ -511,6 +807,45 @@
       43.4,
       97.3,
       57.6
+    ]
+  },
+  "dining_chair_old_max3dd": {
+    "title": "Old Wooden Chair",
+    "author": "MaX3Dd",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/old-wooden-chair-3f95ffdc194047ada2d9391828a5d234",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.dining_chair",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 272708,
+    "thumb": "/thumbs/dining_chair_old_max3dd.webp",
+    "kind": "model",
+    "size": [
+      20.1,
+      48.4,
+      23.9
+    ]
+  },
+  "dining_table_industrial_elasta": {
+    "title": "Industrial Table",
+    "author": "Elasta Kristya",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/industrial-table-5f94fb035fa74f43abda3ada8f0a719e",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.dining_table",
+      "style.industrial"
+    ],
+    "bytes": 559016,
+    "thumb": "/thumbs/dining_table_industrial_elasta.webp",
+    "kind": "model",
+    "size": [
+      150,
+      67.5,
+      80
     ]
   },
   "door_with_frame_witnessk": {
@@ -531,8 +866,85 @@
       2606
     ]
   },
+  "drawer_cabinet": {
+    "title": "Drawer Cabinet",
+    "author": "Ulan Cabanilla",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/drawer_cabinet",
+    "licence": "cc0",
+    "tags": [
+      "furniture.storage",
+      "furniture.bookshelf",
+      "style.industrial"
+    ],
+    "bytes": 247792,
+    "thumb": "/thumbs/drawer_cabinet.webp",
+    "kind": "model",
+    "size": [
+      114.1,
+      188.1,
+      48.8
+    ]
+  },
+  "dresser_kids_harrodine": {
+    "title": "Kid's Dresser/ Chest of Drawers",
+    "author": "ellieharrodine",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/kids-dresser-chest-of-drawers-fcfa67321b5641d6a65dd0ff4c8f523c",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.dresser",
+      "style.scandinavian"
+    ],
+    "bytes": 511360,
+    "thumb": "/thumbs/dresser_kids_harrodine.webp",
+    "kind": "model",
+    "size": [
+      124.7,
+      90,
+      59
+    ]
+  },
+  "dresser_leon": {
+    "title": "Dresser",
+    "author": "Leon.com",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/dresser-4660a4b4ccaf4f5da161729ac95791b2",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.dresser",
+      "style.mid_century"
+    ],
+    "bytes": 146116,
+    "thumb": "/thumbs/dresser_leon.webp",
+    "kind": "model",
+    "size": [
+      66,
+      84.2,
+      37.2
+    ]
+  },
+  "dresser_sifonyer_renend": {
+    "title": "Sifonyer",
+    "author": "Renend Studio",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/sifonyer-3526287617f649a3ad08ff419d323df4",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.dresser",
+      "style.minimal",
+      "style.japandi"
+    ],
+    "bytes": 74252,
+    "thumb": "/thumbs/dresser_sifonyer_renend.webp",
+    "kind": "model",
+    "size": [
+      177.5,
+      296.1,
+      490.5
+    ]
+  },
   "farm_field": {
-    "kind": "hdri",
     "title": "Farm Field",
     "author": "Dimitrios Savva, Jarod Guest",
     "source": "polyhaven",
@@ -541,9 +953,10 @@
     "tags": [
       "backplate.rural.ground"
     ],
-    "backplate": true,
     "bytes": 264562,
-    "thumb": "/thumbs/farm_field.webp"
+    "thumb": "/thumbs/farm_field.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "faucet_renend": {
     "title": "Faucet",
@@ -561,6 +974,66 @@
       69.1,
       104.9,
       23.4
+    ]
+  },
+  "floor_lamp_jackjohn": {
+    "title": "floor lamp",
+    "author": "Jack John",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/floor-lamp-3e2a60cb3d2c42e5bdfab33d396f85e2",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.floor_lamp",
+      "style.industrial",
+      "style.japandi"
+    ],
+    "bytes": 23664,
+    "thumb": "/thumbs/floor_lamp_jackjohn.webp",
+    "kind": "model",
+    "size": [
+      70.2,
+      192,
+      40.4
+    ]
+  },
+  "floor_lamp_mario_milanovic": {
+    "title": "Mario Floor Lamp",
+    "author": "Andriano Milanovic",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/mario-floor-lamp-15b2782b523b486ea169d6e16e72123f",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.floor_lamp",
+      "style.mid_century",
+      "style.minimal"
+    ],
+    "bytes": 313560,
+    "thumb": "/thumbs/floor_lamp_mario_milanovic.webp",
+    "kind": "model",
+    "size": [
+      191.4,
+      200,
+      191.4
+    ]
+  },
+  "floor_lamp_pbr_foley": {
+    "title": "PBR Floor Lamp (Free Download)",
+    "author": "Justin.Foley",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/pbr-floor-lamp-free-download-083c9408b89949d8b201e8a1bb6ce41c",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.floor_lamp",
+      "style.scandinavian",
+      "style.modern_classic"
+    ],
+    "bytes": 151228,
+    "thumb": "/thumbs/floor_lamp_pbr_foley.webp",
+    "kind": "model",
+    "size": [
+      4410.9,
+      16993.7,
+      4410.9
     ]
   },
   "floor_tiles_06": {
@@ -583,7 +1056,6 @@
     ]
   },
   "fouriesburg_mountain_lookout": {
-    "kind": "hdri",
     "title": "Fouriesburg Mountain Lookout",
     "author": "Dimitrios Savva, Jarod Guest",
     "source": "polyhaven",
@@ -592,9 +1064,10 @@
     "tags": [
       "backplate.mountains.high"
     ],
-    "backplate": true,
     "bytes": 212139,
-    "thumb": "/thumbs/fouriesburg_mountain_lookout.webp"
+    "thumb": "/thumbs/fouriesburg_mountain_lookout.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "fridge_grey_glowbox": {
     "title": "Refrigerator - Grey Polished Metal",
@@ -614,8 +1087,87 @@
       341.6
     ]
   },
+  "gallinera_chair": {
+    "title": "Gallinera Chair",
+    "author": "Ulan Cabanilla",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/gallinera_chair",
+    "licence": "cc0",
+    "tags": [
+      "furniture.dining_chair",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 313108,
+    "thumb": "/thumbs/gallinera_chair.webp",
+    "kind": "model",
+    "size": [
+      58.1,
+      103.4,
+      60.4
+    ]
+  },
+  "gallinera_table": {
+    "title": "Gallinera Table",
+    "author": "Ulan Cabanilla",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/gallinera_table",
+    "licence": "cc0",
+    "tags": [
+      "furniture.side_table",
+      "furniture.nightstand",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 226144,
+    "thumb": "/thumbs/gallinera_table.webp",
+    "kind": "model",
+    "size": [
+      83,
+      48.8,
+      51.8
+    ]
+  },
+  "glam_velvet_sofa": {
+    "title": "Glam Velvet Sofa",
+    "author": "Wayfair LLC",
+    "source": "khronos",
+    "sourceUrl": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/GlamVelvetSofa",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.sofa",
+      "style.modern_classic"
+    ],
+    "bytes": 425020,
+    "thumb": "/thumbs/glam_velvet_sofa.webp",
+    "kind": "model",
+    "size": [
+      218.8,
+      78.8,
+      102.3
+    ]
+  },
+  "greenchair_01": {
+    "title": "Green Chair 01",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/GreenChair_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.armchair",
+      "style.mid_century",
+      "style.boho"
+    ],
+    "bytes": 279756,
+    "thumb": "/thumbs/greenchair_01.webp",
+    "kind": "model",
+    "size": [
+      67.3,
+      105.9,
+      66.4
+    ]
+  },
   "hamburg_canal": {
-    "kind": "hdri",
     "title": "Hamburg Canal",
     "author": "Greg Zaal",
     "source": "polyhaven",
@@ -624,9 +1176,10 @@
     "tags": [
       "backplate.city_centre.low"
     ],
-    "backplate": true,
     "bytes": 316480,
-    "thumb": "/thumbs/hamburg_canal.webp"
+    "thumb": "/thumbs/hamburg_canal.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "handle_knob": {
     "title": "Door Knob",
@@ -673,7 +1226,7 @@
     "licence": "cc-by-4.0",
     "tags": [
       "hardware.door_handle",
-      "style.modern"
+      "style.minimal"
     ],
     "bytes": 57404,
     "thumb": "/thumbs/handle_lever_modern.webp",
@@ -759,7 +1312,6 @@
     ]
   },
   "homecoming_center_rooftop": {
-    "kind": "hdri",
     "title": "Homecoming Center Rooftop",
     "author": "Dario Barresi",
     "source": "polyhaven",
@@ -768,9 +1320,10 @@
     "tags": [
       "backplate.urban.high"
     ],
-    "backplate": true,
     "bytes": 223037,
-    "thumb": "/thumbs/homecoming_center_rooftop.webp"
+    "thumb": "/thumbs/homecoming_center_rooftop.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "hood_chimney_ge": {
     "title": "GE Stainless Steel Chimney Style Range Hood",
@@ -791,7 +1344,6 @@
     ]
   },
   "hotel_rooftop_balcony": {
-    "kind": "hdri",
     "title": "Hotel Rooftop Balcony",
     "author": "Dimitrios Savva, Jarod Guest",
     "source": "polyhaven",
@@ -800,9 +1352,30 @@
     "tags": [
       "backplate.city_centre.high"
     ],
-    "backplate": true,
     "bytes": 139245,
-    "thumb": "/thumbs/hotel_rooftop_balcony.webp"
+    "thumb": "/thumbs/hotel_rooftop_balcony.webp",
+    "kind": "hdri",
+    "backplate": true
+  },
+  "industrial_coffee_table": {
+    "title": "Industrial Coffee Table",
+    "author": "Ulan Cabanilla",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/industrial_coffee_table",
+    "licence": "cc0",
+    "tags": [
+      "furniture.coffee_table",
+      "furniture.side_table",
+      "style.industrial"
+    ],
+    "bytes": 492460,
+    "thumb": "/thumbs/industrial_coffee_table.webp",
+    "kind": "model",
+    "size": [
+      77.8,
+      63.8,
+      75.8
+    ]
   },
   "kenney_toilet": {
     "title": "Toilet (Furniture Kit)",
@@ -1020,6 +1593,84 @@
       121
     ]
   },
+  "metal_office_desk": {
+    "title": "Metal Office Desk",
+    "author": "Ulan Cabanilla",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/metal_office_desk",
+    "licence": "cc0",
+    "tags": [
+      "furniture.desk",
+      "style.industrial"
+    ],
+    "bytes": 178500,
+    "thumb": "/thumbs/metal_office_desk.webp",
+    "kind": "model",
+    "size": [
+      200,
+      78.7,
+      94.7
+    ]
+  },
+  "mid_century_lounge_chair": {
+    "title": "Mid Century Lounge Chair",
+    "author": "Kuutti Siitonen",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/mid_century_lounge_chair",
+    "licence": "cc0",
+    "tags": [
+      "furniture.armchair",
+      "style.mid_century"
+    ],
+    "bytes": 292748,
+    "thumb": "/thumbs/mid_century_lounge_chair.webp",
+    "kind": "model",
+    "size": [
+      100.9,
+      116.9,
+      119
+    ]
+  },
+  "mirror_amalia_mohitoz": {
+    "title": "Amalia Floor Mirror",
+    "author": "mohitoz",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/amalia-floor-mirror-c73b336f45bc450b803c720f5c22a324",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.mirror",
+      "style.modern_classic",
+      "style.boho"
+    ],
+    "bytes": 174152,
+    "thumb": "/thumbs/mirror_amalia_mohitoz.webp",
+    "kind": "model",
+    "size": [
+      82,
+      184.8,
+      3
+    ]
+  },
+  "mirror_wall_modern_alexv": {
+    "title": "Wall_Mirror_Modern_Plaster_Steel",
+    "author": "Alex_V_13",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/wall-mirror-modern-plaster-steel-68e048e871214b03a4ad2d4267cab47e",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.mirror",
+      "style.minimal",
+      "style.industrial"
+    ],
+    "bytes": 434256,
+    "thumb": "/thumbs/mirror_wall_modern_alexv.webp",
+    "kind": "model",
+    "size": [
+      76,
+      117.3,
+      3.4
+    ]
+  },
   "modern_arm_chair_01": {
     "title": "Modern Arm Chair 01",
     "author": "Vibrant Nordic",
@@ -1028,7 +1679,8 @@
     "licence": "cc0",
     "tags": [
       "furniture.armchair",
-      "style.modern"
+      "style.mid_century",
+      "style.scandinavian"
     ],
     "bytes": 315264,
     "thumb": "/thumbs/modern_arm_chair_01.webp",
@@ -1065,7 +1717,7 @@
     "licence": "cc0",
     "tags": [
       "furniture.coffee_table",
-      "style.modern"
+      "style.minimal"
     ],
     "bytes": 168436,
     "thumb": "/thumbs/modern_coffee_table_01.webp",
@@ -1076,6 +1728,25 @@
       120.2
     ]
   },
+  "modern_coffee_table_02": {
+    "title": "Modern Coffee Table 02",
+    "author": "Amin",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/modern_coffee_table_02",
+    "licence": "cc0",
+    "tags": [
+      "furniture.coffee_table",
+      "style.minimal"
+    ],
+    "bytes": 477740,
+    "thumb": "/thumbs/modern_coffee_table_02.webp",
+    "kind": "model",
+    "size": [
+      119.9,
+      36.9,
+      120
+    ]
+  },
   "modern_wooden_cabinet": {
     "title": "Modern Wooden Cabinet",
     "author": "Patrik Pangerl",
@@ -1084,7 +1755,9 @@
     "licence": "cc0",
     "tags": [
       "furniture.tv_unit",
-      "furniture.sideboard"
+      "furniture.sideboard",
+      "style.mid_century",
+      "style.minimal"
     ],
     "bytes": 425932,
     "thumb": "/thumbs/modern_wooden_cabinet.webp",
@@ -1093,6 +1766,45 @@
       244,
       68,
       52
+    ]
+  },
+  "nightstand_jlrin_craneo": {
+    "title": "Nigthstand - JLRIN",
+    "author": "Craneo",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/nigthstand-jlrin-2df4843b75114b93b2db4ab6f7c4b044",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.nightstand",
+      "style.mid_century"
+    ],
+    "bytes": 79860,
+    "thumb": "/thumbs/nightstand_jlrin_craneo.webp",
+    "kind": "model",
+    "size": [
+      59.7,
+      57.2,
+      60.2
+    ]
+  },
+  "nightstand_v3_petrus": {
+    "title": "Nightstand v3 (Phase IV furniture curriculum)",
+    "author": "petrus-piv",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/nightstand-v3-phase-iv-furniture-curriculum-77d6f55157aa472cad0c31a023d8f23c",
+    "licence": "cc0",
+    "tags": [
+      "furniture.nightstand",
+      "style.scandinavian",
+      "style.minimal"
+    ],
+    "bytes": 19664,
+    "thumb": "/thumbs/nightstand_v3_petrus.webp",
+    "kind": "model",
+    "size": [
+      49,
+      61,
+      44
     ]
   },
   "oak_veneer_01": {
@@ -1133,6 +1845,83 @@
       84
     ]
   },
+  "office_chair_kilicarslan": {
+    "title": "High-Poly PBR Office Chair",
+    "author": "kilicarslan",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/high-poly-pbr-office-chair-fa2d5243f916407a93db7efcaae75e0d",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.office_chair",
+      "style.modern_classic",
+      "style.industrial"
+    ],
+    "bytes": 215920,
+    "thumb": "/thumbs/office_chair_kilicarslan.webp",
+    "kind": "model",
+    "size": [
+      5669.1,
+      9006,
+      5960.4
+    ]
+  },
+  "office_chair_redfox": {
+    "title": "Office Chair",
+    "author": "Red Fox / nokillnando",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/office-chair-b228a29fa84544c2be501c295653ffe7",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.office_chair",
+      "style.minimal"
+    ],
+    "bytes": 669860,
+    "thumb": "/thumbs/office_chair_redfox.webp",
+    "kind": "model",
+    "size": [
+      9729.6,
+      12582.9,
+      9263.4
+    ]
+  },
+  "old_bed_frame": {
+    "title": "Old Bed Frame",
+    "author": "Luca B",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/old_bed_frame",
+    "licence": "cc0",
+    "tags": [
+      "furniture.bed",
+      "style.industrial"
+    ],
+    "bytes": 645648,
+    "thumb": "/thumbs/old_bed_frame.webp",
+    "kind": "model",
+    "size": [
+      90.5,
+      120.1,
+      200.2
+    ]
+  },
+  "ornate_mirror_01": {
+    "title": "Ornate Mirror 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/ornate_mirror_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.mirror",
+      "style.modern_classic"
+    ],
+    "bytes": 212304,
+    "thumb": "/thumbs/ornate_mirror_01.webp",
+    "kind": "model",
+    "size": [
+      48.7,
+      74.4,
+      2.6
+    ]
+  },
   "oven_builtin_domino": {
     "title": "Built-in oven",
     "author": "3DDomino",
@@ -1171,6 +1960,65 @@
       160
     ]
   },
+  "painted_wooden_bench": {
+    "title": "Painted Wooden Bench",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_bench",
+    "licence": "cc0",
+    "tags": [
+      "furniture.bench",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 258708,
+    "thumb": "/thumbs/painted_wooden_bench.webp",
+    "kind": "model",
+    "size": [
+      116.5,
+      88.9,
+      49.6
+    ]
+  },
+  "painted_wooden_cabinet": {
+    "title": "Painted Wooden Cabinet",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_cabinet",
+    "licence": "cc0",
+    "tags": [
+      "furniture.storage",
+      "furniture.sideboard",
+      "style.mediterranean"
+    ],
+    "bytes": 231120,
+    "thumb": "/thumbs/painted_wooden_cabinet.webp",
+    "kind": "model",
+    "size": [
+      119.5,
+      118.2,
+      61.7
+    ]
+  },
+  "painted_wooden_cabinet_02": {
+    "title": "Painted Wooden Cabinet 02",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_cabinet_02",
+    "licence": "cc0",
+    "tags": [
+      "furniture.storage",
+      "style.mediterranean"
+    ],
+    "bytes": 153296,
+    "thumb": "/thumbs/painted_wooden_cabinet_02.webp",
+    "kind": "model",
+    "size": [
+      99.7,
+      256.9,
+      72.3
+    ]
+  },
   "painted_wooden_chair_01": {
     "title": "Painted Wooden Chair 01",
     "author": "Kuutti Siitonen",
@@ -1178,7 +2026,9 @@
     "sourceUrl": "https://polyhaven.com/a/painted_wooden_chair_01",
     "licence": "cc0",
     "tags": [
-      "furniture.dining_chair"
+      "furniture.dining_chair",
+      "style.mediterranean",
+      "style.scandinavian"
     ],
     "bytes": 201096,
     "thumb": "/thumbs/painted_wooden_chair_01.webp",
@@ -1187,6 +2037,85 @@
       43.2,
       95.6,
       54
+    ]
+  },
+  "painted_wooden_chair_02": {
+    "title": "Painted Wooden Chair 02",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_chair_02",
+    "licence": "cc0",
+    "tags": [
+      "furniture.dining_chair",
+      "style.mediterranean"
+    ],
+    "bytes": 405368,
+    "thumb": "/thumbs/painted_wooden_chair_02.webp",
+    "kind": "model",
+    "size": [
+      63.9,
+      126.4,
+      66.2
+    ]
+  },
+  "painted_wooden_nightstand": {
+    "title": "Painted Wooden Nightstand",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_nightstand",
+    "licence": "cc0",
+    "tags": [
+      "furniture.nightstand",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 274116,
+    "thumb": "/thumbs/painted_wooden_nightstand.webp",
+    "kind": "model",
+    "size": [
+      50.5,
+      61.6,
+      50.9
+    ]
+  },
+  "painted_wooden_sofa": {
+    "title": "Painted Wooden Sofa",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_sofa",
+    "licence": "cc0",
+    "tags": [
+      "furniture.sofa",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 272192,
+    "thumb": "/thumbs/painted_wooden_sofa.webp",
+    "kind": "model",
+    "size": [
+      245.2,
+      128.1,
+      78.7
+    ]
+  },
+  "painted_wooden_table": {
+    "title": "Painted Wooden Table",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/painted_wooden_table",
+    "licence": "cc0",
+    "tags": [
+      "furniture.dining_table",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 144336,
+    "thumb": "/thumbs/painted_wooden_table.webp",
+    "kind": "model",
+    "size": [
+      240.6,
+      95.9,
+      113.7
     ]
   },
   "plastered_wall_04": {
@@ -1229,7 +2158,6 @@
     ]
   },
   "potsdamer_platz": {
-    "kind": "hdri",
     "title": "Potsdamer Platz",
     "author": "Greg Zaal",
     "source": "polyhaven",
@@ -1238,9 +2166,10 @@
     "tags": [
       "backplate.city_centre.ground"
     ],
-    "backplate": true,
     "bytes": 155742,
-    "thumb": "/thumbs/potsdamer_platz.webp"
+    "thumb": "/thumbs/potsdamer_platz.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "potted_plant_01": {
     "title": "Potted Plant 01",
@@ -1297,7 +2226,6 @@
     ]
   },
   "residential_garden": {
-    "kind": "hdri",
     "title": "Residential Garden",
     "author": "Greg Zaal, Rico Cilliers",
     "source": "polyhaven",
@@ -1306,12 +2234,32 @@
     "tags": [
       "backplate.garden"
     ],
-    "backplate": true,
     "bytes": 261057,
-    "thumb": "/thumbs/residential_garden.webp"
+    "thumb": "/thumbs/residential_garden.webp",
+    "kind": "hdri",
+    "backplate": true
+  },
+  "rockingchair_01": {
+    "title": "Rockingchair 01",
+    "author": "Jorge Camacho",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/Rockingchair_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.armchair",
+      "style.boho",
+      "style.scandinavian"
+    ],
+    "bytes": 285540,
+    "thumb": "/thumbs/rockingchair_01.webp",
+    "kind": "model",
+    "size": [
+      70.8,
+      99.5,
+      83.4
+    ]
   },
   "rolling_hills": {
-    "kind": "hdri",
     "title": "Rolling Hills",
     "author": "Dimitrios Savva, Jarod Guest",
     "source": "polyhaven",
@@ -1320,9 +2268,30 @@
     "tags": [
       "backplate.rural.high"
     ],
-    "backplate": true,
     "bytes": 281166,
-    "thumb": "/thumbs/rolling_hills.webp"
+    "thumb": "/thumbs/rolling_hills.webp",
+    "kind": "hdri",
+    "backplate": true
+  },
+  "sheen_chair": {
+    "title": "Sheen Chair",
+    "author": "Wayfair LLC",
+    "source": "khronos",
+    "sourceUrl": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/SheenChair",
+    "licence": "cc0",
+    "tags": [
+      "furniture.armchair",
+      "style.mid_century",
+      "style.modern_classic"
+    ],
+    "bytes": 742684,
+    "thumb": "/thumbs/sheen_chair.webp",
+    "kind": "model",
+    "size": [
+      82.7,
+      68.6,
+      57
+    ]
   },
   "sheen_wood_leather_sofa": {
     "title": "Sheen Wood Leather Sofa",
@@ -1332,7 +2301,7 @@
     "licence": "cc-by-4.0",
     "tags": [
       "furniture.sofa",
-      "style.modern"
+      "style.modern_classic"
     ],
     "bytes": 1247688,
     "thumb": "/thumbs/sheen_wood_leather_sofa.webp",
@@ -1341,6 +2310,47 @@
       272.6,
       111.7,
       92.3
+    ]
+  },
+  "shoe_cabinet_3dwalkabout": {
+    "title": "Shoe Cabinet",
+    "author": "3DWALKABOUT",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/shoe-cabinet-d4205cbd80f4459c80a0257b97ab95a2",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.shoe_cabinet",
+      "style.minimal",
+      "style.scandinavian"
+    ],
+    "bytes": 364980,
+    "thumb": "/thumbs/shoe_cabinet_3dwalkabout.webp",
+    "kind": "model",
+    "size": [
+      79.6,
+      65.7,
+      38.5
+    ]
+  },
+  "shoe_cabinet_borgin": {
+    "title": "BORGIN CABINET (BGC-01) 120x38x110cm",
+    "author": "BETTER CRAFT",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/borgin-cabinet-bgc-01-120x38x110cm-5e2be1c385cc4be4b0c956ab2e39aa41",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.shoe_cabinet",
+      "furniture.storage",
+      "style.minimal",
+      "style.modern_classic"
+    ],
+    "bytes": 187392,
+    "thumb": "/thumbs/shoe_cabinet_borgin.webp",
+    "kind": "model",
+    "size": [
+      118.1,
+      109,
+      38.5
     ]
   },
   "shower_enclosure_binhnham": {
@@ -1369,7 +2379,9 @@
     "licence": "cc0",
     "tags": [
       "furniture.side_table",
-      "furniture.nightstand"
+      "furniture.nightstand",
+      "style.scandinavian",
+      "style.japandi"
     ],
     "bytes": 188956,
     "thumb": "/thumbs/side_table_01.webp",
@@ -1380,8 +2392,224 @@
       45
     ]
   },
+  "side_table_antique_arkell": {
+    "title": "Antique Table",
+    "author": "Luke Arkell",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/antique-table-39a58c86837b4baaa67e325e87a7387d",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.side_table",
+      "furniture.nightstand",
+      "style.modern_classic"
+    ],
+    "bytes": 323504,
+    "thumb": "/thumbs/side_table_antique_arkell.webp",
+    "kind": "model",
+    "size": [
+      77.7,
+      75,
+      48
+    ]
+  },
+  "side_table_tall_01": {
+    "title": "Side Table Tall 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/side_table_tall_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.side_table",
+      "style.minimal"
+    ],
+    "bytes": 176792,
+    "thumb": "/thumbs/side_table_tall_01.webp",
+    "kind": "model",
+    "size": [
+      38.4,
+      76.1,
+      38.4
+    ]
+  },
+  "sideboard_mprender": {
+    "title": "Sideboard",
+    "author": "MPRender",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/sideboard-bb8e2e31efb64e38aab536bd9b1475ba",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.sideboard",
+      "style.minimal",
+      "style.modern_classic"
+    ],
+    "bytes": 588328,
+    "thumb": "/thumbs/sideboard_mprender.webp",
+    "kind": "model",
+    "size": [
+      150,
+      78,
+      44.5
+    ]
+  },
+  "sideboard_teak_kung": {
+    "title": "Mid Century Teak Sideboard Credenza",
+    "author": "calebkung",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/mid-century-teak-sideboard-credenza-3028ba44d1f245b886c12eadc934f722",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.sideboard",
+      "furniture.tv_unit",
+      "style.mid_century",
+      "style.scandinavian"
+    ],
+    "bytes": 267560,
+    "thumb": "/thumbs/sideboard_teak_kung.webp",
+    "kind": "model",
+    "size": [
+      39359.7,
+      63699.3,
+      135000
+    ]
+  },
+  "sofa_01": {
+    "title": "Sofa 01",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/Sofa_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.sofa",
+      "style.mid_century"
+    ],
+    "bytes": 206700,
+    "thumb": "/thumbs/sofa_01.webp",
+    "kind": "model",
+    "size": [
+      157.1,
+      79.7,
+      65.8
+    ]
+  },
+  "sofa_02": {
+    "title": "Sofa 02",
+    "author": "Kirill Sannikov",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/sofa_02",
+    "licence": "cc0",
+    "tags": [
+      "furniture.sofa",
+      "style.scandinavian",
+      "style.minimal"
+    ],
+    "bytes": 169024,
+    "thumb": "/thumbs/sofa_02.webp",
+    "kind": "model",
+    "size": [
+      180.7,
+      71,
+      81.8
+    ]
+  },
+  "sofa_iyzyken": {
+    "title": "Sofa",
+    "author": "iyzyken",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/sofa-71a3f0ba37b54ed58f74125c8773bbdd",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.sofa",
+      "style.scandinavian",
+      "style.boho"
+    ],
+    "bytes": 128804,
+    "thumb": "/thumbs/sofa_iyzyken.webp",
+    "kind": "model",
+    "size": [
+      267.2,
+      92.2,
+      104.1
+    ]
+  },
+  "sofa_mid_century_seddon": {
+    "title": "Mid Century Modern Sofa",
+    "author": "Tom Seddon",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/mid-century-modern-sofa-1f9f52ae17d642b582d0c5ccf9dd64b3",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.sofa",
+      "style.mid_century"
+    ],
+    "bytes": 251180,
+    "thumb": "/thumbs/sofa_mid_century_seddon.webp",
+    "kind": "model",
+    "size": [
+      9367.1,
+      4000.2,
+      4327.2
+    ]
+  },
+  "sofa_modern_ben": {
+    "title": "Modern  Sofa",
+    "author": "3dimentionalben",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/modern-sofa-ac92f6e97eaa43c4ad6cb8f7c65ac43f",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.sofa",
+      "style.minimal",
+      "style.scandinavian"
+    ],
+    "bytes": 1163644,
+    "thumb": "/thumbs/sofa_modern_ben.webp",
+    "kind": "model",
+    "size": [
+      200,
+      60.2,
+      78.4
+    ]
+  },
+  "steel_frame_shelves_01": {
+    "title": "Steel Frame Shelves 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/steel_frame_shelves_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.bookshelf",
+      "furniture.storage",
+      "style.industrial"
+    ],
+    "bytes": 179040,
+    "thumb": "/thumbs/steel_frame_shelves_01.webp",
+    "kind": "model",
+    "size": [
+      1097.3,
+      2140.5,
+      502
+    ]
+  },
+  "storage_modern_lopes": {
+    "title": "Modern Furniture",
+    "author": "Tiago Lopes",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/modern-furniture-4bc3e9f3bd8d404ba130aa58323ba9bb",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.storage",
+      "style.minimal"
+    ],
+    "bytes": 158304,
+    "thumb": "/thumbs/storage_modern_lopes.webp",
+    "kind": "model",
+    "size": [
+      407.1,
+      153.1,
+      157.4
+    ]
+  },
   "stuttgart_hillside": {
-    "kind": "hdri",
     "title": "Stuttgart Hillside",
     "author": "Andreas Mischok",
     "source": "polyhaven",
@@ -1390,12 +2618,12 @@
     "tags": [
       "backplate.suburban.high"
     ],
-    "backplate": true,
     "bytes": 297000,
-    "thumb": "/thumbs/stuttgart_hillside.webp"
+    "thumb": "/thumbs/stuttgart_hillside.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "stuttgart_suburbs": {
-    "kind": "hdri",
     "title": "Stuttgart Suburbs",
     "author": "Andreas Mischok",
     "source": "polyhaven",
@@ -1404,12 +2632,12 @@
     "tags": [
       "backplate.suburban.low"
     ],
-    "backplate": true,
     "bytes": 273464,
-    "thumb": "/thumbs/stuttgart_suburbs.webp"
+    "thumb": "/thumbs/stuttgart_suburbs.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "suburban_garden": {
-    "kind": "hdri",
     "title": "Suburban Garden",
     "author": "Dimitrios Savva, Jarod Guest",
     "source": "polyhaven",
@@ -1418,9 +2646,10 @@
     "tags": [
       "backplate.suburban.ground"
     ],
-    "backplate": true,
     "bytes": 334633,
-    "thumb": "/thumbs/suburban_garden.webp"
+    "thumb": "/thumbs/suburban_garden.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "switch_avot": {
     "title": "Light Switch",
@@ -1477,8 +2706,47 @@
       60.7
     ]
   },
+  "tv_unit_reclaimed_maxsbond": {
+    "title": "Reclaimed TV Stand / Furniture",
+    "author": "maxsbond.work",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/reclaimed-tv-stand-furniture-1fd5aaf7ede3441986d193403aa36893",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.tv_unit",
+      "style.industrial",
+      "style.boho"
+    ],
+    "bytes": 159104,
+    "thumb": "/thumbs/tv_unit_reclaimed_maxsbond.webp",
+    "kind": "model",
+    "size": [
+      153.1,
+      77.9,
+      53.1
+    ]
+  },
+  "tv_unit_wood_slls": {
+    "title": "TV Bench / TV Table / TV Stand Wood",
+    "author": "slls666",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/tv-bench-tv-table-tv-stand-wood-b03d3365cd604e758b49c41aa652068d",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.tv_unit",
+      "style.scandinavian",
+      "style.japandi"
+    ],
+    "bytes": 217488,
+    "thumb": "/thumbs/tv_unit_wood_slls.webp",
+    "kind": "model",
+    "size": [
+      48.8,
+      61.9,
+      180
+    ]
+  },
   "urban_courtyard": {
-    "kind": "hdri",
     "title": "Urban Courtyard",
     "author": "Greg Zaal, Rico Cilliers",
     "source": "polyhaven",
@@ -1487,12 +2755,12 @@
     "tags": [
       "backplate.courtyard"
     ],
-    "backplate": true,
     "bytes": 285327,
-    "thumb": "/thumbs/urban_courtyard.webp"
+    "thumb": "/thumbs/urban_courtyard.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "urban_street_01": {
-    "kind": "hdri",
     "title": "Urban Street 01",
     "author": "Andreas Mischok",
     "source": "polyhaven",
@@ -1501,12 +2769,12 @@
     "tags": [
       "backplate.urban.ground"
     ],
-    "backplate": true,
     "bytes": 525721,
-    "thumb": "/thumbs/urban_street_01.webp"
+    "thumb": "/thumbs/urban_street_01.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "urban_street_03": {
-    "kind": "hdri",
     "title": "Urban Street 03",
     "author": "Andreas Mischok",
     "source": "polyhaven",
@@ -1515,9 +2783,10 @@
     "tags": [
       "backplate.urban.low"
     ],
-    "backplate": true,
     "bytes": 211293,
-    "thumb": "/thumbs/urban_street_03.webp"
+    "thumb": "/thumbs/urban_street_03.webp",
+    "kind": "hdri",
+    "backplate": true
   },
   "vanity_blendffnike": {
     "title": "Sink with Faucet",
@@ -1537,6 +2806,106 @@
       45
     ]
   },
+  "vintage_cabinet_01": {
+    "title": "Vintage Cabinet 01",
+    "author": "Rico Cilliers",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/vintage_cabinet_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.storage",
+      "style.modern_classic",
+      "style.boho"
+    ],
+    "bytes": 596208,
+    "thumb": "/thumbs/vintage_cabinet_01.webp",
+    "kind": "model",
+    "size": [
+      202.2,
+      223.5,
+      67
+    ]
+  },
+  "vintage_wooden_drawer_01": {
+    "title": "Vintage Wooden Drawer 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/vintage_wooden_drawer_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.dresser",
+      "style.mediterranean",
+      "style.boho"
+    ],
+    "bytes": 302992,
+    "thumb": "/thumbs/vintage_wooden_drawer_01.webp",
+    "kind": "model",
+    "size": [
+      85.8,
+      54.5,
+      45.7
+    ]
+  },
+  "wall_shelf_simple_blender3d": {
+    "title": "Simple Wall Shelf 2.0",
+    "author": "Blender3D",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/simple-wall-shelf-20-c25c7fc819e844b1a4fe3d0174b50e8c",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.wall_shelf",
+      "style.minimal",
+      "style.scandinavian"
+    ],
+    "bytes": 311156,
+    "thumb": "/thumbs/wall_shelf_simple_blender3d.webp",
+    "kind": "model",
+    "size": [
+      292.8,
+      286,
+      723.1
+    ]
+  },
+  "wall_shelf_wooden_sanzid": {
+    "title": "Wooden Wall Bookshelf",
+    "author": "Sanzid",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/wooden-wall-bookshelf-96a804790eff41b3b2376f3608fde7df",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.wall_shelf",
+      "style.japandi",
+      "style.boho"
+    ],
+    "bytes": 183132,
+    "thumb": "/thumbs/wall_shelf_wooden_sanzid.webp",
+    "kind": "model",
+    "size": [
+      200,
+      37.4,
+      50
+    ]
+  },
+  "wardrobe_antique_siitonen": {
+    "title": "Antique Wooden Wardrobe",
+    "author": "Kuutti Siitonen",
+    "source": "sketchfab",
+    "sourceUrl": "https://sketchfab.com/3d-models/antique-wooden-wardrobe-a3c221e5504d40a8ba019f8f1bf5ab0e",
+    "licence": "cc-by-4.0",
+    "tags": [
+      "furniture.wardrobe",
+      "style.modern_classic",
+      "style.mediterranean"
+    ],
+    "bytes": 243440,
+    "thumb": "/thumbs/wardrobe_antique_siitonen.webp",
+    "kind": "model",
+    "size": [
+      135,
+      196.9,
+      82
+    ]
+  },
   "wood_floor": {
     "title": "Wood Floor",
     "author": "Dimitrios Savva",
@@ -1554,6 +2923,66 @@
       128,
       96,
       66
+    ]
+  },
+  "wooden_bookshelf_worn": {
+    "title": "Wooden Bookshelf Worn",
+    "author": "Ulan Cabanilla",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/wooden_bookshelf_worn",
+    "licence": "cc0",
+    "tags": [
+      "furniture.bookshelf",
+      "style.boho",
+      "style.mediterranean"
+    ],
+    "bytes": 565032,
+    "thumb": "/thumbs/wooden_bookshelf_worn.webp",
+    "kind": "model",
+    "size": [
+      137.4,
+      206.3,
+      58.1
+    ]
+  },
+  "wooden_display_shelves_01": {
+    "title": "Wooden Display Shelves 01",
+    "author": "James Ray Cock",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/wooden_display_shelves_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.bookshelf",
+      "style.scandinavian",
+      "style.japandi"
+    ],
+    "bytes": 169284,
+    "thumb": "/thumbs/wooden_display_shelves_01.webp",
+    "kind": "model",
+    "size": [
+      37.1,
+      155.6,
+      107.8
+    ]
+  },
+  "woodentable_01": {
+    "title": "Wooden Table 01",
+    "author": "Ethan Place",
+    "source": "polyhaven",
+    "sourceUrl": "https://polyhaven.com/a/WoodenTable_01",
+    "licence": "cc0",
+    "tags": [
+      "furniture.dining_table",
+      "style.scandinavian",
+      "style.japandi"
+    ],
+    "bytes": 232188,
+    "thumb": "/thumbs/woodentable_01.webp",
+    "kind": "model",
+    "size": [
+      180,
+      54.9,
+      65.7
     ]
   }
 }

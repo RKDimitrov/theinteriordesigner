@@ -8,20 +8,34 @@ import type { FurnitureCategory } from "@/domain/schemas/design";
 import CATALOGUE_JSON from "./asset-catalogue.json";
 import { HDRI_IDS, MODEL_IDS, TEXTURE_IDS } from "./asset-ids";
 import { MATERIALS } from "@/domain/materials/library";
-import { ASSET_CATALOGUE, MODEL_SIZE, nativeFootprint, PIECE_ASSETS, pickVariant, TEXTURE_CM, type TextureId } from "./assets";
+import { StyleKey } from "@/domain/schemas/profile";
+import { ASSET_CATALOGUE, BUILT_CATEGORIES, BUILT_MODEL, MODEL_SIZE, nativeFootprint, PIECE_MODELS, type PieceModel, pieceModel, TEXTURE_CM, type TextureId } from "./assets";
 
-describe("pickVariant", () => {
-  const tall = { id: "potted_plant_01" as const };
-  const bushy = { id: "potted_plant_02" as const };
-
-  it("chooses the model whose proportions need the least stretching", () => {
-    expect(pickVariant([bushy, tall], 45, 45, 120)).toBe(tall);
-    expect(pickVariant([tall, bushy], 70, 70, 85)).toBe(bushy);
+describe("pieceModel", () => {
+  it("keeps the model the user chose when it belongs to the category", () => {
+    const m = pieceModel("sofa", "glam_velvet_sofa", 200, 90, 80, null);
+    expect(m !== "built" && m.id).toBe("glam_velvet_sofa");
   });
 
-  it("ignores overall size: a uniformly smaller copy is not distorted", () => {
-    const [w, h, d] = MODEL_SIZE["potted_plant_02"];
-    expect(pickVariant([tall, bushy], w / 2, d / 2, h / 2)).toBe(bushy);
+  it("ignores a chosen model of another category and picks by proportions", () => {
+    const tall = pieceModel("plant", "sofa_02", 45, 45, 120, null);
+    const bushy = pieceModel("plant", undefined, 70, 70, 85, null);
+    expect(tall !== "built" && tall.id).toBe("potted_plant_01");
+    expect(bushy !== "built" && bushy.id).toBe("potted_plant_02");
+  });
+
+  it("leans towards the profile's style", () => {
+    const m = pieceModel("dining_chair", undefined, 45, 50, 90, { mediterranean: 1 });
+    expect(m !== "built" && m.styles).toContain("mediterranean");
+  });
+
+  it("builds in code on request, or when a category has no model", () => {
+    expect(pieceModel("sofa", BUILT_MODEL, 200, 90, 80, null)).toBe(BUILT_MODEL);
+    expect(pieceModel("rug", undefined, 200, 140, 1, null)).toBe(BUILT_MODEL);
+    // A bookshelf model squashed into a low wide piece would look wrong.
+    expect(pieceModel("bookshelf", undefined, 300, 30, 40, null)).toBe(BUILT_MODEL);
+    // Armchairs have no code-built version, so "built" falls back to a model.
+    expect(pieceModel("armchair", BUILT_MODEL, 80, 80, 80, null)).not.toBe(BUILT_MODEL);
   });
 });
 
@@ -33,24 +47,33 @@ describe("nativeFootprint", () => {
   });
 });
 
-describe("PIECE_ASSETS", () => {
-  const modelled = Object.entries(PIECE_ASSETS).filter(([, a]) => a.kind === "models") as [
-    FurnitureCategory,
-    Extract<(typeof PIECE_ASSETS)[FurnitureCategory], { kind: "models" }>,
-  ][];
+describe("PIECE_MODELS", () => {
+  const modelled = Object.entries(PIECE_MODELS) as [FurnitureCategory, readonly PieceModel[]][];
 
-  it.each(modelled)("%s models face the way the catalogue piece does", (category, asset) => {
+  it.each(modelled.filter(([, m]) => m.length > 0))("%s models face the way the catalogue piece does", (category, models) => {
     const [cw, cd] = CATALOGUE[category].sizes.medium;
     // Only clearly oblong pieces have a long side to get wrong.
     if (Math.max(cw, cd) / Math.min(cw, cd) < 1.2) return;
-    for (const v of asset.variants) {
+    for (const v of models) {
       const [w, , d] = nativeFootprint(v);
+      // A round or square model has no long side either.
+      if (Math.max(w, d) / Math.min(w, d) < 1.2) continue;
       expect(w > d, `${v.id} long side`).toBe(cw > cd);
     }
   });
 
-  it("has a measured size for every model it uses", () => {
-    for (const [, a] of modelled) for (const v of a.variants) expect(MODEL_SIZE[v.id]).toHaveLength(3);
+  it("gives every category a model or a version built in code", () => {
+    for (const [c, m] of modelled) expect(m.length > 0 || BUILT_CATEGORIES.has(c), c).toBe(true);
+  });
+
+  it("tags every piece model with at least one known style, except plants and art", () => {
+    for (const [c, models] of modelled) {
+      if (c === "plant" || c === "art") continue;
+      for (const m of models) {
+        expect(m.styles.length, m.id).toBeGreaterThan(0);
+        for (const st of m.styles) expect(StyleKey.options, m.id).toContain(st);
+      }
+    }
   });
 });
 

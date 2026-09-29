@@ -137,6 +137,11 @@ export const FurnitureItem = z.object({
   existing: z.boolean().default(false),
   /** Placed by hand in the planner; a redesign can be asked to keep it. */
   locked: z.boolean().optional(),
+  /** The real 3D model the user picked (an asset id, or "built"); unset lets the planner choose. */
+  modelId: z
+    .string()
+    .regex(/^[a-z0-9_-]{1,80}$/)
+    .optional(),
   rationale: Rationale,
   /** Set by the solver pipeline so a stored design can be re-solved and repaired in priority order. */
   sizeClass: SizeClass.optional(),

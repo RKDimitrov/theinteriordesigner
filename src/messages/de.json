@@ -1064,5 +1064,13 @@
     "outlookDefault": "Wie die Umgebung",
     "saveFailed": "Der Ausblick konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "wallN": "Wand {n}"
+  },
+  "PieceModel": {
+    "title": "Modell",
+    "colour": "Farbe",
+    "auto": "Automatisch",
+    "built": "Schlicht",
+    "builtHint": "Genau nach Maß, ganz in der Farbe des Stücks",
+    "vary": "Modelle variieren"
   }
 }

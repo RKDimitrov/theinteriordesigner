@@ -1738,3 +1738,60 @@ h4.pl-sub {
 .pl-styles > button:last-child:nth-child(odd) {
   grid-column: 1 / -1;
 }
+
+/* Model picker: thumbnails of the real models for the selected piece. */
+.pl-models {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+.pl-models > button {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  padding: 4px;
+  border: 1.5px solid var(--line, #ccc);
+  background: var(--sheet);
+  cursor: pointer;
+  min-width: 0;
+}
+.pl-models > button[aria-checked="true"] {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.pl-models > button:hover:not([aria-checked="true"]) {
+  background: var(--hover);
+}
+.pl-models img,
+.pl-models .pl-model-auto {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: #f1efea;
+}
+.pl-models .pl-model-auto {
+  display: grid;
+  place-items: center;
+  font: 500 10px var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pl-models small {
+  font: 400 10px/1.2 var(--sans, inherit);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+.pl-colour {
+  width: 34px;
+  height: 20px;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  background: none;
+  cursor: pointer;
+}
