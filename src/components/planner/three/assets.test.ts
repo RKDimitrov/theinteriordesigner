@@ -3,13 +3,14 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assetPaths, Catalogue, MODEL_BUDGET_BYTES } from "@/domain/assets/catalogue";
 import { isAttribution } from "@/domain/assets/licence";
+import { MODEL_TUNING } from "@/domain/assets/model-tuning";
 import { CATALOGUE } from "@/domain/design/catalogue";
 import type { FurnitureCategory } from "@/domain/schemas/design";
 import CATALOGUE_JSON from "./asset-catalogue.json";
 import { HDRI_IDS, MODEL_IDS, TEXTURE_IDS } from "./asset-ids";
 import { MATERIALS } from "@/domain/materials/library";
 import { StyleKey } from "@/domain/schemas/profile";
-import { ASSET_CATALOGUE, BUILT_CATEGORIES, BUILT_MODEL, MODEL_SIZE, nativeFootprint, PIECE_MODELS, type PieceModel, pieceModel, TEXTURE_CM, type TextureId } from "./assets";
+import { ASSET_CATALOGUE, BUILT_CATEGORIES, BUILT_MODEL, MODEL_SIZE, modelPicture, nativeFootprint, PIECE_MODELS, type PieceModel, pieceModel, TEXTURE_CM, type TextureId } from "./assets";
 
 describe("pieceModel", () => {
   it("keeps the model the user chose when it belongs to the category", () => {
@@ -93,6 +94,16 @@ describe("asset catalogue", () => {
     const files = e.kind === "model" ? [assetPaths.model(id)] : e.kind === "texture" ? assetPaths.texture(id) : [e.backplate ? assetPaths.backplate(id) : assetPaths.hdri(id)];
     for (const f of files) expect(onDisk(f), f).toBe(true);
     expect(e.thumb && onDisk(e.thumb), "thumbnail").toBeTruthy();
+  });
+
+  it("tunes only models that exist", () => {
+    for (const id of Object.keys(MODEL_TUNING)) expect(MODEL_IDS as readonly string[], id).toContain(id);
+  });
+
+  it.each(Object.values(PIECE_MODELS).flat().map((m) => m.id))("%s has a rendered catalogue picture", (id) => {
+    const picture = modelPicture(id);
+    expect(picture).toBe(assetPaths.render(id));
+    expect(onDisk(picture!), picture).toBe(true);
   });
 
   it.each(entries.filter(([, e]) => e.kind === "model"))("%s is within the model budget", (_, e) => {

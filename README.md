@@ -61,7 +61,7 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | `npm run test:e2e` | Playwright. Needs `npm run dev` already running (or `E2E_BASE_URL`). Runs desktop Chrome and a Pixel 7 profile. Set `E2E_GPU=1` to render 3D on the graphics card; headless Chrome otherwise renders on the CPU at about 1 frame a second. |
 | `npm run db:migrate` | `prisma migrate dev`, used to create new migrations during development |
 | `npm run db:deploy` | `prisma migrate deploy` |
-| `node scripts/fetch-assets.mjs` | The asset pipeline: fetches what is missing among the assets listed in `assets/manifest/*.json`, compresses them (meshopt + WebP), and regenerates `src/components/planner/three/asset-catalogue.json`. Flags: `--force`, `--only <id>`, `--source <name>`, `--check` (offline consistency check). See "3D assets" below. |
+| `node scripts/fetch-assets.mjs` | The asset pipeline: fetches what is missing among the assets listed in `assets/manifest/*.json`, compresses them (meshopt + WebP), and regenerates `src/components/planner/three/asset-catalogue.json`. Flags: `--force`, `--only <id>`, `--source <name>`, `--check` (offline consistency check), `--renders` (catalogue pictures, see step 3 below). See "3D assets" below. |
 
 ## 3D assets
 
@@ -71,7 +71,8 @@ To add an asset:
 
 1. Add an entry to `assets/manifest/models.json`, `textures.json` or `hdris.json`. Give the id, source, source ref, title, author, source URL, licence and tags. Poly Haven and ambientCG take their own id as `ref`. Sketchfab takes the model uid. Khronos, Poly Pizza, Kenney, Quaternius, cgbookcase and 3dtextures.me take a pinned file or zip URL, plus `pick` (and `thumbPick`) patterns for zips. Textures from anywhere except Poly Haven need `tileCm`.
 2. Run `node scripts/fetch-assets.mjs --only <id>`. Commit the new files in `public/`, the catalogue and `asset-ids.ts`.
-3. Map it in `src/components/planner/three/assets.ts` if a category should use it.
+3. For a furniture model, run `node scripts/fetch-assets.mjs --renders`. It photographs every furniture model that has no picture yet in headless Chrome (same camera angle, light and framing for all) and writes `public/renders/<id>.webp`, which the Catalogue and the model picker show. `--force` renders all of them again. Set `E2E_BROWSER_CHANNEL=chrome` to use the installed Chrome. Commit the pictures and the catalogue.
+4. Map it in `src/components/planner/three/assets.ts` if a category should use it.
 
 Rules:
 

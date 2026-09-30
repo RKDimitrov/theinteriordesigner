@@ -263,7 +263,8 @@
       84.8,
       106.5,
       76.6
-    ]
+    ],
+    "render": "/renders/armchair_01.webp"
   },
   "armchair_lounger_kudrin": {
     "title": "Lounger Armchair",
@@ -283,7 +284,8 @@
       98.3,
       136.5,
       116.2
-    ]
+    ],
+    "render": "/renders/armchair_lounger_kudrin.webp"
   },
   "basin_stand_renviro": {
     "title": "Wash Basin Stand",
@@ -357,7 +359,8 @@
       32767.9,
       29489.8,
       39886.6
-    ]
+    ],
+    "render": "/renders/bed_double_branscombe.webp"
   },
   "bed_poliform_ramos": {
     "title": "Poliform_Bed",
@@ -377,7 +380,8 @@
       22203.2,
       8107.5,
       23993.9
-    ]
+    ],
+    "render": "/renders/bed_poliform_ramos.webp"
   },
   "bed_v1_mh": {
     "title": "Bed - v1",
@@ -397,7 +401,8 @@
       120,
       92.4,
       229.8
-    ]
+    ],
+    "render": "/renders/bed_v1_mh.webp"
   },
   "bench_wooden_stano": {
     "title": "Wooden Bench",
@@ -417,7 +422,8 @@
       200,
       204.8,
       589.7
-    ]
+    ],
+    "render": "/renders/bench_wooden_stano.webp"
   },
   "blinds_venetian_akstudio": {
     "title": "Window Blinds Low poly 3D model",
@@ -472,7 +478,8 @@
       383.5,
       451.1,
       67.8
-    ]
+    ],
+    "render": "/renders/bookshelf_antique_drago.webp"
   },
   "brass_vase_03": {
     "title": "Brass Vase 03",
@@ -637,7 +644,8 @@
       82.9,
       68.7,
       57.2
-    ]
+    ],
+    "render": "/renders/chair_damask_purplegold.webp"
   },
   "chandelier_02": {
     "title": "Chandelier 02",
@@ -674,7 +682,8 @@
       154.3,
       94.9,
       58.9
-    ]
+    ],
+    "render": "/renders/classicconsole_01.webp"
   },
   "classicnightstand_01": {
     "title": "Classic Nightstand 01",
@@ -693,7 +702,8 @@
       56.8,
       70,
       42.4
-    ]
+    ],
+    "render": "/renders/classicnightstand_01.webp"
   },
   "clay_plaster": {
     "title": "Clay Plaster",
@@ -732,7 +742,8 @@
       131617.5,
       40232.6,
       94787.8
-    ]
+    ],
+    "render": "/renders/coffee_table_noguchi_kumagai.webp"
   },
   "coffee_table_round_01": {
     "title": "Coffee Table Round 01",
@@ -752,7 +763,8 @@
       130.1,
       49.1,
       130.1
-    ]
+    ],
+    "render": "/renders/coffee_table_round_01.webp"
   },
   "coffeetable_01": {
     "title": "Coffee Table 01",
@@ -771,7 +783,8 @@
       154,
       52.3,
       97.3
-    ]
+    ],
+    "render": "/renders/coffeetable_01.webp"
   },
   "concrete_cat_statue": {
     "title": "Concrete Cat Statue",
@@ -920,7 +933,8 @@
       140,
       75.7,
       60
-    ]
+    ],
+    "render": "/renders/desk_office_aleixo.webp"
   },
   "desk_wooden_shahsavan": {
     "title": "Desk Wooden Office - 18MB",
@@ -940,7 +954,8 @@
       128,
       79.9,
       64.1
-    ]
+    ],
+    "render": "/renders/desk_wooden_shahsavan.webp"
   },
   "diagonal_parquet": {
     "title": "Diagonal Parquet",
@@ -980,7 +995,8 @@
       43.4,
       97.3,
       57.6
-    ]
+    ],
+    "render": "/renders/dining_chair_02.webp"
   },
   "dining_chair_old_max3dd": {
     "title": "Old Wooden Chair",
@@ -1000,7 +1016,8 @@
       20.1,
       48.4,
       23.9
-    ]
+    ],
+    "render": "/renders/dining_chair_old_max3dd.webp"
   },
   "dining_table_industrial_elasta": {
     "title": "Industrial Table",
@@ -1019,7 +1036,8 @@
       150,
       67.5,
       80
-    ]
+    ],
+    "render": "/renders/dining_table_industrial_elasta.webp"
   },
   "door_with_frame_witnessk": {
     "title": "Door with frame",
@@ -1057,7 +1075,8 @@
       114.1,
       188.1,
       48.8
-    ]
+    ],
+    "render": "/renders/drawer_cabinet.webp"
   },
   "dresser_kids_harrodine": {
     "title": "Kid's Dresser/ Chest of Drawers",
@@ -1076,7 +1095,8 @@
       124.7,
       90,
       59
-    ]
+    ],
+    "render": "/renders/dresser_kids_harrodine.webp"
   },
   "dresser_leon": {
     "title": "Dresser",
@@ -1095,7 +1115,8 @@
       66,
       84.2,
       37.2
-    ]
+    ],
+    "render": "/renders/dresser_leon.webp"
   },
   "dresser_sifonyer_renend": {
     "title": "Sifonyer",
@@ -1115,7 +1136,8 @@
       177.5,
       296.1,
       490.5
-    ]
+    ],
+    "render": "/renders/dresser_sifonyer_renend.webp"
   },
   "faucet_renend": {
     "title": "Faucet",
@@ -1153,7 +1175,8 @@
       70.2,
       192,
       40.4
-    ]
+    ],
+    "render": "/renders/floor_lamp_jackjohn.webp"
   },
   "floor_lamp_mario_milanovic": {
     "title": "Mario Floor Lamp",
@@ -1173,7 +1196,8 @@
       191.4,
       200,
       191.4
-    ]
+    ],
+    "render": "/renders/floor_lamp_mario_milanovic.webp"
   },
   "floor_lamp_pbr_foley": {
     "title": "PBR Floor Lamp (Free Download)",
@@ -1193,7 +1217,8 @@
       4410.9,
       16993.7,
       4410.9
-    ]
+    ],
+    "render": "/renders/floor_lamp_pbr_foley.webp"
   },
   "floor_tiles_06": {
     "title": "Floor Tiles 06",
@@ -1250,7 +1275,8 @@
       58.1,
       103.4,
       60.4
-    ]
+    ],
+    "render": "/renders/gallinera_chair.webp"
   },
   "gallinera_table": {
     "title": "Gallinera Table",
@@ -1271,7 +1297,8 @@
       83,
       48.8,
       51.8
-    ]
+    ],
+    "render": "/renders/gallinera_table.webp"
   },
   "glam_velvet_sofa": {
     "title": "Glam Velvet Sofa",
@@ -1290,7 +1317,8 @@
       218.8,
       78.8,
       102.3
-    ]
+    ],
+    "render": "/renders/glam_velvet_sofa.webp"
   },
   "greenchair_01": {
     "title": "Green Chair 01",
@@ -1310,7 +1338,8 @@
       67.3,
       105.9,
       66.4
-    ]
+    ],
+    "render": "/renders/greenchair_01.webp"
   },
   "handle_knob": {
     "title": "Door Knob",
@@ -1420,7 +1449,8 @@
       75.2,
       50,
       3.3
-    ]
+    ],
+    "render": "/renders/hanging_picture_frame_02.webp"
   },
   "herringbone_parquet": {
     "title": "Herringbone Parquet",
@@ -1496,7 +1526,8 @@
       77.8,
       63.8,
       75.8
-    ]
+    ],
+    "render": "/renders/industrial_coffee_table.webp"
   },
   "kenney_toilet": {
     "title": "Toilet (Furniture Kit)",
@@ -1767,7 +1798,8 @@
       200,
       78.7,
       94.7
-    ]
+    ],
+    "render": "/renders/metal_office_desk.webp"
   },
   "mid_century_lounge_chair": {
     "title": "Mid Century Lounge Chair",
@@ -1786,7 +1818,8 @@
       100.9,
       116.9,
       119
-    ]
+    ],
+    "render": "/renders/mid_century_lounge_chair.webp"
   },
   "mirror_amalia_mohitoz": {
     "title": "Amalia Floor Mirror",
@@ -1806,7 +1839,8 @@
       82,
       184.8,
       3
-    ]
+    ],
+    "render": "/renders/mirror_amalia_mohitoz.webp"
   },
   "mirror_wall_modern_alexv": {
     "title": "Wall_Mirror_Modern_Plaster_Steel",
@@ -1826,7 +1860,8 @@
       76,
       117.3,
       3.4
-    ]
+    ],
+    "render": "/renders/mirror_wall_modern_alexv.webp"
   },
   "modern_arm_chair_01": {
     "title": "Modern Arm Chair 01",
@@ -1846,7 +1881,8 @@
       82,
       102.3,
       98.7
-    ]
+    ],
+    "render": "/renders/modern_arm_chair_01.webp"
   },
   "modern_ceiling_lamp_01": {
     "title": "Modern Ceiling Lamp 01",
@@ -1883,7 +1919,8 @@
       60,
       39,
       120.2
-    ]
+    ],
+    "render": "/renders/modern_coffee_table_01.webp"
   },
   "modern_coffee_table_02": {
     "title": "Modern Coffee Table 02",
@@ -1902,7 +1939,8 @@
       119.9,
       36.9,
       120
-    ]
+    ],
+    "render": "/renders/modern_coffee_table_02.webp"
   },
   "modern_wooden_cabinet": {
     "title": "Modern Wooden Cabinet",
@@ -1923,7 +1961,8 @@
       244,
       68,
       52
-    ]
+    ],
+    "render": "/renders/modern_wooden_cabinet.webp"
   },
   "nightstand_jlrin_craneo": {
     "title": "Nigthstand - JLRIN",
@@ -1942,7 +1981,8 @@
       59.7,
       57.2,
       60.2
-    ]
+    ],
+    "render": "/renders/nightstand_jlrin_craneo.webp"
   },
   "nightstand_v3_petrus": {
     "title": "Nightstand v3 (Phase IV furniture curriculum)",
@@ -1962,7 +2002,8 @@
       49,
       61,
       44
-    ]
+    ],
+    "render": "/renders/nightstand_v3_petrus.webp"
   },
   "oak_veneer_01": {
     "title": "Oak Veneer 01",
@@ -2020,7 +2061,8 @@
       5669.1,
       9006,
       5960.4
-    ]
+    ],
+    "render": "/renders/office_chair_kilicarslan.webp"
   },
   "office_chair_redfox": {
     "title": "Office Chair",
@@ -2039,7 +2081,8 @@
       9729.6,
       12582.9,
       9263.4
-    ]
+    ],
+    "render": "/renders/office_chair_redfox.webp"
   },
   "old_bed_frame": {
     "title": "Old Bed Frame",
@@ -2058,7 +2101,8 @@
       90.5,
       120.1,
       200.2
-    ]
+    ],
+    "render": "/renders/old_bed_frame.webp"
   },
   "ornate_mirror_01": {
     "title": "Ornate Mirror 01",
@@ -2077,7 +2121,8 @@
       48.7,
       74.4,
       2.6
-    ]
+    ],
+    "render": "/renders/ornate_mirror_01.webp"
   },
   "oven_builtin_domino": {
     "title": "Built-in oven",
@@ -2135,7 +2180,8 @@
       116.5,
       88.9,
       49.6
-    ]
+    ],
+    "render": "/renders/painted_wooden_bench.webp"
   },
   "painted_wooden_cabinet": {
     "title": "Painted Wooden Cabinet",
@@ -2155,7 +2201,8 @@
       119.5,
       118.2,
       61.7
-    ]
+    ],
+    "render": "/renders/painted_wooden_cabinet.webp"
   },
   "painted_wooden_cabinet_02": {
     "title": "Painted Wooden Cabinet 02",
@@ -2174,7 +2221,8 @@
       99.7,
       256.9,
       72.3
-    ]
+    ],
+    "render": "/renders/painted_wooden_cabinet_02.webp"
   },
   "painted_wooden_chair_01": {
     "title": "Painted Wooden Chair 01",
@@ -2194,7 +2242,8 @@
       43.2,
       95.6,
       54
-    ]
+    ],
+    "render": "/renders/painted_wooden_chair_01.webp"
   },
   "painted_wooden_chair_02": {
     "title": "Painted Wooden Chair 02",
@@ -2213,7 +2262,8 @@
       63.9,
       126.4,
       66.2
-    ]
+    ],
+    "render": "/renders/painted_wooden_chair_02.webp"
   },
   "painted_wooden_nightstand": {
     "title": "Painted Wooden Nightstand",
@@ -2233,7 +2283,8 @@
       50.5,
       61.6,
       50.9
-    ]
+    ],
+    "render": "/renders/painted_wooden_nightstand.webp"
   },
   "painted_wooden_sofa": {
     "title": "Painted Wooden Sofa",
@@ -2253,7 +2304,8 @@
       245.2,
       128.1,
       78.7
-    ]
+    ],
+    "render": "/renders/painted_wooden_sofa.webp"
   },
   "painted_wooden_table": {
     "title": "Painted Wooden Table",
@@ -2273,7 +2325,8 @@
       240.6,
       95.9,
       113.7
-    ]
+    ],
+    "render": "/renders/painted_wooden_table.webp"
   },
   "plastered_wall_04": {
     "title": "Plastered Wall 04",
@@ -2330,7 +2383,8 @@
       58.7,
       133.6,
       63.4
-    ]
+    ],
+    "render": "/renders/potted_plant_01.webp"
   },
   "potted_plant_02": {
     "title": "Potted Plant 02",
@@ -2348,7 +2402,8 @@
       70.1,
       84.1,
       65.7
-    ]
+    ],
+    "render": "/renders/potted_plant_02.webp"
   },
   "potted_plant_04": {
     "title": "Potted Plant 04",
@@ -2404,7 +2459,8 @@
       70.8,
       99.5,
       83.4
-    ]
+    ],
+    "render": "/renders/rockingchair_01.webp"
   },
   "sheen_chair": {
     "title": "Sheen Chair",
@@ -2424,7 +2480,8 @@
       82.7,
       68.6,
       57
-    ]
+    ],
+    "render": "/renders/sheen_chair.webp"
   },
   "sheen_wood_leather_sofa": {
     "title": "Sheen Wood Leather Sofa",
@@ -2443,7 +2500,8 @@
       272.6,
       111.7,
       92.3
-    ]
+    ],
+    "render": "/renders/sheen_wood_leather_sofa.webp"
   },
   "shoe_cabinet_3dwalkabout": {
     "title": "Shoe Cabinet",
@@ -2463,7 +2521,8 @@
       79.6,
       65.7,
       38.5
-    ]
+    ],
+    "render": "/renders/shoe_cabinet_3dwalkabout.webp"
   },
   "shoe_cabinet_borgin": {
     "title": "BORGIN CABINET (BGC-01) 120x38x110cm",
@@ -2484,7 +2543,8 @@
       118.1,
       109,
       38.5
-    ]
+    ],
+    "render": "/renders/shoe_cabinet_borgin.webp"
   },
   "shower_enclosure_binhnham": {
     "title": "Shower Enclosure",
@@ -2523,7 +2583,8 @@
       55,
       55.1,
       45
-    ]
+    ],
+    "render": "/renders/side_table_01.webp"
   },
   "side_table_antique_arkell": {
     "title": "Antique Table",
@@ -2543,7 +2604,8 @@
       77.7,
       75,
       48
-    ]
+    ],
+    "render": "/renders/side_table_antique_arkell.webp"
   },
   "side_table_tall_01": {
     "title": "Side Table Tall 01",
@@ -2562,7 +2624,8 @@
       38.4,
       76.1,
       38.4
-    ]
+    ],
+    "render": "/renders/side_table_tall_01.webp"
   },
   "sideboard_mprender": {
     "title": "Sideboard",
@@ -2582,7 +2645,8 @@
       150,
       78,
       44.5
-    ]
+    ],
+    "render": "/renders/sideboard_mprender.webp"
   },
   "sideboard_teak_kung": {
     "title": "Mid Century Teak Sideboard Credenza",
@@ -2603,7 +2667,8 @@
       39359.7,
       63699.3,
       135000
-    ]
+    ],
+    "render": "/renders/sideboard_teak_kung.webp"
   },
   "sofa_01": {
     "title": "Sofa 01",
@@ -2622,7 +2687,8 @@
       157.1,
       79.7,
       65.8
-    ]
+    ],
+    "render": "/renders/sofa_01.webp"
   },
   "sofa_02": {
     "title": "Sofa 02",
@@ -2642,7 +2708,8 @@
       180.7,
       71,
       81.8
-    ]
+    ],
+    "render": "/renders/sofa_02.webp"
   },
   "sofa_iyzyken": {
     "title": "Sofa",
@@ -2662,7 +2729,8 @@
       267.2,
       92.2,
       104.1
-    ]
+    ],
+    "render": "/renders/sofa_iyzyken.webp"
   },
   "sofa_mid_century_seddon": {
     "title": "Mid Century Modern Sofa",
@@ -2681,7 +2749,8 @@
       9367.1,
       4000.2,
       4327.2
-    ]
+    ],
+    "render": "/renders/sofa_mid_century_seddon.webp"
   },
   "sofa_modern_ben": {
     "title": "Modern  Sofa",
@@ -2701,7 +2770,8 @@
       200,
       60.2,
       78.4
-    ]
+    ],
+    "render": "/renders/sofa_modern_ben.webp"
   },
   "standing_picture_frame_01": {
     "title": "Standing Picture Frame 01",
@@ -2757,7 +2827,8 @@
       1097.3,
       2140.5,
       502
-    ]
+    ],
+    "render": "/renders/steel_frame_shelves_01.webp"
   },
   "storage_modern_lopes": {
     "title": "Modern Furniture",
@@ -2776,7 +2847,8 @@
       407.1,
       153.1,
       157.4
-    ]
+    ],
+    "render": "/renders/storage_modern_lopes.webp"
   },
   "switch_avot": {
     "title": "Light Switch",
@@ -2887,7 +2959,8 @@
       153.1,
       77.9,
       53.1
-    ]
+    ],
+    "render": "/renders/tv_unit_reclaimed_maxsbond.webp"
   },
   "tv_unit_wood_slls": {
     "title": "TV Bench / TV Table / TV Stand Wood",
@@ -2907,7 +2980,8 @@
       48.8,
       61.9,
       180
-    ]
+    ],
+    "render": "/renders/tv_unit_wood_slls.webp"
   },
   "vanity_blendffnike": {
     "title": "Sink with Faucet",
@@ -2945,7 +3019,8 @@
       202.2,
       223.5,
       67
-    ]
+    ],
+    "render": "/renders/vintage_cabinet_01.webp"
   },
   "vintage_wooden_drawer_01": {
     "title": "Vintage Wooden Drawer 01",
@@ -2965,7 +3040,8 @@
       85.8,
       54.5,
       45.7
-    ]
+    ],
+    "render": "/renders/vintage_wooden_drawer_01.webp"
   },
   "wall_shelf_simple_blender3d": {
     "title": "Simple Wall Shelf 2.0",
@@ -2985,7 +3061,8 @@
       292.8,
       286,
       723.1
-    ]
+    ],
+    "render": "/renders/wall_shelf_simple_blender3d.webp"
   },
   "wall_shelf_wooden_sanzid": {
     "title": "Wooden Wall Bookshelf",
@@ -3005,7 +3082,8 @@
       200,
       37.4,
       50
-    ]
+    ],
+    "render": "/renders/wall_shelf_wooden_sanzid.webp"
   },
   "wardrobe_antique_siitonen": {
     "title": "Antique Wooden Wardrobe",
@@ -3025,7 +3103,8 @@
       135,
       196.9,
       82
-    ]
+    ],
+    "render": "/renders/wardrobe_antique_siitonen.webp"
   },
   "wicker_basket_02": {
     "title": "Wicker Basket 02",
@@ -3082,7 +3161,8 @@
       137.4,
       206.3,
       58.1
-    ]
+    ],
+    "render": "/renders/wooden_bookshelf_worn.webp"
   },
   "wooden_bowl_01": {
     "title": "Wooden Bowl 01",
@@ -3138,7 +3218,8 @@
       37.1,
       155.6,
       107.8
-    ]
+    ],
+    "render": "/renders/wooden_display_shelves_01.webp"
   },
   "woodentable_01": {
     "title": "Wooden Table 01",
@@ -3158,6 +3239,7 @@
       180,
       54.9,
       65.7
-    ]
+    ],
+    "render": "/renders/woodentable_01.webp"
   }
 }

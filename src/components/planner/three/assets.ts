@@ -1,5 +1,6 @@
 import type { Catalogue, CatalogueEntry } from "@/domain/assets/catalogue";
 import { chooseModel, distortion } from "@/domain/assets/choice";
+import { MODEL_TUNING } from "@/domain/assets/model-tuning";
 import { FurnitureCategory } from "@/domain/schemas/design";
 import CATALOGUE_JSON from "./asset-catalogue.json";
 import { MODEL_IDS, TEXTURE_IDS } from "./asset-ids";
@@ -13,6 +14,12 @@ export const ASSET_CATALOGUE = CATALOGUE_JSON as unknown as Catalogue;
 export type ModelId = (typeof MODEL_IDS)[number];
 export type TextureId = (typeof TEXTURE_IDS)[number];
 
+/** A model's picture for cards and pickers: rendered by the asset pipeline, or the source's own preview until then. */
+export function modelPicture(id: string): string | undefined {
+  const e = ASSET_CATALOGUE[id];
+  return e?.kind === "model" ? (e.render ?? e.thumb) : e?.thumb;
+}
+
 /** One value per id of a kind, read from its catalogue row. */
 function table<Id extends string, K extends CatalogueEntry["kind"], V>(ids: readonly Id[], kind: K, value: (e: Extract<CatalogueEntry, { kind: K }>) => V): Readonly<Record<Id, V>> {
   const out = {} as Record<Id, V>;
@@ -25,28 +32,6 @@ function table<Id extends string, K extends CatalogueEntry["kind"], V>(ids: read
 
 /** Native size of each model in public/models, in cm as [w, h, d]. */
 export const MODEL_SIZE = table(MODEL_IDS, "model", (e): readonly [number, number, number] => e.size);
-
-/**
- * Per-model settings the catalogue cannot know: the turn that makes its
- * front face +z (checked by rendering each model), and which of its
- * materials are upholstery, tinted to the piece's colour.
- */
-const MODEL_TUNING: Partial<Record<ModelId, { turn?: number; fabric?: RegExp }>> = {
-  // Modelled with its long side front to back.
-  modern_coffee_table_01: { turn: 90 },
-  modern_arm_chair_01: { fabric: /pillow/ },
-  wooden_display_shelves_01: { turn: 90 },
-  bed_v1_mh: { turn: 180, fabric: /^Fabric/ },
-  bed_poliform_ramos: { fabric: /edredon/ },
-  dresser_sifonyer_renend: { turn: 90 },
-  office_chair_redfox: { fabric: /Cloth/ },
-  sideboard_teak_kung: { turn: 270 },
-  tv_unit_wood_slls: { turn: 270 },
-  bench_wooden_stano: { turn: 90 },
-  wall_shelf_simple_blender3d: { turn: 90 },
-  glam_velvet_sofa: { fabric: /fabric/ },
-  sheen_chair: { fabric: /^fabric/ },
-};
 
 export interface PieceModel extends ModelVariant {
   /** Style keys from the manifest tags, e.g. "japandi". */

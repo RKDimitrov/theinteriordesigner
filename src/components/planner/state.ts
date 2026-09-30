@@ -121,6 +121,8 @@ export interface PlannerState {
   tool: Tool;
   /** Catalogue piece waiting to be placed with a click on the plan. */
   armed: string | null;
+  /** The model picked for the armed piece in the catalogue; null lets the 3D view choose. */
+  armedModel: string | null;
   /** Item the next catalogue pick replaces ("Swap"). */
   swapFor: string | null;
   /** What the fixture tool places: kitchen run, WC, pendant light … */
@@ -182,6 +184,7 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     mode: "2d",
     tool: "select",
     armed: null,
+    armedModel: null,
     swapFor: null,
     fixtureKind: "kitchen_run",
     selection: null,

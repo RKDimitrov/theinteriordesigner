@@ -8,6 +8,8 @@
  *   node scripts/fetch-assets.mjs --only <id>     one entry (repeatable)
  *   node scripts/fetch-assets.mjs --source <s>    one source, e.g. sketchfab
  *   node scripts/fetch-assets.mjs --check         offline: manifest, outputs, orphans
+ *   node scripts/fetch-assets.mjs --renders       catalogue pictures of the furniture models that lack one
+ *                                                 (all of them with --force, some with --only)
  *
  * See docs/superpowers/specs/2026-09-28-asset-pipeline-design.md.
  */
@@ -17,14 +19,15 @@ import { join, relative, sep } from "node:path";
 import { Catalogue, CatalogueEntry, MODEL_BUDGET_BYTES, assetPaths } from "../../src/domain/assets/catalogue.ts";
 import { Manifest, manifestIssues, type ManifestEntry } from "../../src/domain/assets/manifest.ts";
 import { bytesOf, exists, getBytes, kb, PUBLIC, ROOT } from "./io.ts";
-import { idsModule, mergeCatalogue, orphans, outputsOf } from "./plan.ts";
+import { idsModule, mergeCatalogue, missingRenders, orphans, outputsOf, renderTargets } from "./plan.ts";
 import { extractNodes, measureModel, meanColour, optimizeModel, writeBackplate, writeHdri, writeTexture, writeThumb } from "./process.ts";
+import { renderModels } from "./render.ts";
 import { ADAPTERS } from "./sources/index.ts";
 
 const THREE_DIR = join(ROOT, "src", "components", "planner", "three");
 const CATALOGUE = join(THREE_DIR, "asset-catalogue.json");
 const IDS = join(THREE_DIR, "asset-ids.ts");
-const ASSET_DIRS = ["models", "textures", "hdris", "thumbs"];
+const ASSET_DIRS = ["models", "textures", "hdris", "thumbs", "renders"];
 
 const args = process.argv.slice(2);
 const flag = (name: string) => args.includes(name);
@@ -43,6 +46,8 @@ function loadCatalogue(): Catalogue {
 }
 
 const onDisk = (path: string) => exists(join(PUBLIC, path));
+/** The catalogue picture's public path, once it has been rendered. */
+const renderOf = (id: string) => (onDisk(assetPaths.render(id)) ? assetPaths.render(id) : undefined);
 
 function publicFiles(): string[] {
   return ASSET_DIRS.flatMap((dir) => {
@@ -65,7 +70,9 @@ function check(entries: ManifestEntry[], catalogue: Catalogue): string[] {
       problems.push(`${e.id}: over the ${kb(MODEL_BUDGET_BYTES)} model budget`);
     }
   }
-  for (const f of orphans(publicFiles(), entries)) problems.push(`orphan file ${f}`);
+  const files = publicFiles();
+  for (const id of missingRenders(catalogue, files)) problems.push(`${id}: no catalogue picture (run with --renders)`);
+  for (const f of orphans(files, entries)) problems.push(`orphan file ${f}`);
   return problems;
 }
 
@@ -99,6 +106,8 @@ async function build(e: ManifestEntry): Promise<CatalogueEntry> {
       optimizeModel(src, out, e.textureSize ?? 1024);
       const bytes = bytesOf(out);
       if (bytes > MODEL_BUDGET_BYTES) throw new Error(`${e.id}: ${kb(bytes)} is over the ${kb(MODEL_BUDGET_BYTES)} model budget`);
+      // A picture of the previous file would no longer show this model.
+      rmSync(join(PUBLIC, assetPaths.render(e.id)), { force: true });
       return { kind: "model", ...common, bytes, size: measureModel(out), thumb: await thumb(raw) };
     } finally {
       rmSync(tmp, { recursive: true, force: true });
@@ -129,7 +138,7 @@ async function refresh(e: ManifestEntry, old: CatalogueEntry | undefined): Promi
   const common = { title: e.title, author: e.author, source: e.source, sourceUrl: e.sourceUrl, licence: e.licence, tags: e.tags, thumb: onDisk(assetPaths.thumb(e.id)) ? assetPaths.thumb(e.id) : undefined };
   const files = outputsOf(e).map((p) => join(PUBLIC, p));
   const bytes = files.reduce((n, f) => n + bytesOf(f), 0);
-  if (old.kind === "model") return { ...old, ...common, bytes, size: measureModel(files[0]!) };
+  if (old.kind === "model") return { ...old, ...common, bytes, size: measureModel(files[0]!), render: renderOf(e.id) };
   if (old.kind === "texture") return { ...old, ...common, bytes, tileCm: e.kind === "texture" && e.tileCm ? e.tileCm : old.tileCm, mean: await meanColour(files[0]!) };
   return { ...old, ...common, bytes };
 }
@@ -146,6 +155,14 @@ async function main() {
   }
 
   const only = values("--only");
+  if (flag("--renders")) {
+    const ids = renderTargets(old).filter((id) => (!only.length || only.includes(id)) && (flag("--force") || !renderOf(id)));
+    const failed = await renderModels(ids, console.log);
+    const catalogue: Catalogue = Object.fromEntries(Object.entries(old).map(([id, row]) => [id, row.kind === "model" ? { ...row, render: renderOf(id) } : row]));
+    writeFileSync(CATALOGUE, `${JSON.stringify(catalogue, null, 2)}\n`);
+    console.log(failed.length ? `${failed.length} failed: ${failed.join(", ")}` : `ok: ${ids.length} rendered`);
+    process.exit(failed.length ? 1 : 0);
+  }
   const sources = values("--source");
   const chosen = entries.filter((e) => (!only.length || only.includes(e.id)) && (!sources.length || sources.includes(e.source)));
   const fresh: Catalogue = {};

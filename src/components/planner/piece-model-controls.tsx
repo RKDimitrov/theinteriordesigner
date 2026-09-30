@@ -9,7 +9,7 @@ import type { FurnitureItem, PieceDecor } from "@/domain/schemas/design";
 import { StyleKey } from "@/domain/schemas/profile";
 import { usePlanner } from "./planner-context";
 import { mapRoom } from "./state";
-import { ASSET_CATALOGUE, BUILT_CATEGORIES, BUILT_MODEL, PIECE_MODELS, pieceModel } from "./three/assets";
+import { ASSET_CATALOGUE, BUILT_CATEGORIES, BUILT_MODEL, modelPicture, PIECE_MODELS, pieceModel } from "./three/assets";
 
 const isStyle = (s: string): s is StyleKey => (StyleKey.options as readonly string[]).includes(s);
 
@@ -26,6 +26,7 @@ export function PieceLook({ roomId, f, set }: { roomId: string; f: FurnitureItem
   const built = BUILT_CATEGORIES.has(f.category);
   const auto = pieceModel(f.category, undefined, f.w, f.d, f.h, data.styles);
   const autoTitle = auto === BUILT_MODEL ? t("built") : (ASSET_CATALOGUE[auto.id]?.title ?? auto.id);
+  const autoPicture = auto === BUILT_MODEL ? undefined : modelPicture(auto.id);
   const current = f.modelId && (f.modelId === BUILT_MODEL ? built : models.some((m) => m.id === f.modelId)) ? f.modelId : undefined;
 
   // Dev: moves every piece in the room on to its next model, to check them all quickly.
@@ -57,14 +58,15 @@ export function PieceLook({ roomId, f, set }: { roomId: string; f: FurnitureItem
           </span>
           <div className="pl-models" role="radiogroup" aria-label={t("title")} data-testid="piece-models">
             <button type="button" role="radio" aria-checked={current === undefined} data-model="" onClick={() => set({ modelId: undefined })}>
-              <span className="pl-model-auto">{t("auto")}</span>
-              <small>{autoTitle}</small>
+              {autoPicture ? <Image src={autoPicture} alt="" width={96} height={96} unoptimized /> : <span className="pl-model-auto">{t("auto")}</span>}
+              <small>{autoPicture ? `${t("auto")} · ${autoTitle}` : autoTitle}</small>
             </button>
             {models.map((m) => {
               const e = ASSET_CATALOGUE[m.id];
+              const src = modelPicture(m.id);
               return (
                 <button key={m.id} type="button" role="radio" aria-checked={current === m.id} data-model={m.id} title={m.styles.flatMap((s) => (isStyle(s) ? [ts(s)] : [])).join(", ")} onClick={() => set({ modelId: m.id })}>
-                  {e?.thumb ? <Image src={e.thumb} alt="" width={96} height={96} unoptimized /> : <span className="pl-model-auto" />}
+                  {src ? <Image src={src} alt="" width={96} height={96} unoptimized /> : <span className="pl-model-auto" />}
                   <small>{e?.title ?? m.id}</small>
                 </button>
               );

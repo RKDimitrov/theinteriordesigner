@@ -28,6 +28,8 @@ export const CatalogueEntry = z.discriminatedUnion("kind", [
     kind: z.literal("model"),
     /** Native bounds in cm as [width x, height y, depth z]. */
     size: z.tuple([z.number().positive(), z.number().positive(), z.number().positive()]),
+    /** Public path of the picture rendered from the model (furniture only), see scripts/assets/render.ts. */
+    render: z.string().startsWith("/renders/").optional(),
   }),
   Common.extend({
     kind: z.literal("texture"),
@@ -53,4 +55,5 @@ export const assetPaths = {
   hdri: (id: string) => `/hdris/${id}.hdr`,
   backplate: (id: string) => `/hdris/${id}.jpg`,
   thumb: (id: string) => `/thumbs/${id}.webp`,
+  render: (id: string) => `/renders/${id}.webp`,
 };

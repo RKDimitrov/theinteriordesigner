@@ -20,6 +20,7 @@ import { PX_PER_CM, removeSelected, roomBox, SNAP_CM, usePlanner, useView, ZOOM_
 import { FixedHits, FloorPattern, OpeningHits, RoomDimensions, RoomLabel, RoomShell, WallGrip } from "./plan-room";
 import { inScope, mapItem, mapRoom, type Plan, type PlanRoom, type Tool } from "./state";
 import { PieceSymbol } from "./symbols";
+import { PIECE_MODELS } from "./three/assets";
 
 const CLAY = "#c8794a";
 const CLAY_DARK = "#8e4f2f";
@@ -174,9 +175,11 @@ export function Stage2D() {
     if (!target) return toast(t("placeInside"));
     const p = snapV(local(target.room.id, w));
     const taken = plan.rooms.flatMap((r) => r.furniture.map((f) => f.id));
-    const item = newPlannerItem(piece, p, pieceName(piece), taken);
+    // A model picked in the catalogue is kept; otherwise the 3D view chooses one for the size and style.
+    const modelId = s.armedModel && !piece.mine && PIECE_MODELS[piece.category].some((m) => m.id === s.armedModel) ? s.armedModel : undefined;
+    const item = { ...newPlannerItem(piece, p, pieceName(piece), taken), modelId };
     dispatch({ type: "edit", fn: (pl) => mapRoom(pl, target.room.id, (r) => ({ ...r, furniture: [...r.furniture, item] })) });
-    dispatch({ type: "set", patch: { armed: null, selection: { kind: "item", roomId: target.room.id, id: item.id } } });
+    dispatch({ type: "set", patch: { armed: null, armedModel: null, selection: { kind: "item", roomId: target.room.id, id: item.id } } });
   };
 
   const addOpening = (w: Vec, kind: OpeningKind | "pass") => {

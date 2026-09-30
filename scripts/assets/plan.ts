@@ -8,9 +8,21 @@ export function outputsOf(e: Pick<ManifestEntry, "id" | "kind"> & { backplate?: 
   return [e.kind === "hdri" && "backplate" in e && e.backplate ? assetPaths.backplate(e.id) : assetPaths.hdri(e.id)];
 }
 
+/** Furniture models get a catalogue picture rendered from the model itself. */
+const isFurniture = (e: { kind: string; tags: readonly string[] }) => e.kind === "model" && e.tags.some((t) => t.startsWith("furniture."));
+
+/** Ids of the models that need a rendered picture. */
+export const renderTargets = (catalogue: Catalogue): string[] => Object.keys(catalogue).filter((id) => isFurniture(catalogue[id]!));
+
+/** Furniture models whose picture is not among the public `files`. */
+export function missingRenders(catalogue: Catalogue, files: readonly string[]): string[] {
+  const have = new Set(files);
+  return renderTargets(catalogue).filter((id) => !have.has(assetPaths.render(id)));
+}
+
 /** Public asset files that no manifest entry produces. */
 export function orphans(files: readonly string[], entries: readonly ManifestEntry[]): string[] {
-  const wanted = new Set(entries.flatMap((e) => [...outputsOf(e), assetPaths.thumb(e.id)]));
+  const wanted = new Set(entries.flatMap((e) => [...outputsOf(e), assetPaths.thumb(e.id), ...(isFurniture(e) ? [assetPaths.render(e.id)] : [])]));
   return files.filter((f) => !wanted.has(f));
 }
 

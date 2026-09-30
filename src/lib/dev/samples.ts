@@ -241,6 +241,22 @@ export const SAMPLE_FIT_OUTS: readonly { name: string; fitOut: FitOut }[] = [
   },
 ];
 
+/**
+ * Models to arm in the catalogue's model strip, per furniture category (ids from
+ * assets/manifest/models.json). Categories without a preset cycle through their own models.
+ */
+export const SAMPLE_MODELS: Readonly<Record<string, readonly string[]>> = {
+  sofa: ["sofa_02", "glam_velvet_sofa"],
+  armchair: ["modern_arm_chair_01", "sheen_chair"],
+  bed: ["bed_v1_mh", "bed_poliform_ramos"],
+};
+
+/** The model a "fill sample" click arms: the category's preset if it has one, else one of `available`. */
+export function sampleModel(category: string, available: readonly string[], counter: number): string {
+  const presets = (SAMPLE_MODELS[category] ?? []).filter((id) => available.includes(id));
+  return samplePreset(presets.length ? presets : available, counter);
+}
+
 /** Preset at `counter`, cycling. Use for preset factories (functions cannot be cloned). */
 export function samplePreset<T>(list: readonly T[], counter: number): T {
   const item = list[counter % list.length];

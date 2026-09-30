@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Catalogue, CatalogueEntry } from "../../src/domain/assets/catalogue.ts";
 import type { ManifestEntry } from "../../src/domain/assets/manifest.ts";
-import { idsModule, mergeCatalogue, orphans, outputsOf } from "./plan.ts";
+import { idsModule, mergeCatalogue, missingRenders, orphans, outputsOf, renderTargets } from "./plan.ts";
 
 const entry = (id: string, kind: ManifestEntry["kind"]) =>
   ({ id, kind, source: "polyhaven", ref: id, title: id, author: "a", sourceUrl: "https://polyhaven.com", licence: "cc0", tags: [] }) as ManifestEntry;
@@ -39,5 +39,25 @@ describe("idsModule", () => {
     const src = idsModule({ sky: row("sky"), dusk: row("dusk") });
     expect(src).toContain('export const HDRI_IDS = ["sky","dusk"] as const;');
     expect(src).toContain("export const MODEL_IDS = [] as const;");
+  });
+});
+
+describe("renders", () => {
+  const model = (tags: string[]) => ({ ...row("m"), kind: "model", size: [1, 1, 1], tags }) as CatalogueEntry;
+  const catalogue: Catalogue = { sofa: model(["furniture.sofa", "style.japandi"]), vase: model(["decor.vase"]), sky: row("sky") };
+
+  it("renders furniture models only", () => {
+    expect(renderTargets(catalogue)).toEqual(["sofa"]);
+  });
+
+  it("lists the furniture models without a render on disk", () => {
+    expect(missingRenders(catalogue, ["/renders/sofa.webp"])).toEqual([]);
+    expect(missingRenders(catalogue, ["/models/sofa.glb"])).toEqual(["sofa"]);
+  });
+
+  it("keeps a furniture model's render and reports any other render as an orphan", () => {
+    const sofa = { ...entry("sofa", "model"), tags: ["furniture.sofa"] } as ManifestEntry;
+    const files = ["/models/sofa.glb", "/renders/sofa.webp", "/renders/gone.webp", "/models/vase.glb", "/renders/vase.webp"];
+    expect(orphans(files, [sofa, entry("vase", "model")])).toEqual(["/renders/gone.webp", "/renders/vase.webp"]);
   });
 });

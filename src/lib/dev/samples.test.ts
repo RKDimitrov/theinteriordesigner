@@ -5,7 +5,9 @@ import { profileStatus } from "@/domain/profile/status";
 import { ApartmentInput } from "@/domain/schemas/apartment";
 import { StyleProfileInput } from "@/domain/schemas/profile";
 import { FitOut } from "@/domain/room/fit-out";
-import { pickSample, SAMPLE_APARTMENTS, SAMPLE_FIT_OUTS, SAMPLE_PROFILES, SAMPLE_ROOMS } from "./samples";
+import { PIECE_MODELS } from "@/components/planner/three/assets";
+import { FurnitureCategory } from "@/domain/schemas/design";
+import { pickSample, SAMPLE_APARTMENTS, SAMPLE_FIT_OUTS, SAMPLE_MODELS, SAMPLE_PROFILES, SAMPLE_ROOMS, sampleModel } from "./samples";
 
 describe("sample data", () => {
   it.each(SAMPLE_APARTMENTS.map((a) => [a.name, a] as const))("apartment %s is valid", (_, a) => {
@@ -38,6 +40,17 @@ describe("sample data", () => {
 
   it("profiles work for an apartment without rooms", () => {
     for (const f of SAMPLE_PROFILES) expect(StyleProfileInput.safeParse(f([])).success).toBe(true);
+  });
+
+  it.each(Object.entries(SAMPLE_MODELS))("sample models for %s are real models of that category", (category, ids) => {
+    const models = PIECE_MODELS[FurnitureCategory.parse(category)].map((m) => m.id);
+    for (const id of ids) expect(models, id).toContain(id);
+  });
+
+  it("arms a preset model, or one of the category's own when it has no preset", () => {
+    expect(sampleModel("sofa", ["sofa_01", "sofa_02", "glam_velvet_sofa"], 0)).toBe("sofa_02");
+    expect(sampleModel("sofa", ["sofa_01", "sofa_02", "glam_velvet_sofa"], 1)).toBe("glam_velvet_sofa");
+    expect(sampleModel("desk", ["a", "b"], 3)).toBe("b");
   });
 
   it("cycles and returns copies", () => {
