@@ -69,10 +69,11 @@ Every model, texture and HDRI in `public/models`, `public/textures` and `public/
 
 To add an asset:
 
+0. To look for furniture on Sketchfab, run `node scripts/fetch-assets.mjs --find <category> [--query "<words>"]`. It lists downloadable CC0 and CC-BY candidates as ready-made manifest entries, with thumbnail, face count and likes, and writes nothing. Pick by eye, then add style tags.
 1. Add an entry to `assets/manifest/models.json`, `textures.json` or `hdris.json`. Give the id, source, source ref, title, author, source URL, licence and tags. Poly Haven and ambientCG take their own id as `ref`. Sketchfab takes the model uid. Khronos, Poly Pizza, Kenney, Quaternius, cgbookcase and 3dtextures.me take a pinned file or zip URL, plus `pick` (and `thumbPick`) patterns for zips. Textures from anywhere except Poly Haven need `tileCm`.
 2. Run `node scripts/fetch-assets.mjs --only <id>`. Commit the new files in `public/`, the catalogue and `asset-ids.ts`.
 3. For a furniture model, run `node scripts/fetch-assets.mjs --renders`. It photographs every furniture model that has no picture yet in headless Chrome (same camera angle, light and framing for all) and writes `public/renders/<id>.webp`, which the Catalogue and the model picker show. `--force` renders all of them again. Set `E2E_BROWSER_CHANNEL=chrome` to use the installed Chrome. Commit the pictures and the catalogue.
-4. Map it in `src/components/planner/three/assets.ts` if a category should use it.
+4. Furniture is mapped by its `furniture.<category>` tag. If the render shows the piece from the side or the back, set its `turn` in `src/domain/assets/model-tuning.ts` and render again with `--renders --force --only <id>`.
 
 Rules:
 

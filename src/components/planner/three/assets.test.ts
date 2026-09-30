@@ -19,10 +19,15 @@ describe("pieceModel", () => {
   });
 
   it("ignores a chosen model of another category and picks by proportions", () => {
+    const plants = PIECE_MODELS.plant.map((m) => m.id);
     const tall = pieceModel("plant", "sofa_02", 45, 45, 120, null);
     const bushy = pieceModel("plant", undefined, 70, 70, 85, null);
-    expect(tall !== "built" && tall.id).toBe("potted_plant_01");
-    expect(bushy !== "built" && bushy.id).toBe("potted_plant_02");
+    if (tall === "built" || bushy === "built") throw new Error("plants have models");
+    expect(plants).toContain(tall.id);
+    expect(plants).toContain(bushy.id);
+    // The tall piece gets the slimmer model.
+    const slimness = (m: PieceModel) => nativeFootprint(m)[1] / nativeFootprint(m)[0];
+    expect(slimness(tall)).toBeGreaterThan(slimness(bushy));
   });
 
   it("leans towards the profile's style", () => {

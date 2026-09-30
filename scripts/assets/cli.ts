@@ -8,6 +8,8 @@
  *   node scripts/fetch-assets.mjs --only <id>     one entry (repeatable)
  *   node scripts/fetch-assets.mjs --source <s>    one source, e.g. sketchfab
  *   node scripts/fetch-assets.mjs --check         offline: manifest, outputs, orphans
+ *   node scripts/fetch-assets.mjs --find <category> [--query "<words>"] [--limit <n>]
+ *                                                 list Sketchfab candidates for review; writes nothing
  *   node scripts/fetch-assets.mjs --renders       catalogue pictures of the furniture models that lack one
  *                                                 (all of them with --force, some with --only)
  *
@@ -18,6 +20,7 @@ import { tmpdir } from "node:os";
 import { join, relative, sep } from "node:path";
 import { Catalogue, CatalogueEntry, MODEL_BUDGET_BYTES, assetPaths } from "../../src/domain/assets/catalogue.ts";
 import { Manifest, manifestIssues, type ManifestEntry } from "../../src/domain/assets/manifest.ts";
+import { findCandidates } from "./find.ts";
 import { bytesOf, exists, getBytes, kb, PUBLIC, ROOT } from "./io.ts";
 import { idsModule, mergeCatalogue, missingRenders, orphans, outputsOf, renderTargets } from "./plan.ts";
 import { extractNodes, measureModel, meanColour, optimizeModel, writeBackplate, writeHdri, writeTexture, writeThumb } from "./process.ts";
@@ -152,6 +155,14 @@ async function main() {
     for (const p of problems) console.error(`  ${p}`);
     console.log(problems.length ? `${problems.length} problem(s)` : `ok: ${entries.length} assets`);
     process.exit(problems.length ? 1 : 0);
+  }
+
+  const find = values("--find")[0];
+  if (find) {
+    const known = new Set(entries.map((e) => e.ref));
+    const found = await findCandidates(find, values("--query")[0] ?? find.replace(/_/g, " "), known, Number(values("--limit")[0] ?? 24));
+    console.log(JSON.stringify(found, null, 2));
+    process.exit(0);
   }
 
   const only = values("--only");
