@@ -34,7 +34,7 @@ import { cmUV } from "./three/geometry";
 import { FlatSurface, RealSurface } from "./three/surface-materials";
 import { Opening3D, sideSign } from "./three/openings3d";
 import { Fixed3D } from "./three/fixtures3d";
-import { Outside } from "./three/outside3d";
+import { Backdrop } from "./three/backdrop3d";
 import { RoomLights } from "./three/lights3d";
 import { PhotoCapture, type PhotoApi } from "./three/photo";
 import { SkirtingBoard } from "./three/trim3d";
@@ -320,7 +320,7 @@ function sunVector(hour: number, lat: number, northAngleDeg: number) {
     envIntensity: up ? (warm ? 0.45 : 0.6) : 0.2,
     color: warm ? "#ffd2a1" : "#fff4e2",
     sky: !up ? "#b9b3b8" : warm ? "#f1dcc6" : "#ece6d8",
-    /** Brightness and tint of the view outside. */
+    /** Brightness and tint of the sky in the scene. */
     sky3d: skyLight(altitudeDeg),
   };
 }
@@ -328,7 +328,6 @@ function sunVector(hour: number, lat: number, northAngleDeg: number) {
 /* ---------------- scene ---------------- */
 
 const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Placed[]; sun: ReturnType<typeof sunVector> }) {
-  const { s, data } = usePlanner();
   const center = useMemo(() => {
     const v = new THREE.Vector3();
     placed.forEach((p) => {
@@ -368,21 +367,7 @@ const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Pla
       />
       <primitive object={target} />
       <Environment files={apartmentHdri} environmentIntensity={sun.envIntensity} />
-      {s.scene.realistic ? (
-        <Suspense fallback={null}>
-          <Outside
-            rooms={placed.map((p) => ({ room: p.r.room, origin: p.origin, outlooks: s.outlooks[p.r.room.id] ?? {} }))}
-            surroundings={data.apartment.surroundings}
-            floorLevel={data.apartment.floorLevel}
-            sky={sun.sky3d}
-          />
-        </Suspense>
-      ) : (
-        <mesh rotation-x={-Math.PI / 2} position={[center.x, -1.5, center.z]} receiveShadow>
-          <circleGeometry args={[3000, 48]} />
-          <meshStandardMaterial color="#e3d5bd" roughness={1} />
-        </mesh>
-      )}
+      <Backdrop center={center} sky={sun.sky3d} />
       {placed.map((p) => (
         <Room3D key={p.r.room.id} placed={p} />
       ))}

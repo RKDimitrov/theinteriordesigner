@@ -81,15 +81,7 @@
     "north": "Къде е северът на плана ви?",
     "northHint": "Завъртете стрелката или въведете ъгъл. 0° означава, че северът е в горната част на плана.",
     "submitCreate": "Създай жилище",
-    "submitEdit": "Запази промените",
-    "surroundings": "Околност",
-    "surroundingsHint": "Какво се вижда от прозорците; 3D изгледът го показва.",
-    "surroundings_city_centre": "Център на града",
-    "surroundings_urban": "Градски квартал",
-    "surroundings_suburban": "Предградие",
-    "surroundings_rural": "Селски район",
-    "waterfront": "До вода",
-    "mountains": "Изглед към планина"
+    "submitEdit": "Запази промените"
   },
   "Overview": {
     "details": "Подробности",
@@ -1056,19 +1048,6 @@
     "terrazzo": "Терацо",
     "carpet": "Мокет",
     "beams": "Греди"
-  },
-  "Outside": {
-    "title": "Навън",
-    "hint": "Гледката и сградата около жилището следват етажа и околността на жилището.",
-    "floor": "Етаж {n}",
-    "outlook": "Гледка",
-    "outlook_street": "Улица",
-    "outlook_courtyard": "Вътрешен двор",
-    "outlook_garden": "Градина",
-    "outlook_open": "Открито поле",
-    "outlookDefault": "Според околността",
-    "saveFailed": "Гледката не можа да се запази. Опитайте отново.",
-    "wallN": "Стена {n}"
   },
   "PieceModel": {
     "title": "Модел",

@@ -1,6 +1,5 @@
 import type { Vec } from "@/domain/geometry/vec";
 import { DEFAULT_FIT_OUT, type FitOut } from "@/domain/room/fit-out";
-import type { WallOutlooks } from "@/domain/context/outside";
 import type { RoomFinishes } from "@/domain/materials/library";
 import type { FixtureKind } from "@/domain/room/fixtures";
 import type { FurnitureItem } from "@/domain/schemas/design";
@@ -141,8 +140,6 @@ export interface PlannerState {
   preset: CameraPreset | null;
   /** Floor, wall and ceiling materials per room id (saved to Room.finishes). */
   finishes: Record<string, RoomFinishes>;
-  /** What each wall looks onto, per room id (saved to Room.wallOutlooks). */
-  outlooks: Record<string, WallOutlooks>;
   /** Rooms whose lights were switched by hand (on or off); others follow the time of day. */
   lightsSwitched: Record<string, boolean>;
   scene: SceneSettings;
@@ -199,7 +196,6 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     camera: { ...CAMERA_PRESETS.architect },
     preset: "architect",
     finishes: Object.fromEntries(plan.rooms.map((r) => [r.room.id, r.room.finishes])),
-    outlooks: Object.fromEntries(plan.rooms.map((r) => [r.room.id, r.room.wallOutlooks])),
     scene: { realistic: true, hour: 16, lightKelvin: 2700, labels: false, foldWalls: true, decor: true },
     lightsSwitched: {},
     doorsOpen: {},

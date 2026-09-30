@@ -7,7 +7,6 @@ import { CompassInput } from "@/components/plan-view/compass";
 import { Button } from "@/components/ui/button";
 import { FillSampleButton } from "@/components/dev/fill-sample-button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SurroundingsKind } from "@/domain/context/outside";
 import type { Apartment, ApartmentInput, Tenure } from "@/domain/schemas/apartment";
 import { useRouter } from "@/i18n/navigation";
 import { pickSample, SAMPLE_APARTMENTS } from "@/lib/dev/samples";
@@ -134,21 +133,6 @@ export function ApartmentForm({ apartment }: { apartment?: Apartment }) {
             error={errors["yearBuilt"]}
             onChange={(v) => set("yearBuilt", v)}
           />
-          <SelectField<SurroundingsKind>
-            label={t("surroundings")}
-            hint={t("surroundingsHint")}
-            value={draft.surroundings.kind}
-            options={(["city_centre", "urban", "suburban", "rural"] as const).map((k) => ({ value: k, label: t(`surroundings_${k}`) }))}
-            onChange={(kind) => set("surroundings", { ...draft.surroundings, kind })}
-          />
-          <fieldset className="flex flex-col justify-end gap-2">
-            {(["waterfront", "mountains"] as const).map((k) => (
-              <label key={k} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={draft.surroundings[k]} onChange={(e) => set("surroundings", { ...draft.surroundings, [k]: e.target.checked })} />
-                {t(k)}
-              </label>
-            ))}
-          </fieldset>
           <div className="flex flex-col gap-2 sm:col-span-2">
             <p className="text-sm font-medium">{t("north")}</p>
             <p className="text-xs text-muted-foreground">{t("northHint")}</p>

@@ -81,15 +81,7 @@
     "north": "Where is north on your floor plan?",
     "northHint": "Drag the arrow or type an angle. 0° means north is at the top of the plan.",
     "submitCreate": "Create apartment",
-    "submitEdit": "Save changes",
-    "surroundings": "Surroundings",
-    "surroundingsHint": "What the windows look out on; the 3D view shows it.",
-    "surroundings_city_centre": "City centre",
-    "surroundings_urban": "Urban residential",
-    "surroundings_suburban": "Suburban",
-    "surroundings_rural": "Rural",
-    "waterfront": "By the water",
-    "mountains": "Mountains in view"
+    "submitEdit": "Save changes"
   },
   "Overview": {
     "details": "Details",
@@ -1056,19 +1048,6 @@
     "terrazzo": "Terrazzo",
     "carpet": "Carpet",
     "beams": "Beams"
-  },
-  "Outside": {
-    "title": "Outside",
-    "hint": "The view outside and the building around the flat follow the apartment's floor and surroundings.",
-    "floor": "Floor {n}",
-    "outlook": "Outlook",
-    "outlook_street": "Street",
-    "outlook_courtyard": "Courtyard",
-    "outlook_garden": "Garden",
-    "outlook_open": "Open land",
-    "outlookDefault": "Area default",
-    "saveFailed": "Couldn't save the outlook. Try again.",
-    "wallN": "Wall {n}"
   },
   "PieceModel": {
     "title": "Model",

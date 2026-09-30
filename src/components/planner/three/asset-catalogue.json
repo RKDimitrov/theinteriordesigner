@@ -211,7 +211,6 @@
     ]
   },
   "alarm_clock_01": {
-    "kind": "model",
     "title": "Alarm Clock 01",
     "author": "Yann Kervran, James Ray Cock",
     "source": "polyhaven",
@@ -221,30 +220,15 @@
       "decor.clock"
     ],
     "bytes": 144024,
+    "thumb": "/thumbs/alarm_clock_01.webp",
+    "kind": "model",
     "size": [
       13.2,
       17.4,
       6.7
-    ],
-    "thumb": "/thumbs/alarm_clock_01.webp"
-  },
-  "alps_field": {
-    "title": "Alps Field",
-    "author": "Andreas Mischok",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/alps_field",
-    "licence": "cc0",
-    "tags": [
-      "backplate.mountains.ground",
-      "backplate.mountains.low"
-    ],
-    "bytes": 390861,
-    "thumb": "/thumbs/alps_field.webp",
-    "kind": "hdri",
-    "backplate": true
+    ]
   },
   "antique_ceramic_vase_01": {
-    "kind": "model",
     "title": "Antique Ceramic Vase 01",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -254,12 +238,13 @@
       "decor.vase"
     ],
     "bytes": 100780,
+    "thumb": "/thumbs/antique_ceramic_vase_01.webp",
+    "kind": "model",
     "size": [
       25.5,
       44,
       25.5
-    ],
-    "thumb": "/thumbs/antique_ceramic_vase_01.webp"
+    ]
   },
   "armchair_01": {
     "title": "Arm Chair 01",
@@ -414,20 +399,6 @@
       229.8
     ]
   },
-  "belfast_open_field": {
-    "title": "Belfast Open Field",
-    "author": "Dimitrios Savva, Jarod Guest",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/belfast_open_field",
-    "licence": "cc0",
-    "tags": [
-      "backplate.rural.low"
-    ],
-    "bytes": 318812,
-    "thumb": "/thumbs/belfast_open_field.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
   "bench_wooden_stano": {
     "title": "Wooden Bench",
     "author": "JanStano",
@@ -448,20 +419,6 @@
       589.7
     ]
   },
-  "binnenalster": {
-    "title": "Binnenalster",
-    "author": "Greg Zaal",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/binnenalster",
-    "licence": "cc0",
-    "tags": [
-      "backplate.waterfront"
-    ],
-    "bytes": 240822,
-    "thumb": "/thumbs/binnenalster.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
   "blinds_venetian_akstudio": {
     "title": "Window Blinds Low poly 3D model",
     "author": "AK STUDIO",
@@ -481,7 +438,6 @@
     ]
   },
   "book_encyclopedia_set_01": {
-    "kind": "model",
     "title": "Book Encyclopedia Set 01",
     "author": "John Malcolm",
     "source": "polyhaven",
@@ -491,12 +447,13 @@
       "decor.books"
     ],
     "bytes": 444388,
+    "thumb": "/thumbs/book_encyclopedia_set_01.webp",
+    "kind": "model",
     "size": [
       55.1,
       23.7,
       16.3
-    ],
-    "thumb": "/thumbs/book_encyclopedia_set_01.webp"
+    ]
   },
   "bookshelf_antique_drago": {
     "title": "Antique wooden bookcase - Game model",
@@ -518,7 +475,6 @@
     ]
   },
   "brass_vase_03": {
-    "kind": "model",
     "title": "Brass Vase 03",
     "author": "Rico Cilliers",
     "source": "polyhaven",
@@ -528,12 +484,13 @@
       "decor.vase"
     ],
     "bytes": 80104,
+    "thumb": "/thumbs/brass_vase_03.webp",
+    "kind": "model",
     "size": [
       8.3,
       20,
       8.3
-    ],
-    "thumb": "/thumbs/brass_vase_03.webp"
+    ]
   },
   "brick_wall_02": {
     "title": "Brick Wall 02",
@@ -555,7 +512,6 @@
     ]
   },
   "carved_wooden_elephant": {
-    "kind": "model",
     "title": "Carved Wooden Elephant",
     "author": "Greg Zaal",
     "source": "polyhaven",
@@ -565,15 +521,15 @@
       "decor.figurine"
     ],
     "bytes": 108852,
+    "thumb": "/thumbs/carved_wooden_elephant.webp",
+    "kind": "model",
     "size": [
       10.9,
       9.6,
       5.8
-    ],
-    "thumb": "/thumbs/carved_wooden_elephant.webp"
+    ]
   },
   "carved_wooden_plate": {
-    "kind": "model",
     "title": "Carved Wooden Plate",
     "author": "Jan Martens",
     "source": "polyhaven",
@@ -583,15 +539,15 @@
       "decor.bowl"
     ],
     "bytes": 69244,
+    "thumb": "/thumbs/carved_wooden_plate.webp",
+    "kind": "model",
     "size": [
       27.2,
       3.8,
       26.9
-    ],
-    "thumb": "/thumbs/carved_wooden_plate.webp"
+    ]
   },
   "ceramic_vase_01": {
-    "kind": "model",
     "title": "Ceramic Vase 01",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -601,15 +557,15 @@
       "decor.vase"
     ],
     "bytes": 81056,
+    "thumb": "/thumbs/ceramic_vase_01.webp",
+    "kind": "model",
     "size": [
       20.4,
       40,
       20.4
-    ],
-    "thumb": "/thumbs/ceramic_vase_01.webp"
+    ]
   },
   "ceramic_vase_02": {
-    "kind": "model",
     "title": "Ceramic Vase 02",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -619,15 +575,15 @@
       "decor.vase"
     ],
     "bytes": 128892,
+    "thumb": "/thumbs/ceramic_vase_02.webp",
+    "kind": "model",
     "size": [
       21.8,
       30.9,
       21.8
-    ],
-    "thumb": "/thumbs/ceramic_vase_02.webp"
+    ]
   },
   "ceramic_vase_03": {
-    "kind": "model",
     "title": "Ceramic Vase 03",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -637,15 +593,15 @@
       "decor.vase"
     ],
     "bytes": 111224,
+    "thumb": "/thumbs/ceramic_vase_03.webp",
+    "kind": "model",
     "size": [
       11.2,
       41.4,
       11.2
-    ],
-    "thumb": "/thumbs/ceramic_vase_03.webp"
+    ]
   },
   "ceramic_vase_04": {
-    "kind": "model",
     "title": "Ceramic Vase 04",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -655,12 +611,13 @@
       "decor.vase"
     ],
     "bytes": 102252,
+    "thumb": "/thumbs/ceramic_vase_04.webp",
+    "kind": "model",
     "size": [
       18.1,
       34.2,
       18.1
-    ],
-    "thumb": "/thumbs/ceramic_vase_04.webp"
+    ]
   },
   "chair_damask_purplegold": {
     "title": "Chair Damask Purplegold",
@@ -817,7 +774,6 @@
     ]
   },
   "concrete_cat_statue": {
-    "kind": "model",
     "title": "Concrete Cat Statue",
     "author": "Rico Cilliers, Riley Queen",
     "source": "polyhaven",
@@ -827,12 +783,13 @@
       "decor.figurine"
     ],
     "bytes": 238476,
+    "thumb": "/thumbs/concrete_cat_statue.webp",
+    "kind": "model",
     "size": [
       15.3,
       28.3,
       25
-    ],
-    "thumb": "/thumbs/concrete_cat_statue.webp"
+    ]
   },
   "concrete_floor_02": {
     "title": "Concrete Floor 02",
@@ -928,7 +885,6 @@
     ]
   },
   "desk_lamp_arm_01": {
-    "kind": "model",
     "title": "Desk Lamp Arm 01",
     "author": "Yann Kervran, Kuutti Siitonen",
     "source": "polyhaven",
@@ -938,12 +894,13 @@
       "decor.lamp"
     ],
     "bytes": 269928,
+    "thumb": "/thumbs/desk_lamp_arm_01.webp",
+    "kind": "model",
     "size": [
       20.2,
       89.3,
       61.4
-    ],
-    "thumb": "/thumbs/desk_lamp_arm_01.webp"
+    ]
   },
   "desk_office_aleixo": {
     "title": "Office Desk 140x60",
@@ -1160,20 +1117,6 @@
       490.5
     ]
   },
-  "farm_field": {
-    "title": "Farm Field",
-    "author": "Dimitrios Savva, Jarod Guest",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/farm_field",
-    "licence": "cc0",
-    "tags": [
-      "backplate.rural.ground"
-    ],
-    "bytes": 264562,
-    "thumb": "/thumbs/farm_field.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
   "faucet_renend": {
     "title": "Faucet",
     "author": "Renend Studio",
@@ -1270,20 +1213,6 @@
       112,
       107
     ]
-  },
-  "fouriesburg_mountain_lookout": {
-    "title": "Fouriesburg Mountain Lookout",
-    "author": "Dimitrios Savva, Jarod Guest",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/fouriesburg_mountain_lookout",
-    "licence": "cc0",
-    "tags": [
-      "backplate.mountains.high"
-    ],
-    "bytes": 212139,
-    "thumb": "/thumbs/fouriesburg_mountain_lookout.webp",
-    "kind": "hdri",
-    "backplate": true
   },
   "fridge_grey_glowbox": {
     "title": "Refrigerator - Grey Polished Metal",
@@ -1382,20 +1311,6 @@
       105.9,
       66.4
     ]
-  },
-  "hamburg_canal": {
-    "title": "Hamburg Canal",
-    "author": "Greg Zaal",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/hamburg_canal",
-    "licence": "cc0",
-    "tags": [
-      "backplate.city_centre.low"
-    ],
-    "bytes": 316480,
-    "thumb": "/thumbs/hamburg_canal.webp",
-    "kind": "hdri",
-    "backplate": true
   },
   "handle_knob": {
     "title": "Door Knob",
@@ -1527,20 +1442,6 @@
       77
     ]
   },
-  "homecoming_center_rooftop": {
-    "title": "Homecoming Center Rooftop",
-    "author": "Dario Barresi",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/homecoming_center_rooftop",
-    "licence": "cc0",
-    "tags": [
-      "backplate.urban.high"
-    ],
-    "bytes": 223037,
-    "thumb": "/thumbs/homecoming_center_rooftop.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
   "hood_chimney_ge": {
     "title": "GE Stainless Steel Chimney Style Range Hood",
     "author": "allenbranch",
@@ -1560,7 +1461,6 @@
     ]
   },
   "horse_statue_01": {
-    "kind": "model",
     "title": "Horse Statue 01",
     "author": "Rico Cilliers",
     "source": "polyhaven",
@@ -1570,26 +1470,13 @@
       "decor.figurine"
     ],
     "bytes": 220796,
+    "thumb": "/thumbs/horse_statue_01.webp",
+    "kind": "model",
     "size": [
       16.3,
       22,
       10.8
-    ],
-    "thumb": "/thumbs/horse_statue_01.webp"
-  },
-  "hotel_rooftop_balcony": {
-    "title": "Hotel Rooftop Balcony",
-    "author": "Dimitrios Savva, Jarod Guest",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/hotel_rooftop_balcony",
-    "licence": "cc0",
-    "tags": [
-      "backplate.city_centre.high"
-    ],
-    "bytes": 139245,
-    "thumb": "/thumbs/hotel_rooftop_balcony.webp",
-    "kind": "hdri",
-    "backplate": true
+    ]
   },
   "industrial_coffee_table": {
     "title": "Industrial Coffee Table",
@@ -1809,7 +1696,6 @@
     ]
   },
   "mantel_clock_01": {
-    "kind": "model",
     "title": "Mantel Clock 01",
     "author": "Yann Kervran, Rico Cilliers",
     "source": "polyhaven",
@@ -1819,12 +1705,13 @@
       "decor.clock"
     ],
     "bytes": 185484,
+    "thumb": "/thumbs/mantel_clock_01.webp",
+    "kind": "model",
     "size": [
       34.2,
       16,
       12.6
-    ],
-    "thumb": "/thumbs/mantel_clock_01.webp"
+    ]
   },
   "marble_01": {
     "title": "Marble 01",
@@ -1846,7 +1733,6 @@
     ]
   },
   "metal_jug": {
-    "kind": "model",
     "title": "Metal Jug",
     "author": "Anzor Lezhava",
     "source": "polyhaven",
@@ -1856,12 +1742,13 @@
       "decor.vase"
     ],
     "bytes": 81564,
+    "thumb": "/thumbs/metal_jug.webp",
+    "kind": "model",
     "size": [
       19.7,
       28.8,
       19.5
-    ],
-    "thumb": "/thumbs/metal_jug.webp"
+    ]
   },
   "metal_office_desk": {
     "title": "Metal Office Desk",
@@ -2427,20 +2314,6 @@
       113
     ]
   },
-  "potsdamer_platz": {
-    "title": "Potsdamer Platz",
-    "author": "Greg Zaal",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/potsdamer_platz",
-    "licence": "cc0",
-    "tags": [
-      "backplate.city_centre.ground"
-    ],
-    "bytes": 155742,
-    "thumb": "/thumbs/potsdamer_platz.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
   "potted_plant_01": {
     "title": "Potted Plant 01",
     "author": "Rico Cilliers",
@@ -2478,7 +2351,6 @@
     ]
   },
   "potted_plant_04": {
-    "kind": "model",
     "title": "Potted Plant 04",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -2488,12 +2360,13 @@
       "decor.plant"
     ],
     "bytes": 179780,
+    "thumb": "/thumbs/potted_plant_04.webp",
+    "kind": "model",
     "size": [
       16.8,
       26.7,
       18.5
-    ],
-    "thumb": "/thumbs/potted_plant_04.webp"
+    ]
   },
   "radiator_valve_trv": {
     "title": "Radiator Thermostatic Valve (UK)",
@@ -2512,20 +2385,6 @@
       35.6,
       9.1
     ]
-  },
-  "residential_garden": {
-    "title": "Residential Garden",
-    "author": "Greg Zaal, Rico Cilliers",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/residential_garden",
-    "licence": "cc0",
-    "tags": [
-      "backplate.garden"
-    ],
-    "bytes": 261057,
-    "thumb": "/thumbs/residential_garden.webp",
-    "kind": "hdri",
-    "backplate": true
   },
   "rockingchair_01": {
     "title": "Rockingchair 01",
@@ -2546,20 +2405,6 @@
       99.5,
       83.4
     ]
-  },
-  "rolling_hills": {
-    "title": "Rolling Hills",
-    "author": "Dimitrios Savva, Jarod Guest",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/rolling_hills",
-    "licence": "cc0",
-    "tags": [
-      "backplate.rural.high"
-    ],
-    "bytes": 281166,
-    "thumb": "/thumbs/rolling_hills.webp",
-    "kind": "hdri",
-    "backplate": true
   },
   "sheen_chair": {
     "title": "Sheen Chair",
@@ -2859,7 +2704,6 @@
     ]
   },
   "standing_picture_frame_01": {
-    "kind": "model",
     "title": "Standing Picture Frame 01",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -2869,15 +2713,15 @@
       "decor.frame"
     ],
     "bytes": 58176,
+    "thumb": "/thumbs/standing_picture_frame_01.webp",
+    "kind": "model",
     "size": [
       10,
       25,
       20.1
-    ],
-    "thumb": "/thumbs/standing_picture_frame_01.webp"
+    ]
   },
   "standing_picture_frame_02": {
-    "kind": "model",
     "title": "Standing Picture Frame 02",
     "author": "James Ray Cock",
     "source": "polyhaven",
@@ -2887,12 +2731,13 @@
       "decor.frame"
     ],
     "bytes": 77384,
+    "thumb": "/thumbs/standing_picture_frame_02.webp",
+    "kind": "model",
     "size": [
       10.2,
       26.6,
       21.7
-    ],
-    "thumb": "/thumbs/standing_picture_frame_02.webp"
+    ]
   },
   "steel_frame_shelves_01": {
     "title": "Steel Frame Shelves 01",
@@ -2933,48 +2778,6 @@
       157.4
     ]
   },
-  "stuttgart_hillside": {
-    "title": "Stuttgart Hillside",
-    "author": "Andreas Mischok",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/stuttgart_hillside",
-    "licence": "cc0",
-    "tags": [
-      "backplate.suburban.high"
-    ],
-    "bytes": 297000,
-    "thumb": "/thumbs/stuttgart_hillside.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
-  "stuttgart_suburbs": {
-    "title": "Stuttgart Suburbs",
-    "author": "Andreas Mischok",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/stuttgart_suburbs",
-    "licence": "cc0",
-    "tags": [
-      "backplate.suburban.low"
-    ],
-    "bytes": 273464,
-    "thumb": "/thumbs/stuttgart_suburbs.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
-  "suburban_garden": {
-    "title": "Suburban Garden",
-    "author": "Dimitrios Savva, Jarod Guest",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/suburban_garden",
-    "licence": "cc0",
-    "tags": [
-      "backplate.suburban.ground"
-    ],
-    "bytes": 334633,
-    "thumb": "/thumbs/suburban_garden.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
   "switch_avot": {
     "title": "Light Switch",
     "author": "Avot",
@@ -2994,7 +2797,6 @@
     ]
   },
   "tea_set_01": {
-    "kind": "model",
     "title": "Tea Set 01",
     "author": "James Ray Cock, Rico Cilliers, Jurita Burger",
     "source": "polyhaven",
@@ -3004,12 +2806,13 @@
       "decor.tea_set"
     ],
     "bytes": 234360,
+    "thumb": "/thumbs/tea_set_01.webp",
+    "kind": "model",
     "size": [
       91.8,
       16.5,
       48.4
-    ],
-    "thumb": "/thumbs/tea_set_01.webp"
+    ]
   },
   "terracotta_floor_tiles": {
     "title": "Terracotta Floor Tiles",
@@ -3031,7 +2834,6 @@
     ]
   },
   "throw_pillows_01": {
-    "kind": "model",
     "title": "Throw Pillows 01",
     "author": "Serhii Khromov",
     "source": "polyhaven",
@@ -3041,12 +2843,13 @@
       "decor.pillows"
     ],
     "bytes": 207772,
+    "thumb": "/thumbs/throw_pillows_01.webp",
+    "kind": "model",
     "size": [
       94,
       45,
       45.2
-    ],
-    "thumb": "/thumbs/throw_pillows_01.webp"
+    ]
   },
   "toilet_hippostance": {
     "title": "Toilet",
@@ -3105,48 +2908,6 @@
       61.9,
       180
     ]
-  },
-  "urban_courtyard": {
-    "title": "Urban Courtyard",
-    "author": "Greg Zaal, Rico Cilliers",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/urban_courtyard",
-    "licence": "cc0",
-    "tags": [
-      "backplate.courtyard"
-    ],
-    "bytes": 285327,
-    "thumb": "/thumbs/urban_courtyard.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
-  "urban_street_01": {
-    "title": "Urban Street 01",
-    "author": "Andreas Mischok",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/urban_street_01",
-    "licence": "cc0",
-    "tags": [
-      "backplate.urban.ground"
-    ],
-    "bytes": 525721,
-    "thumb": "/thumbs/urban_street_01.webp",
-    "kind": "hdri",
-    "backplate": true
-  },
-  "urban_street_03": {
-    "title": "Urban Street 03",
-    "author": "Andreas Mischok",
-    "source": "polyhaven",
-    "sourceUrl": "https://polyhaven.com/a/urban_street_03",
-    "licence": "cc0",
-    "tags": [
-      "backplate.urban.low"
-    ],
-    "bytes": 211293,
-    "thumb": "/thumbs/urban_street_03.webp",
-    "kind": "hdri",
-    "backplate": true
   },
   "vanity_blendffnike": {
     "title": "Sink with Faucet",
@@ -3267,7 +3028,6 @@
     ]
   },
   "wicker_basket_02": {
-    "kind": "model",
     "title": "Wicker Basket 02",
     "author": "Kuutti Siitonen",
     "source": "polyhaven",
@@ -3277,12 +3037,13 @@
       "decor.basket"
     ],
     "bytes": 271404,
+    "thumb": "/thumbs/wicker_basket_02.webp",
+    "kind": "model",
     "size": [
       34.7,
       20,
       25.4
-    ],
-    "thumb": "/thumbs/wicker_basket_02.webp"
+    ]
   },
   "wood_floor": {
     "title": "Wood Floor",
@@ -3324,7 +3085,6 @@
     ]
   },
   "wooden_bowl_01": {
-    "kind": "model",
     "title": "Wooden Bowl 01",
     "author": "Oliver Harries",
     "source": "polyhaven",
@@ -3334,15 +3094,15 @@
       "decor.bowl"
     ],
     "bytes": 147192,
+    "thumb": "/thumbs/wooden_bowl_01.webp",
+    "kind": "model",
     "size": [
       31.3,
       9.4,
       30.9
-    ],
-    "thumb": "/thumbs/wooden_bowl_01.webp"
+    ]
   },
   "wooden_candlestick": {
-    "kind": "model",
     "title": "Wooden Candlestick",
     "author": "Josh Dean",
     "source": "polyhaven",
@@ -3352,12 +3112,13 @@
       "decor.candle"
     ],
     "bytes": 436008,
+    "thumb": "/thumbs/wooden_candlestick.webp",
+    "kind": "model",
     "size": [
       9.7,
       22,
       9.9
-    ],
-    "thumb": "/thumbs/wooden_candlestick.webp"
+    ]
   },
   "wooden_display_shelves_01": {
     "title": "Wooden Display Shelves 01",
