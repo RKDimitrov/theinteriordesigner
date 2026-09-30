@@ -7,6 +7,7 @@ import type { DroppedItem } from "../../schemas/design";
 import type { RoomShape } from "../../schemas/room";
 import type { ValidationIssue } from "../../schemas/validation-issue";
 import { summarizeIssues, validateLayout } from "../../validator";
+import { suitsRoom } from "../catalogue";
 import { isRelational, type PlannedItem, type Pose, toFurnitureItem } from "../plan";
 import { candidates, type Choice, poseFor, type SolverCtx, zoneTarget } from "./candidates";
 import { cheapCost, footprintOf, HARD, type Placed } from "./cost";
@@ -324,8 +325,18 @@ export function solveLayout(input: SolveInput): SolveResult {
   const dropped: DroppedItem[] = [];
   const drop = (i: PlannedItem, reason: DropReason) => dropped.push({ id: i.id, name: i.name, category: i.category, reason });
 
-  // 1. Item cap: keep existing pieces, then by priority, then plan order.
+  // 1. Pieces that do not belong in this kind of room go first, with whatever was placed relative to them.
+  //    What the household already owns stays.
   let active = [...input.items];
+  const unsuited = active.filter((i) => !i.existing && !suitsRoom(i.category, room.type));
+  if (unsuited.length > 0) {
+    const gone = new Set(unsuited.map((i) => i.id));
+    for (const i of unsuited) for (const d of dependentsOf(active, i.id)) if (!active.find((a) => a.id === d)?.existing) gone.add(d);
+    for (const i of active) if (gone.has(i.id)) drop(i, suitsRoom(i.category, room.type) ? "anchor_dropped" : "unsuited_room");
+    active = active.filter((i) => !gone.has(i.id));
+  }
+
+  // 2. Item cap: keep existing pieces, then by priority, then plan order.
   if (input.cap !== undefined && active.length > input.cap) {
     const ranked = active.map((item, index) => ({ item, index })).sort((a, b) => Number(b.item.existing) - Number(a.item.existing) || a.item.priority - b.item.priority || a.index - b.index);
     const keep = new Set(ranked.slice(0, input.cap).map((r) => r.item.id));

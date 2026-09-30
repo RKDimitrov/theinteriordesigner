@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { FurnitureCategory } from "../schemas/design";
-import { CATALOGUE, catalogueSize, maxItems, minFreeSpan, nearestSizeClass, wallElevation } from "./catalogue";
+import { CATALOGUE, catalogueSize, maxItems, minFreeSpan, nearestSizeClass, suitsRoom, unsuitedFor, wallElevation } from "./catalogue";
 
 describe("catalogue", () => {
   it("has three size classes with growing width for every category", () => {
@@ -45,5 +45,29 @@ describe("catalogue", () => {
     expect(wallElevation(70)).toBe(115);
     expect(wallElevation(180)).toBe(60);
     expect(wallElevation(300)).toBe(10);
+  });
+});
+
+describe("suitsRoom", () => {
+  it("keeps seating groups, beds, desks and dining tables out of a hallway", () => {
+    for (const category of ["sofa", "coffee_table", "tv_unit", "bed", "nightstand", "desk", "office_chair", "dining_table", "dining_chair"] as const) {
+      expect(suitsRoom(category, "hallway"), category).toBe(false);
+    }
+  });
+
+  it("lets a hallway have what a hallway is for", () => {
+    for (const category of ["bench", "shoe_cabinet", "coat_rack", "mirror", "wardrobe", "rug", "plant", "art"] as const) {
+      expect(suitsRoom(category, "hallway"), category).toBe(true);
+    }
+  });
+
+  it("does not restrict living rooms, bedrooms or rooms of no set kind", () => {
+    for (const type of ["living", "bedroom", "office", "dining", "kids", "other"] as const) expect(unsuitedFor(type)).toEqual([]);
+  });
+
+  it("keeps beds and upholstery out of bathrooms and storage rooms", () => {
+    expect(suitsRoom("bed", "bath")).toBe(false);
+    expect(suitsRoom("sofa", "storage")).toBe(false);
+    expect(suitsRoom("storage", "bath")).toBe(true);
   });
 });

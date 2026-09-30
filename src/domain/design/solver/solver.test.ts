@@ -33,6 +33,30 @@ describe("solver on fixture rooms", () => {
     expect(r.stats.dropped.filter((d) => d.reason === "over_item_cap").map((d) => d.id)).toEqual(expect.arrayContaining(["armchair", "planter"]));
   });
 
+  it("leaves a sofa out of a hallway, with what goes with it, and says why", () => {
+    const plan = {
+      ...HALLWAY_PLAN,
+      items: [
+        ...HALLWAY_PLAN.items.filter((i) => i.id === "bench"),
+        { ...HALLWAY_PLAN.items[0]!, id: "sofa", category: "sofa" as const, name: "Sofa", sizeClass: "medium" as const, priority: 1 as const, intent: { anchor: "wall" as const } },
+        { ...HALLWAY_PLAN.items[0]!, id: "table", category: "coffee_table" as const, name: "Coffee table", sizeClass: "small" as const, priority: 2 as const, intent: { anchor: "front_of" as const, relativeTo: "sofa" } },
+      ],
+    };
+    const planned = resolvePlan(plan, { mustKeep: [], ceilingHeight: 260 });
+    const r = solveLayout({ room: HALLWAY, items: planned.items });
+    expect(r.poses.has("sofa")).toBe(false);
+    expect(r.poses.has("table")).toBe(false);
+    expect(r.poses.has("bench")).toBe(true);
+    expect(r.dropped.filter((d) => d.reason === "unsuited_room").map((d) => d.id).sort()).toEqual(["sofa", "table"]);
+  });
+
+  it("keeps a piece the household owns even where it would not be proposed", () => {
+    const owned = { ...HALLWAY_PLAN.items[0]!, id: "desk", category: "desk" as const, name: "Old desk", sizeClass: "small" as const, existing: true, intent: { anchor: "wall" as const } };
+    const planned = resolvePlan({ ...HALLWAY_PLAN, items: [owned] }, { mustKeep: [], ceilingHeight: 260 });
+    const r = solveLayout({ room: HALLWAY, items: planned.items });
+    expect(r.dropped.filter((d) => d.reason === "unsuited_room")).toEqual([]);
+  });
+
   it("drops the lowest-priority pieces when the hallway is overloaded without a cap", () => {
     const planned = resolvePlan(HALLWAY_PLAN, { mustKeep: [], ceilingHeight: 260 });
     const r = solveLayout({ room: HALLWAY, items: planned.items });

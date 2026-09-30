@@ -4,13 +4,16 @@ import { Copy, RotateCw, Sparkles, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { toast as sonner } from "sonner";
-import { itemFootprint } from "@/domain/geometry/obb";
+import { convexOverlap, itemFootprint } from "@/domain/geometry/obb";
 import { area, bbox, containsPoint, rectPolygon, toClockwise } from "@/domain/geometry/polygon";
 import { clamp, m2 } from "@/domain/geometry/units";
 import { distance, sub, type Vec } from "@/domain/geometry/vec";
 import { nearestWall, wallsOf } from "@/domain/geometry/walls";
+import { keepClearZones } from "@/domain/geometry/zones";
+import { labelWidth, sharedWalls } from "@/domain/planner/dimensions";
 import { newPlannerItem, snapTo, SYMBOL_OF, turn } from "@/domain/planner/items";
-import { roomsBounds } from "@/domain/planner/layout";
+import { type Box, placeLabels } from "@/domain/planner/label-layout";
+import { PLANNER_WALL_CM, roomsBounds } from "@/domain/planner/layout";
 import { FIXTURE_SPEC, placeCeilingFixture, placeFixture } from "@/domain/room/fixtures";
 import { clampOffset, newOpening, newPassThrough, nextId, withFitOutStyle } from "@/domain/room/openings-edit";
 import type { FurnitureItem } from "@/domain/schemas/design";
@@ -180,6 +183,9 @@ export function Stage2D() {
     const item = { ...newPlannerItem(piece, p, pieceName(piece), taken), modelId };
     dispatch({ type: "edit", fn: (pl) => mapRoom(pl, target.room.id, (r) => ({ ...r, furniture: [...r.furniture, item] })) });
     dispatch({ type: "set", patch: { armed: null, armedModel: null, selection: { kind: "item", roomId: target.room.id, id: item.id } } });
+    // Placing by hand is never refused, but a piece on a door's swing or sliding run gets pointed out at once.
+    const onDoor = item.placement === "floor" && keepClearZones(target.room).some((z) => (z.kind === "door_swing" || z.kind === "door_slide") && convexOverlap(itemFootprint(item), z.polygon));
+    if (onDoor) toast(t("onDoorSwing", { name: item.name }));
   };
 
   const addOpening = (w: Vec, kind: OpeningKind | "pass") => {
@@ -528,6 +534,24 @@ export function Stage2D() {
           : [],
       );
 
+  /** Bounds on the sheet of a piece standing in `roomId`. */
+  const boundsOf = (roomId: string, f: FurnitureItem): Box => {
+    const o = plan.origins[roomId] ?? { x: 0, y: 0 };
+    const pts = itemFootprint(f);
+    const xs = pts.map((p) => p.x + o.x);
+    const ys = pts.map((p) => p.y + o.y);
+    return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) };
+  };
+  const ghostLabels = (() => {
+    const fs = 8 / k;
+    const texts = suggestions.map(({ roomId, sg }) => ({ id: `${roomId}-${sg.id}`, sgId: sg.id, text: `✦ ${sg.name.toLowerCase()}`, anchor: boundsOf(roomId, sg.item!) }));
+    const requests = texts.map((g) => ({ id: g.id, anchor: g.anchor, w: labelWidth(g.text, fs) + 8 / k, h: fs * 1.7 }));
+    // Rugs lie under everything; a label may sit on one.
+    const pieces = hidden.has("furniture") ? [] : scopeRooms.flatMap((r) => r.furniture.filter((f) => f.placement !== "floor_covering").map((f) => boundsOf(r.room.id, f)));
+    const at = placeLabels(requests, pieces, 3 / k);
+    return texts.map((g, i) => ({ ...g, ...at[g.id]!, w: requests[i]!.w, h: requests[i]!.h }));
+  })();
+
   const hint = s.armed ? t("hint_place", { name: pieceName(pieces.find((p) => p.key === s.armed)!) }) : t(`hint_${tool}`);
 
   return (
@@ -588,12 +612,18 @@ export function Stage2D() {
                   }}
                 >
                   <rect x={-f.w / 2} y={-f.d / 2} width={f.w} height={f.d} fill={CLAY} fillOpacity={0.1} stroke={CLAY} strokeWidth={1.3} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" />
-                  <text y={0} fontSize={8 / k} textAnchor="middle" dominantBaseline="central" fill={CLAY_DARK} fontFamily="var(--mono)" transform={`rotate(${-f.rotation})`} pointerEvents="none">
-                    ✦ {sg.name.toLowerCase()}
-                  </text>
                 </g>
               );
             })}
+            {/* Ghost names, on top and moved clear of placed pieces, other ghosts and each other. */}
+            {ghostLabels.map((l) => (
+              <g key={l.id} pointerEvents="none" data-testid={`designer-suggestion-label-${l.sgId}`}>
+                <rect x={l.x - l.w / 2} y={l.y - l.h / 2} width={l.w} height={l.h} fill="#fbf6ec" fillOpacity={0.92} stroke={CLAY} strokeWidth={0.8} vectorEffect="non-scaling-stroke" />
+                <text x={l.x} y={l.y} fontSize={8 / k} textAnchor="middle" dominantBaseline="central" fill={CLAY_DARK} fontFamily="var(--mono)">
+                  {l.text}
+                </text>
+              </g>
+            ))}
             {!hidden.has("dimensions") &&
               plan.annotations.filter((a) => a.kind === "dimension" && a.b).map((a) => <FreeDim key={a.id} a={a.a} b={a.b!} k={k} label={len(distance(a.a, a.b!))} />)}
             {plan.annotations
@@ -791,6 +821,16 @@ const LAYER_ORDER: Record<FurnitureItem["placement"], number> = { floor_covering
 const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onRoomDown, len, kindLabel }: RoomsLayerProps) {
   const off = new Set(hidden);
   const layers = { walls: !off.has("walls"), openings: !off.has("openings"), electrical: !off.has("electrical"), floor: !off.has("floor") };
+  // Dimension lines sit 30 and 52 cm outside a wall; on a wall two rooms share, that is the neighbour's floor.
+  const shared = useMemo(
+    () =>
+      sharedWalls(
+        plan.rooms.map((r) => ({ id: r.room.id, polygon: r.room.polygon })),
+        plan.origins,
+        [PLANNER_WALL_CM + 18, PLANNER_WALL_CM + 40],
+      ),
+    [plan.rooms, plan.origins],
+  );
   return (
     <>
       {plan.rooms.map((r) => {
@@ -830,7 +870,16 @@ const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection,
               <OpeningHits room={r.room} onDown={(op, e) => onOpeningDown(r, op, e)} selectedId={selection?.kind === "opening" && selection.roomId === r.room.id ? selection.id : null} />
             )}
             {!off.has("labels") && <RoomLabel room={r.room} k={k} />}
-            {!off.has("dimensions") && active && <RoomDimensions room={r.room} k={k} len={len} kindLabel={kindLabel} />}
+            {!off.has("dimensions") && active && (
+              <RoomDimensions
+                room={r.room}
+                k={k}
+                len={len}
+                kindLabel={kindLabel}
+                shared={shared[r.room.id] ?? []}
+                focus={scope === r.room.id ? "room" : selection?.kind === "opening" && selection.roomId === r.room.id ? (r.room.openings.find((op) => op.id === selection.id)?.wallIndex ?? null) : null}
+              />
+            )}
           </g>
         );
       })}

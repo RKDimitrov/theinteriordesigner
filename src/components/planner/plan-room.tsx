@@ -8,6 +8,7 @@ import { area, bbox, offsetPolygon } from "@/domain/geometry/polygon";
 import { m2 } from "@/domain/geometry/units";
 import { add, cross, scale, sub, type Vec } from "@/domain/geometry/vec";
 import { type Wall, wallsOf } from "@/domain/geometry/walls";
+import { fitLabel, labelWidth, openingChain } from "@/domain/planner/dimensions";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { isCeilingKind, kitchenSlots } from "@/domain/room/fixtures";
 import type { FixedElement, Opening, Room } from "@/domain/schemas/room";
@@ -341,8 +342,8 @@ export function OpeningHits({ room, onDown, selectedId }: { room: Room; onDown: 
   );
 }
 
-/** Mono dimension with slash ticks and a sheet knockout behind the label. */
-function Dim({ a, b, wall, off, label, k }: { a: Vec; b: Vec; wall: Wall; off: number; label: string; k: number }) {
+/** Mono dimension with slash ticks and a sheet knockout behind the label. `off` is cm outside the wall; negative is inside the room. */
+function Dim({ a, b, wall, off, label, k }: { a: Vec; b: Vec; wall: Wall; off: number; label: string | null; k: number }) {
   const o = scale(wall.inward, -off);
   const p = add(a, o);
   const q = add(b, o);
@@ -351,57 +352,72 @@ function Dim({ a, b, wall, off, label, k }: { a: Vec; b: Vec; wall: Wall; off: n
   if (angle > 90 || angle <= -90) angle += 180;
   const fs = 10 / k;
   const tick = scale(add(wall.dir, scale(wall.inward, -1)), 4 / k);
-  const tw = label.length * fs * 0.62 + 6 / k;
+  const tw = labelWidth(label ?? "", fs) + 6 / k;
   return (
     <g>
       <line x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke={INK} strokeWidth={0.8} vectorEffect="non-scaling-stroke" />
       {[p, q].map((e, i) => (
         <line key={i} x1={e.x - tick.x} y1={e.y - tick.y} x2={e.x + tick.x} y2={e.y + tick.y} stroke={INK} strokeWidth={1} vectorEffect="non-scaling-stroke" />
       ))}
-      <g transform={`rotate(${angle} ${mid.x} ${mid.y})`}>
-        <rect x={mid.x - tw / 2} y={mid.y - fs * 0.7} width={tw} height={fs * 1.4} fill={SHEET} />
-        <text x={mid.x} y={mid.y} fontSize={fs} textAnchor="middle" dominantBaseline="central" fill={INK} fontFamily="var(--mono)">
-          {label}
-        </text>
-      </g>
+      {label !== null && (
+        <g transform={`rotate(${angle} ${mid.x} ${mid.y})`}>
+          <rect x={mid.x - tw / 2} y={mid.y - fs * 0.7} width={tw} height={fs * 1.4} fill={SHEET} />
+          <text x={mid.x} y={mid.y} fontSize={fs} textAnchor="middle" dominantBaseline="central" fill={INK} fontFamily="var(--mono)">
+            {label}
+          </text>
+        </g>
+      )}
     </g>
   );
 }
 
-/** Overall wall lengths 52 cm outside the wall, and a chain of openings at 30 cm. */
+/** Where a focused room's dimensions go on a wall it shares: inside the room, clear of the room next door. */
+const INSIDE_CHAIN_CM = 16;
+const INSIDE_LENGTH_CM = 38;
+
+/**
+ * Overall wall lengths 52 cm outside the wall, and a chain of openings at 30 cm.
+ * A wall shared with another room has no outside: its dimensions would lie on
+ * the neighbour's floor, so they show only for the room or wall in `focus`,
+ * and then inside the room.
+ */
 export const RoomDimensions = memo(function RoomDimensions({
   room,
   k,
   len,
   kindLabel,
+  shared,
+  focus,
 }: {
   room: Room;
   k: number;
   len: (cm: number) => string;
   kindLabel: (o: Opening) => string;
+  /** Per wall: true when another room lies on its other side. */
+  shared: readonly boolean[];
+  /** The whole room, one of its walls (by index), or nothing is being worked on. */
+  focus: "room" | number | null;
 }) {
   const walls = wallsOf(room.polygon);
+  const fs = 10 / k;
   return (
     <g pointerEvents="none">
       {walls.map((w) => {
-        const ops = room.openings
-          .filter((o) => o.wallIndex === w.index && (o.kind === "door" || o.kind === "window"))
-          .sort((a, b) => a.offset - b.offset);
+        const inside = shared[w.index] ?? false;
+        if (inside && focus !== "room" && focus !== w.index) return null;
+        const ops = room.openings.filter((o) => o.wallIndex === w.index && (o.kind === "door" || o.kind === "window"));
         const pointAt = (t: number) => add(w.a, scale(w.dir, t));
-        const chain: { from: number; to: number; label: string }[] = [];
-        let cursor = 0;
-        for (const o of ops) {
-          if (o.offset > cursor + 1) chain.push({ from: cursor, to: o.offset, label: len(o.offset - cursor) });
-          chain.push({ from: o.offset, to: o.offset + o.width, label: `${len(o.width)} ${kindLabel(o)}` });
-          cursor = o.offset + o.width;
-        }
-        if (ops.length > 0 && w.length - cursor > 1) chain.push({ from: cursor, to: w.length, label: len(w.length - cursor) });
+        const chain = openingChain(w.length, ops);
         return (
           <g key={w.index}>
-            <Dim a={w.a} b={w.b} wall={w} off={W + 40} label={len(w.length)} k={k} />
-            {chain.map((c, i) => (
-              <Dim key={i} a={pointAt(c.from)} b={pointAt(c.to)} wall={w} off={W + 18} label={c.label} k={k} />
-            ))}
+            <Dim a={w.a} b={w.b} wall={w} off={inside ? -(chain.length ? INSIDE_LENGTH_CM : INSIDE_CHAIN_CM) : W + 40} label={len(w.length)} k={k} />
+            {chain.map((c, i) => {
+              const size = len(c.to - c.from);
+              const o = c.opening === null ? undefined : ops[c.opening];
+              // A stretch too short for its label keeps its ticks and drops the words, then the number.
+              const label = fitLabel(o ? [`${size} ${kindLabel(o)}`, size] : [size], c.to - c.from, fs, 6 / k);
+              return <Dim key={i} a={pointAt(c.from)} b={pointAt(c.to)} wall={w} off={inside ? -INSIDE_CHAIN_CM : W + 18} label={label} k={k} />;
+            })}
           </g>
         );
       })}

@@ -6,7 +6,7 @@ import { keepClearZones } from "../geometry/zones";
 import { doorStyle, radiatorStyle, windowStyle } from "../room/fit-out";
 import { isCeilingKind } from "../room/fixtures";
 import type { Opening, RoomShape } from "../schemas/room";
-import { maxItems } from "./catalogue";
+import { maxItems, unsuitedFor } from "./catalogue";
 import { freeFloorRect, wallSlots } from "./solver/slots";
 
 interface OpeningFact {
@@ -55,6 +55,8 @@ export function roomFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
     areaM2,
     /** Most pieces of furniture (rugs and wall pieces included) this room should get. */
     itemCap: maxItems(areaM2, room.type),
+    /** Furniture categories that do not belong in this kind of room; new pieces of these are left out. */
+    unsuitedCategories: unsuitedFor(room.type),
     ceilingHeightCm: room.ceilingHeight,
     polygon: room.polygon.map(pt),
     walls: walls.map((w) => ({
@@ -129,6 +131,7 @@ export function planFacts(room: RoomShape & { id: string }, northAngleDeg: numbe
     lengthCm: f.lengthCm,
     areaM2: f.areaM2,
     itemCap: f.itemCap,
+    unsuitedCategories: f.unsuitedCategories,
     ceilingHeightCm: f.ceilingHeightCm,
     walls: f.walls.map((w) => ({ index: w.index, lengthCm: w.lengthCm, facing: w.facing })),
     openings: room.openings.map((o) => ({

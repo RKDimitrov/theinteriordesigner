@@ -110,6 +110,27 @@ export function minFreeSpan(category: FurnitureCategory, sizeClass: SizeClass): 
   return { length: w, depth: d };
 }
 
+const SEATING_GROUP: readonly FurnitureCategory[] = ["sofa", "coffee_table", "tv_unit"];
+const SLEEPING: readonly FurnitureCategory[] = ["bed", "nightstand"];
+const WORK_AND_DINING: readonly FurnitureCategory[] = ["desk", "office_chair", "dining_table", "dining_chair"];
+
+/**
+ * Categories the designer does not propose for a kind of room: a hallway is
+ * for passing through and for coats and shoes, not for a sofa or a bed.
+ * Rooms not listed take anything. Pieces the household already owns, and
+ * pieces placed by hand, are never held to this.
+ */
+const UNSUITED: Partial<Record<RoomType, readonly FurnitureCategory[]>> = {
+  hallway: [...SEATING_GROUP, ...SLEEPING, ...WORK_AND_DINING],
+  storage: [...SEATING_GROUP, ...SLEEPING, ...WORK_AND_DINING, "armchair"],
+  bath: [...SEATING_GROUP, ...SLEEPING, ...WORK_AND_DINING, "armchair", "bookshelf", "wardrobe"],
+  kitchen: [...SLEEPING, "wardrobe"],
+};
+
+export const unsuitedFor = (roomType: RoomType): readonly FurnitureCategory[] => UNSUITED[roomType] ?? [];
+
+export const suitsRoom = (category: FurnitureCategory, roomType: RoomType): boolean => !unsuitedFor(roomType).includes(category);
+
 /**
  * Most pieces of furniture a room of this size and type should get. Rugs,
  * art and wall pieces count too: every piece costs space or wall.

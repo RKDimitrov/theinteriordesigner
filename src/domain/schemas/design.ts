@@ -295,7 +295,7 @@ export const DroppedItem = z.object({
   id: z.string(),
   name: z.string(),
   category: FurnitureCategory,
-  reason: z.enum(["over_item_cap", "no_space", "anchor_dropped"]),
+  reason: z.enum(["over_item_cap", "no_space", "anchor_dropped", "unsuited_room"]),
 });
 export type DroppedItem = z.infer<typeof DroppedItem>;
 
