@@ -1,7 +1,7 @@
 "use client";
 
 import apartmentHdri from "@pmndrs/assets/hdri/apartment.exr";
-import { Edges, Environment, Html, OrbitControls, PerformanceMonitor } from "@react-three/drei";
+import { Edges, Environment, Html, OrbitControls } from "@react-three/drei";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { Bloom, EffectComposer, N8AO, ToneMapping } from "@react-three/postprocessing";
 import { ToneMappingMode } from "postprocessing";
@@ -21,6 +21,7 @@ import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { fixtureWall } from "@/domain/room/fixtures";
 import { type Material, resolveFinishes } from "@/domain/materials/library";
 import { roomLit, skyLight } from "@/domain/planner/lighting";
+import { QUALITY } from "@/domain/planner/quality";
 import { skirtingPieces } from "@/domain/room/opening-parts";
 import { canStand, roomAt, startSpot, type WalkRoom, wallPieces, windowSpot } from "@/domain/planner/walls3d";
 import { approach, EYE_SITTING, EYE_STANDING, shortestTurn, smoothstep } from "@/domain/planner/walk-motion";
@@ -40,6 +41,8 @@ import { PhotoCapture, type PhotoApi } from "./three/photo";
 import { SkirtingBoard } from "./three/trim3d";
 import { PieceDecor3D } from "./three/decor3d";
 import { RealPiece } from "./three/pieces";
+import { FrameRateWatch } from "./three/frame-rate-watch";
+import { useQuality } from "./three/use-quality";
 
 const INK = "#2b2622";
 const CLAY = "#c8794a";
@@ -68,8 +71,6 @@ export default function Stage3D() {
   const gl = useRef<THREE.WebGLRenderer | null>(null);
   const [locked, setLocked] = useState(false);
   const [location, setLocation] = useState<string | null>(null);
-  // Ambient occlusion is the costliest pass; drop it when the frame rate sags.
-  const [ao, setAo] = useState(true);
   const walkApiRef = useRef<WalkApi | null>(null);
 
   const placed: Placed[] = useMemo(
@@ -152,6 +153,10 @@ export default function Stage3D() {
     return () => document.removeEventListener("pointerlockchange", onLock);
   }, []);
 
+  // Photo mode always renders at the best level.
+  const quality = useQuality();
+  const q = QUALITY[photoBusy ? "high" : quality.level];
+
   const empty = placed.length === 0;
   const coarse = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
 
@@ -161,25 +166,30 @@ export default function Stage3D() {
         {!empty && (
           <Canvas
             shadows="percentage"
+            // Nothing moves by itself in orbit mode, so a frame is drawn only when something changed.
+            frameloop={s.walking || photoBusy ? "always" : "demand"}
             // Photo mode renders at twice the pixel density.
-            dpr={photoBusy ? 2 : [1, 1.5]}
+            dpr={photoBusy ? 2 : [q.dpr[0], q.dpr[1]]}
             gl={{ preserveDrawingBuffer: true, antialias: true }}
             camera={{ fov: fovOf(s.camera.lens), near: 5, far: 40000, position: [bounds.cx + 800, 700, bounds.cz + 800] }}
             onCreated={(state) => {
               gl.current = state.gl;
               // Neutral keeps paint and fabric colours true; the composer below takes over while mounted.
               state.gl.toneMapping = THREE.NeutralToneMapping;
+              // Reading back every shader's log stalls the first frames; keep it for development.
+              if (process.env.NODE_ENV === "production") state.gl.debug.checkShaderErrors = false;
             }}
             onPointerMissed={() => !s.walking && dispatch({ type: "select", selection: null })}
           >
-            <PerformanceMonitor onDecline={() => setAo(false)} />
-            <SceneContents placed={placed} sun={sun} />
+            <FrameRateWatch />
+            <RedrawOnChange />
+            <SceneContents placed={placed} sun={sun} shadowMap={q.shadowMap} maxLights={q.maxLights} />
             <PhotoCapture apiRef={photoApi} onBusy={setPhotoBusy} />
             <EffectComposer multisampling={4}>
               {/* Scene units are cm: occlusion reaches ~40 cm from contact. Photo mode renders it at full quality. */}
-              <N8AO enabled={ao || photoBusy} aoRadius={40} distanceFalloff={1} intensity={2.5} quality={photoBusy ? "high" : "medium"} halfRes={!photoBusy} />
+              <N8AO enabled={q.ao} aoRadius={40} distanceFalloff={1} intensity={2.5} quality={photoBusy ? "high" : "medium"} halfRes={!photoBusy} />
               {/* A soft glow round lit lamps and bright windows. */}
-              <Bloom mipmapBlur intensity={0.3} luminanceThreshold={0.92} luminanceSmoothing={0.2} />
+              <Bloom mipmapBlur intensity={q.bloom ? 0.3 : 0} luminanceThreshold={0.92} luminanceSmoothing={0.2} />
               {/* Walking, the eye adapts: a dim room brightens, a bright window does not blow out. */}
               <ToneMapping
                 key={s.walking ? "adaptive" : "neutral"}
@@ -327,7 +337,22 @@ function sunVector(hour: number, lat: number, northAngleDeg: number) {
 
 /* ---------------- scene ---------------- */
 
-const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Placed[]; sun: ReturnType<typeof sunVector> }) {
+/**
+ * The view draws on demand. Changes to three.js objects made through React ask for a frame by themselves;
+ * this covers what does not (a wall folding away as the state changes, an environment map arriving).
+ */
+function RedrawOnChange() {
+  const { s } = usePlanner();
+  const invalidate = useThree((st) => st.invalidate);
+  useEffect(() => {
+    invalidate();
+    const late = window.setTimeout(() => invalidate(), 300);
+    return () => window.clearTimeout(late);
+  }, [s, invalidate]);
+  return null;
+}
+
+const SceneContents = memo(function SceneContents({ placed, sun, shadowMap, maxLights }: { placed: Placed[]; sun: ReturnType<typeof sunVector>; shadowMap: number; maxLights: number }) {
   const center = useMemo(() => {
     const v = new THREE.Vector3();
     placed.forEach((p) => {
@@ -349,12 +374,14 @@ const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Pla
       <hemisphereLight args={["#fff7ea", "#d8c6a8", 0.35]} />
       <ambientLight intensity={0.1} color="#fff3e2" />
       <directionalLight
+        // A shadow map keeps the size it was made with; a new size needs a new light.
+        key={shadowMap}
         position={sunPos}
         target={target}
         intensity={sun.intensity}
         color={sun.color}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[shadowMap, shadowMap]}
         shadow-radius={4}
         shadow-camera-left={-1500}
         shadow-camera-right={1500}
@@ -371,7 +398,7 @@ const SceneContents = memo(function SceneContents({ placed, sun }: { placed: Pla
       {placed.map((p) => (
         <Room3D key={p.r.room.id} placed={p} />
       ))}
-      <RoomLights placed={placed} />
+      <RoomLights placed={placed} max={maxLights} />
     </>
   );
 });
@@ -560,6 +587,7 @@ function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: Furnitu
   const h = rug ? 1 : Math.max(1, Math.min(f.h, ceiling));
   const y = f.placement === "wall" ? f.elevation + h / 2 : f.placement === "ceiling" ? ceiling - h / 2 : h / 2 + (rug ? 0.5 : 0);
   const lit = roomLit(roomId, s.lightsSwitched, s.scene.hour);
+  const decor = QUALITY[useQuality().level].decor;
   const box = (
     <mesh castShadow={!rug} receiveShadow>
       <boxGeometry args={[f.w, h, f.d]} />
@@ -595,7 +623,7 @@ function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: Furnitu
       ) : (
         box
       )}
-      {s.scene.realistic && s.scene.decor && (
+      {s.scene.realistic && s.scene.decor && decor && (
         <group position-y={-h / 2}>
           <PieceDecor3D f={f} h={h} />
         </group>
@@ -639,6 +667,7 @@ function OrbitRig({ cx, cz, radius }: { cx: number; cz: number; radius: number }
     persp.lookAt(target);
     controls.current?.target.copy(target);
     controls.current?.update();
+    get().invalidate();
   }, [cam, get, cx, cz, fitFor]);
 
   return (

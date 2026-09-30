@@ -6,11 +6,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { clamp } from "@/domain/geometry/units";
+import { QualityChoice } from "@/domain/planner/quality";
 import { FitOutBlock } from "./fit-out-controls";
 import { SelectionBlock } from "./inspector";
 import { usePlanner } from "./planner-context";
 import { FinishesBlock } from "./finishes-controls";
 import { LightsBlock } from "./lights-controls";
+import { useQuality } from "./three/use-quality";
 import { type Camera, CAMERA_PRESETS, type CameraPreset, type PlannerState, type SavedView, type WalkSpot } from "./state";
 
 const PRESETS: readonly CameraPreset[] = ["eye", "architect", "bird", "plan"];
@@ -291,6 +293,30 @@ function Finishes() {
   );
 }
 
+const QUALITY_CHOICES = QualityChoice.options;
+
+/** How much the 3D view draws: Auto follows the frame rate, or one level is held. */
+function QualityBlock() {
+  const t = useTranslations("Planner");
+  const quality = useQuality();
+  return (
+    <div className="pl-blk" data-testid="planner-quality">
+      <h3>
+        <span>{t("quality")}</span>
+        <span>{t(`quality_${quality.level}`)}</span>
+      </h3>
+      <div className="pl-styles" role="radiogroup" aria-label={t("quality")}>
+        {QUALITY_CHOICES.map((c) => (
+          <button key={c} type="button" role="radio" aria-checked={quality.choice === c} data-quality={c} onClick={() => quality.setChoice(c)}>
+            {t(`quality_${c}`)}
+          </button>
+        ))}
+      </div>
+      <p className="pl-hint">{t("qualityHint")}</p>
+    </div>
+  );
+}
+
 function Scene() {
   const t = useTranslations("Planner");
   const { s, dispatch } = usePlanner();
@@ -315,6 +341,7 @@ function Scene() {
         <p className="pl-hint">{t("timeHint")}</p>
       </div>
       <LightsBlock />
+      <QualityBlock />
       <div className="pl-blk">
         {(
           [

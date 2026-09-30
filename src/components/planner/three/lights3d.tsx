@@ -7,17 +7,15 @@ import { kelvinToHex, lampSources, lampWorld, nearestLights, roomLit } from "@/d
 import { usePlanner } from "../planner-context";
 import type { PlanRoom } from "../state";
 
-/** Real-time point lights are costly; the rest of the lit lamps only glow. */
-export const MAX_LIGHTS = 8;
 /** How often the nearest lamps are picked again as the camera moves. */
 const PICK_EVERY_S = 0.4;
 
 /**
  * The lamps of every lit room in view: pendants, chandeliers, floor lamps, or
- * one ceiling light where a room has none. Only the nearest MAX_LIGHTS to the
- * camera cast light.
+ * one ceiling light where a room has none. Real-time point lights are costly:
+ * only the `max` nearest the camera cast light, the rest only glow.
  */
-export function RoomLights({ placed }: { placed: readonly { r: PlanRoom; origin: Vec }[] }) {
+export function RoomLights({ placed, max }: { placed: readonly { r: PlanRoom; origin: Vec }[]; max: number }) {
   const { s } = usePlanner();
   const lamps = useMemo(
     () =>
@@ -35,7 +33,7 @@ export function RoomLights({ placed }: { placed: readonly { r: PlanRoom; origin:
     since.current += dt;
     if (since.current < PICK_EVERY_S) return;
     since.current = 0;
-    const next = nearestLights(lamps, camera.position, MAX_LIGHTS);
+    const next = nearestLights(lamps, camera.position, max);
     const keys = next.map((l) => l.key).join("|");
     // Changing the number of lights recompiles shaders; only update when the set changes.
     if (keys !== lastKeys.current) {

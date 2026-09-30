@@ -1,7 +1,7 @@
 "use client";
 
-import { type ThreeEvent, useFrame } from "@react-three/fiber";
-import { useMemo, useRef } from "react";
+import { type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { doorDesign, doorStyle, finishOf, type FitOut, slides } from "@/domain/room/fit-out";
@@ -425,9 +425,15 @@ function BarnRail({ x0, x1, y, z, realistic }: { x0: number; x1: number; y: numb
 /** Eased 0 → 1 progress towards `open`, updated every frame. */
 function useOpenProgress(open: boolean) {
   const t = useRef(open ? 1 : 0);
+  const invalidate = useThree((s) => s.invalidate);
+  // The view draws on demand: ask for frames while the leaf is on its way.
+  useEffect(() => invalidate(), [open, invalidate]);
   useFrame((_, dt) => {
-    const step = dt / DOOR_OPEN_S;
+    if (t.current === (open ? 1 : 0)) return;
+    // The first frame after a rest reports the whole rest as its time step.
+    const step = Math.min(dt, 0.05) / DOOR_OPEN_S;
     t.current = open ? Math.min(1, t.current + step) : Math.max(0, t.current - step);
+    invalidate();
   });
   return t;
 }
