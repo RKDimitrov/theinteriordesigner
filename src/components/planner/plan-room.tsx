@@ -569,6 +569,31 @@ export function WallGrip({ room, onDown }: { room: Room; onDown: (e: React.Point
   return <path d={`M${pts(outer)}Z M${pts(room.polygon)}Z`} fill="transparent" fillRule="evenodd" style={{ cursor: "move" }} onPointerDown={onDown} data-wall-grip={room.id} />;
 }
 
+/** Handles on the room's corners: drag one to move that corner, tilting the two walls that meet there. */
+export function CornerHandles({ room, k, onDown }: { room: Room; k: number; onDown: (index: number, e: React.PointerEvent) => void }) {
+  const s = Math.max(4, 6 / k);
+  return (
+    <g>
+      {room.polygon.map((p, i) => (
+        <rect
+          key={i}
+          x={p.x - s}
+          y={p.y - s}
+          width={s * 2}
+          height={s * 2}
+          fill={SHEET}
+          stroke={CLAY}
+          strokeWidth={1.5}
+          vectorEffect="non-scaling-stroke"
+          style={{ cursor: "crosshair" }}
+          data-testid={`room-corner-${i}`}
+          onPointerDown={(e) => onDown(i, e)}
+        />
+      ))}
+    </g>
+  );
+}
+
 /** Sheet box with the room name (serif) and area (mono), at the room's centre. Click-through, so pieces under it stay reachable. */
 export function RoomLabel({ room, k }: { room: Room; k: number }) {
   const rot = use(ViewRotationContext);

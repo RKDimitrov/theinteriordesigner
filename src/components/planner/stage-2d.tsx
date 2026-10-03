@@ -15,7 +15,7 @@ import { newPlannerItem, snapTo, SYMBOL_OF, turn } from "@/domain/planner/items"
 import { type Box, placeLabels } from "@/domain/planner/label-layout";
 import { PLANNER_WALL_CM, roomsBounds } from "@/domain/planner/layout";
 import { rotatePoint, rulerAxes, screenToWorld, turnView, uprightAngle, worldToScreen } from "@/domain/planner/view";
-import { type DimensionTarget, editDimension } from "@/domain/room/edit-dimensions";
+import { type DimensionTarget, editDimension, fitOpenings } from "@/domain/room/edit-dimensions";
 import { allOpenings, findOpening, nearestInnerWall, updateOpening } from "@/domain/room/inner-walls";
 import { FIXTURE_SPEC, placeCeilingFixture, placeFixture } from "@/domain/room/fixtures";
 import { clampOffset, newOpening, newPassThrough, nextId, withFitOutStyle } from "@/domain/room/openings-edit";
@@ -23,7 +23,7 @@ import type { FurnitureItem } from "@/domain/schemas/design";
 import type { FixedElement, FloorZone, InnerWall, Opening, OpeningKind } from "@/domain/schemas/room";
 import { createRoomAction } from "@/server/actions/rooms";
 import { PX_PER_CM, removeSelected, roomBox, SNAP_CM, usePlanner, useView, ZOOM_MAX, ZOOM_MIN } from "./planner-context";
-import { FixedHits, FloorPattern, InnerWallHits, OpeningHits, RoomDimensions, RoomLabel, RoomShell, ViewRotationContext, WallGrip, ZoneHits } from "./plan-room";
+import { CornerHandles, FixedHits, FloorPattern, InnerWallHits, OpeningHits, RoomDimensions, RoomLabel, RoomShell, ViewRotationContext, WallGrip, ZoneHits } from "./plan-room";
 import { inScope, mapItem, mapRoom, type Plan, type PlanRoom, type Tool } from "./state";
 import { PieceSymbol } from "./symbols";
 import { PIECE_MODELS } from "./three/assets";
@@ -43,6 +43,7 @@ type Drag =
   /** A press that only selected something; its pointer-up must not clear the selection. */
   | { kind: "fixed"; roomId: string; id: string; start: Vec; x0: number; y0: number; moved: boolean }
   | { kind: "zone"; roomId: string; id: string; start: Vec; x0: number; y0: number; moved: boolean }
+  | { kind: "corner"; roomId: string; index: number; start: Vec; p0: Vec; moved: boolean }
   | { kind: "innerWall"; roomId: string; id: string; start: Vec; a0: Vec; b0: Vec; end: "a" | "b" | null; moved: boolean }
   | { kind: "press" };
 
@@ -422,6 +423,30 @@ export function Stage2D() {
         });
         return;
       }
+      case "corner": {
+        const dx = w.x - d.start.x;
+        const dy = w.y - d.start.y;
+        if (!d.moved && Math.hypot(dx, dy) * k < 3) return;
+        d.moved = true;
+        const p = { x: snap(d.p0.x + dx), y: snap(d.p0.y + dy) };
+        dispatch({
+          type: "edit",
+          fn: (pl) =>
+            mapRoom(pl, d.roomId, (r) => {
+              const poly = r.room.polygon;
+              const n = poly.length;
+              const prev = poly[(d.index - 1 + n) % n]!;
+              const next = poly[(d.index + 1) % n]!;
+              const cur = poly[d.index]!;
+              // A corner dropped onto its neighbour would leave a wall with no length; it stops just short.
+              if (Math.hypot(p.x - prev.x, p.y - prev.y) < 1 || Math.hypot(p.x - next.x, p.y - next.y) < 1) return r;
+              if (cur.x === p.x && cur.y === p.y) return r;
+              // Doors and windows slide back onto a wall that got shorter.
+              return { ...r, room: fitOpenings({ ...r.room, polygon: poly.map((q, i) => (i === d.index ? p : q)) }) };
+            }),
+        });
+        return;
+      }
       case "zone": {
         const dx = w.x - d.start.x;
         const dy = w.y - d.start.y;
@@ -640,6 +665,16 @@ export function Stage2D() {
     drag.current = { kind: "innerWall", roomId: r.room.id, id: wall.id, start: toWorld(eventPoint(e)), a0: wall.a, b0: wall.b, end, moved: false };
   };
 
+  const startCornerDown = (r: PlanRoom, index: number, e: React.PointerEvent) => {
+    if (tool !== "select" || e.button !== 0) return;
+    const p0 = r.room.polygon[index];
+    if (!p0) return;
+    e.stopPropagation();
+    paper.current?.setPointerCapture(e.pointerId);
+    dispatch({ type: "gesture-start" });
+    drag.current = { kind: "corner", roomId: r.room.id, index, start: toWorld(eventPoint(e)), p0, moved: false };
+  };
+
   const startZoneDown = (r: PlanRoom, z: FloorZone, e: React.PointerEvent) => {
     if (tool !== "select" || e.button !== 0) return;
     e.stopPropagation();
@@ -695,7 +730,10 @@ export function Stage2D() {
       if (!r) return;
       const res = editDimension(r.room, target, cm);
       if (!res.ok) return toast(res.reason);
-      dispatch({ type: "edit", fn: (pl) => mapRoom(pl, roomId, (x) => ({ ...x, room: { ...x.room, polygon: res.room.polygon, openings: res.room.openings } })) });
+      // The edit may also renumber what refers to walls (roof slopes, finishes) when a wall shrinks to nothing.
+      dispatch({ type: "edit", fn: (pl) => mapRoom(pl, roomId, (x) => ({ ...x, room: { ...x.room, ...res.room } })) });
+      // Allowed, but worth knowing (a very short wall, an opening running into another); Checks lists it too.
+      if (res.warning) toast(res.warning);
     } else if (p.kind === "note") {
       const id = nextId("note", plan.annotations.map((x) => x.id));
       dispatch({ type: "edit", fn: (pl) => ({ ...pl, annotations: [...pl.annotations, { id, kind: "note", a: p.world, text: value.slice(0, 200) }] }) });
@@ -836,7 +874,7 @@ export function Stage2D() {
             {reference && bounds && !hidden.has("reference") && (
               <image href={reference} x={bounds.x} y={bounds.y} width={bounds.w} height={bounds.d} opacity={0.45} preserveAspectRatio="xMidYMid meet" />
             )}
-            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onFixedDown={startFixedDown} onInnerWallDown={startInnerWallDown} onZoneDown={startZoneDown} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} onEditDim={editDim} />
+            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onFixedDown={startFixedDown} onInnerWallDown={startInnerWallDown} onZoneDown={startZoneDown} onCornerDown={startCornerDown} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} onEditDim={editDim} />
             {suggestions.map(({ roomId, sg }) => {
               const o = plan.origins[roomId] ?? { x: 0, y: 0 };
               const f = sg.item!;
@@ -1073,6 +1111,7 @@ interface RoomsLayerProps {
   onFixedDown: (r: PlanRoom, f: FixedElement, e: React.PointerEvent) => void;
   onInnerWallDown: (r: PlanRoom, w: InnerWall, e: React.PointerEvent, end: "a" | "b" | null) => void;
   onZoneDown: (r: PlanRoom, z: FloorZone, e: React.PointerEvent) => void;
+  onCornerDown: (r: PlanRoom, index: number, e: React.PointerEvent) => void;
   onRoomDown: (r: PlanRoom, e: React.PointerEvent) => void;
   len: (cm: number) => string;
   kindLabel: (o: Opening) => string;
@@ -1082,7 +1121,7 @@ interface RoomsLayerProps {
 const LAYER_ORDER: Record<FurnitureItem["placement"], number> = { floor_covering: 0, floor: 1, wall: 2, ceiling: 3 };
 
 /** Every room: shell, furniture, labels, dimensions and the selection box. */
-const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onInnerWallDown, onZoneDown, onRoomDown, len, kindLabel, onEditDim }: RoomsLayerProps) {
+const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onInnerWallDown, onZoneDown, onCornerDown, onRoomDown, len, kindLabel, onEditDim }: RoomsLayerProps) {
   const off = new Set(hidden);
   const layers = { walls: !off.has("walls"), openings: !off.has("openings"), electrical: !off.has("electrical"), floor: !off.has("floor") };
   // Dimension lines sit 30 and 52 cm outside a wall; on a wall two rooms share, that is the neighbour's floor.
@@ -1133,6 +1172,7 @@ const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection,
                   );
                 })}
             {active && tool === "select" && layers.walls && <WallGrip room={r.room} onDown={(e) => onRoomDown(r, e)} />}
+            {active && tool === "select" && layers.walls && <CornerHandles room={r.room} k={k} onDown={(i, e) => onCornerDown(r, i, e)} />}
             {active && tool === "select" && layers.walls && (
               <InnerWallHits room={r.room} k={k} onDown={(w, e, end) => onInnerWallDown(r, w, e, end)} selectedId={selection?.kind === "innerWall" && selection.roomId === r.room.id ? selection.id : null} />
             )}

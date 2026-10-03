@@ -10,7 +10,7 @@ import { fromLegacy } from "@/domain/materials/library";
 import { floorOrigins } from "@/domain/planner/floor-layout";
 import { layoutRooms } from "@/domain/planner/layout";
 import type { ViewRotation } from "@/domain/planner/view";
-import { checkRoom, type RoomIssue } from "@/domain/room/check-room";
+import { blockingIssues, checkRoom, type RoomIssue } from "@/domain/room/check-room";
 import { removeOpening } from "@/domain/room/inner-walls";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room, RoomShape } from "@/domain/schemas/room";
@@ -234,7 +234,7 @@ export function PlannerProvider({
       const info = data.rooms.find((x) => x.room.id === r.room.id);
       const roomIssues = checkRoom(r.room);
       let design: ValidationIssue[] = [];
-      if (roomIssues.length === 0 && (r.furniture.length > 0 || info?.design)) {
+      if (blockingIssues(roomIssues).length === 0 && (r.furniture.length > 0 || info?.design)) {
         design = validateDesign({
           room: r.room,
           design: designFor(info, r.furniture),
@@ -274,8 +274,8 @@ export function PlannerProvider({
       const last = saved.current.get(r.room.id) ?? { furniture: "[]", room: "" };
       const roomJson = JSON.stringify(r.room);
       const furnJson = JSON.stringify(r.furniture);
-      // A room outline with problems is not saved until it is fixed; Checks shows why.
-      const roomOk = (latestChecks.current.get(r.room.id)?.room.length ?? 0) === 0;
+      // A room with a blocking problem is not saved until it is fixed; Checks shows why. Warnings do not stop the save.
+      const roomOk = blockingIssues(latestChecks.current.get(r.room.id)?.room ?? []).length === 0;
       if (roomJson !== last.room && roomOk) {
         const id = r.room.id;
         jobs.push(

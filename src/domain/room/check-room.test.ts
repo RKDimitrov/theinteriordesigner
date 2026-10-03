@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Opening, RoomShape } from "../schemas/room";
-import { checkRoom, RoomInput } from "./check-room";
+import { blockingIssues, checkRoom, RoomInput } from "./check-room";
 import { rectRoom, resizeRect } from "./factory";
 
 const base = (): RoomShape => rectRoom({ name: "Living", type: "living", widthCm: 420, lengthCm: 380 });
@@ -104,6 +104,15 @@ describe("RoomInput schema", () => {
     const res = RoomInput.safeParse({ ...base(), openings: [door({ offset: 400 })] });
     expect(res.success).toBe(false);
     expect(res.error?.issues[0]?.path).toEqual(["openings", 0, "width"]);
+  });
+
+  it("accepts a room whose only problems are warnings, such as a very short wall", () => {
+    const polygon = [{ x: 0, y: 0 }, { x: 400, y: 0 }, { x: 400, y: 300 }, { x: 4, y: 300 }, { x: 0, y: 296 }];
+    const issues = checkRoom({ ...base(), polygon });
+    // The cut corner (wall 4) is under 6 cm long.
+    expect(issues.map((i) => [i.message, i.warning])).toEqual([["Wall 4 is shorter than 10 cm", true]]);
+    expect(blockingIssues(issues)).toEqual([]);
+    expect(RoomInput.safeParse({ ...base(), polygon }).success).toBe(true);
   });
 
   it("applies defaults", () => {

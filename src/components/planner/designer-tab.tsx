@@ -67,7 +67,7 @@ function DesignerBody({ roomId }: { roomId: string | null }) {
   const skip = (rid: string, id: string) => dispatch({ type: "set", patch: { skipped: [...s.skipped, `${rid}:${id}`] } });
 
   const scopeChecks = s.plan.rooms.filter((r) => inScope(s.scope, r.room.id)).map((r) => ({ r, c: checks.get(r.room.id) }));
-  const roomIssues = scopeChecks.flatMap(({ r, c }) => (c?.room ?? []).map((i) => ({ room: r.room.name, message: i.message })));
+  const roomIssues = scopeChecks.flatMap(({ r, c }) => (c?.room ?? []).map((i) => ({ room: r.room.name, message: i.message, warning: i.warning === true })));
   const designIssues = scopeChecks.flatMap(({ r, c }) =>
     (c?.design ?? []).map((i) => ({
       room: r.room.name,
@@ -140,8 +140,11 @@ function DesignerBody({ roomId }: { roomId: string | null }) {
               <div data-testid="room-issues">
                 {roomIssues.map((i, n) => (
                   <div key={`r${n}`} className="pl-issue">
-                    <span className="pl-chip" style={{ borderColor: "var(--red)", color: "var(--red)", cursor: "default" }}>
-                      {td("error")}
+                    <span
+                      className="pl-chip"
+                      style={i.warning ? { borderColor: "var(--clay)", color: "var(--clay-dark)", cursor: "default" } : { borderColor: "var(--red)", color: "var(--red)", cursor: "default" }}
+                    >
+                      {i.warning ? t("warn") : td("error")}
                     </span>
                     <span>
                       {multi && <b>{i.room}: </b>}
