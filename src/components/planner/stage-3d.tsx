@@ -10,7 +10,6 @@ import { useTranslations } from "next-intl";
 import { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getPosition } from "suncalc";
 import * as THREE from "three";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { Button } from "@/components/ui/button";
 import { openingSpan } from "@/domain/geometry/openings";
 import { bbox } from "@/domain/geometry/polygon";
@@ -23,8 +22,8 @@ import { type Material, resolveFinishes } from "@/domain/materials/library";
 import { roomLit, skyLight } from "@/domain/planner/lighting";
 import { QUALITY } from "@/domain/planner/quality";
 import { skirtingPieces } from "@/domain/room/opening-parts";
-import { ceilingPatches, wallTop } from "@/domain/room/roof";
-import { canStand, roomAt, sharedWallInfo, startSpot, type WalkRoom, type WallShare, wallPieces, windowSpot } from "@/domain/planner/walls3d";
+import { ceilingPatches } from "@/domain/room/roof";
+import { canStand, roomAt, sharedWallInfo, startSpot, type WalkRoom, type WallShare, windowSpot } from "@/domain/planner/walls3d";
 import { approach, EYE_SITTING, EYE_STANDING, shortestTurn, smoothstep } from "@/domain/planner/walk-motion";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening, Room } from "@/domain/schemas/room";
@@ -34,9 +33,10 @@ import { type Camera, type PlanRoom, type WalkSpot } from "./state";
 import { AssetBoundary } from "./three/asset-boundary";
 import { cmUV } from "./three/geometry";
 import { FlatSurface, RealSurface } from "./three/surface-materials";
-import { Opening3D, sideSign } from "./three/openings3d";
+import { Opening3D } from "./three/openings3d";
 import { Fixed3D } from "./three/fixtures3d";
 import { Backdrop } from "./three/backdrop3d";
+import { wallGeometry } from "./three/wall-geometry";
 import { RoomLights } from "./three/lights3d";
 import { PhotoCapture, type PhotoApi } from "./three/photo";
 import { SkirtingBoard } from "./three/trim3d";
@@ -556,20 +556,8 @@ function FoldGroup({ wall, origin, children }: { wall: Wall; origin: Vec; childr
  * runs on across the pieces above and below windows.
  */
 function Wall3D({ room, wall, m, realistic, share }: { room: Room; wall: Wall; m: Material; realistic: boolean; share?: WallShare }) {
-  // A shared wall is half as thick on each side; the neighbour's openings are cut through this half too.
-  const T = share?.shared ? W / 2 : W;
-  const cuts = share?.cuts;
-  const pieces = useMemo(() => wallPieces(wall.length, room.ceilingHeight, [...room.openings.filter((o) => o.wallIndex === wall.index), ...(cuts ?? [])]), [wall, room.ceilingHeight, room.openings, cuts]);
-  const side = sideSign(wall);
-  const top = useMemo(() => wallTop(room, wall), [room, wall]);
-  const geo = useMemo(() => {
-    // Under a roof slope the wall's top follows the ceiling; elsewhere the pieces are plain boxes.
-    const flat = top.every((p) => p.h >= room.ceilingHeight);
-    const parts = pieces.flatMap((p) => (flat ? [new THREE.BoxGeometry(p.to - p.from, p.y1 - p.y0, T).translate((p.from + p.to) / 2, (p.y0 + p.y1) / 2, (-T / 2) * side)] : slopedPiece(p, top, side, T)));
-    const merged = parts.length ? mergeGeometries(parts) : new THREE.BufferGeometry();
-    parts.forEach((g) => g.dispose());
-    return cmUV(merged);
-  }, [pieces, side, top, room.ceilingHeight, T]);
+  // Shared walls are drawn half thick from each side, with the neighbour's openings cut through.
+  const geo = useMemo(() => wallGeometry(room, wall, share), [room, wall, share]);
   useEffect(() => () => geo.dispose(), [geo]);
   const angle = -Math.atan2(wall.dir.y, wall.dir.x);
   return (
@@ -580,35 +568,6 @@ function Wall3D({ room, wall, m, realistic, share }: { room: Room; wall: Wall; m
       </mesh>
     </group>
   );
-}
-
-/** Height of a wall's top at `t` cm along it, from its profile. */
-function topAt(top: readonly { t: number; h: number }[], t: number): number {
-  for (let i = 1; i < top.length; i++) {
-    const a = top[i - 1]!;
-    const b = top[i]!;
-    if (t <= b.t) return a.h + ((b.h - a.h) * (t - a.t)) / Math.max(1e-6, b.t - a.t);
-  }
-  return top[top.length - 1]!.h;
-}
-
-/**
- * One wall piece (beside, above or below an opening) whose top may run into
- * the roof: its outline is cut by the wall's top profile, then given the
- * wall's thickness. Pieces wholly under the roof line vanish.
- */
-function slopedPiece(p: { from: number; to: number; y0: number; y1: number }, top: readonly { t: number; h: number }[], side: number, thickness: number): THREE.BufferGeometry[] {
-  const ts = [p.from, ...top.map((q) => q.t).filter((t) => t > p.from && t < p.to), p.to];
-  const heights = ts.map((t) => Math.min(p.y1, topAt(top, t)));
-  if (heights.every((h) => h <= p.y0 + 0.5)) return [];
-  const shape = new THREE.Shape();
-  shape.moveTo(p.from, p.y0);
-  shape.lineTo(p.to, p.y0);
-  for (let i = ts.length - 1; i >= 0; i--) shape.lineTo(ts[i]!, Math.max(p.y0, heights[i]!));
-  const g = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled: false });
-  // Extruded along +z from 0 to the thickness; walls sit on the side away from the room.
-  if (side > 0) g.translate(0, 0, -thickness);
-  return [g.toNonIndexed()];
 }
 
 /** A door, window or radiator, with the planner's open doors and finishes. Click a door to open or close it. */

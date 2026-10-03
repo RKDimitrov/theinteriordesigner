@@ -138,7 +138,10 @@
     "crumbApartments": "Wohnungen",
     "editDetails": "Details bearbeiten",
     "editPlan": "Plan bearbeiten",
-    "openPlanner": "Planer öffnen"
+    "openPlanner": "Planer öffnen",
+    "floorTitle": "Grundriss",
+    "floorNote": "Alle Räume an ihrem Platz",
+    "modelHint": "Ziehen zum Drehen · Scrollen zum Zoomen"
   },
   "RoomType": {
     "living": "Wohnzimmer",

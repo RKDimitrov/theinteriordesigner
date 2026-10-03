@@ -7,6 +7,8 @@ import { MarginNote, Rows, SideSection, SwatchCard } from "@/components/atelier/
 import { type TicketStep, TicketStepper } from "@/components/atelier/ticket-stepper";
 import { TitleBlock } from "@/components/atelier/title-block";
 import { RefreshLocationButton } from "@/components/context/refresh-buttons";
+import { FloorPlan } from "@/components/plan-view/floor-plan";
+import { FloorModel } from "@/components/plan-view/floor-model-lazy";
 import { RoomPlan } from "@/components/plan-view/room-plan";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -77,6 +79,23 @@ export default async function ApartmentOverviewPage({ params }: PageProps<"/[loc
       <Stepper apartmentId={id} progress={progress} />
 
       <SheetColumns side={<Sidebar apartment={apartment} progress={progress} />}>
+        {rooms.length > 0 && (
+          <section id="floor" aria-labelledby="floor-title" className="mb-11">
+            <SectionTitle id="floor-title" note={t("floorNote")}>
+              {t("floorTitle")}
+            </SectionTitle>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="border border-foreground/20 bg-card p-3">
+                <FloorPlan rooms={rooms} northAngleDeg={apartment.northAngleDeg} />
+              </div>
+              <div className="relative h-[340px] border border-foreground/20 bg-card">
+                <FloorModel rooms={rooms} />
+                <p className="pointer-events-none absolute bottom-2 left-3 text-xs text-muted-foreground">{t("modelHint")}</p>
+              </div>
+            </div>
+          </section>
+        )}
+
         <section id="rooms" aria-labelledby="rooms-title">
           <SectionTitle
             id="rooms-title"

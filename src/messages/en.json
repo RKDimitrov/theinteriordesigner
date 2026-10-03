@@ -138,7 +138,10 @@
     "crumbApartments": "Apartments",
     "editDetails": "Edit details",
     "editPlan": "Edit plan",
-    "openPlanner": "Open planner"
+    "openPlanner": "Open planner",
+    "floorTitle": "Floor",
+    "floorNote": "Every room where it stands",
+    "modelHint": "Drag to turn · scroll to zoom"
   },
   "RoomType": {
     "living": "Living room",

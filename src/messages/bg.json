@@ -138,7 +138,10 @@
     "crumbApartments": "Жилища",
     "editDetails": "Редактирай данните",
     "editPlan": "Редактирай плана",
-    "openPlanner": "Отвори плановика"
+    "openPlanner": "Отвори плановика",
+    "floorTitle": "Етаж",
+    "floorNote": "Всички стаи на мястото им",
+    "modelHint": "Плъзнете за завъртане · превъртете за мащаб"
   },
   "RoomType": {
     "living": "Всекидневна",

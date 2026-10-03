@@ -7,6 +7,7 @@ import { m2 } from "@/domain/geometry/units";
 import type { Vec } from "@/domain/geometry/vec";
 import { blankDesign, type CataloguePiece, cataloguePieces, withFurniture } from "@/domain/planner/items";
 import { fromLegacy } from "@/domain/materials/library";
+import { floorOrigins } from "@/domain/planner/floor-layout";
 import { layoutRooms } from "@/domain/planner/layout";
 import type { ViewRotation } from "@/domain/planner/view";
 import { checkRoom, type RoomIssue } from "@/domain/room/check-room";
@@ -138,7 +139,7 @@ const storedOrigins = (rooms: readonly { room: Room }[]): Map<string, Vec> => ne
 
 function initialPlan(data: PlannerData): Plan {
   const rooms = data.rooms.map((r) => ({ room: r.room, furniture: r.design?.furniture ?? [] }));
-  const origins = Object.fromEntries(layoutRooms(rooms.map((r) => ({ id: r.room.id, polygon: r.room.polygon })), storedOrigins(rooms)));
+  const origins = Object.fromEntries(floorOrigins(rooms.map((r) => ({ id: r.room.id, polygon: r.room.polygon, plan: r.room.plan }))));
   return { rooms, origins, annotations: [] };
 }
 

@@ -3,10 +3,9 @@ import { Ledger } from "@/components/atelier/ledger";
 import { PageHeader, SheetColumns } from "@/components/atelier/page-header";
 import { AddTile, SheetCardFoot, SheetCardHead, SheetCardPlan, SheetLink, TapedCard } from "@/components/atelier/sheet-card";
 import { MarginNote, SideSection } from "@/components/atelier/sidebar";
-import { RoomPlan } from "@/components/plan-view/room-plan";
+import { FloorPlan } from "@/components/plan-view/floor-plan";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { area } from "@/domain/geometry/polygon";
 import type { Apartment } from "@/domain/schemas/apartment";
 import { Link } from "@/i18n/navigation";
 import { type ActivityEntry, recentActivity } from "@/server/activity";
@@ -70,16 +69,12 @@ export default async function ApartmentsPage() {
 
 async function ApartmentCard({ apartment: a, progress }: { apartment: Apartment; progress: Awaited<ReturnType<typeof apartmentProgress>> }) {
   const [t, tc, tf] = await Promise.all([getTranslations("Apartments"), getTranslations("Common"), getTranslations("ApartmentForm")]);
-  const largest = progress.rooms.reduce<(typeof progress.rooms)[number] | null>(
-    (best, r) => (!best || area(r.polygon) > area(best.polygon) ? r : best),
-    null
-  );
   const allDone = progress.done.every(Boolean);
   return (
     <TapedCard as="li">
       <SheetCardHead title={<Link href={`/apartments/${a.id}`}>{a.name}</Link>} value={`${a.totalAreaM2} ${tc("m2")}`} />
       <SheetCardPlan className="h-[220px]">
-        {largest && <RoomPlan room={largest} northAngleDeg={a.northAngleDeg} showDimensions={false} className="h-full" />}
+        {progress.rooms.length > 0 && <FloorPlan rooms={progress.rooms} northAngleDeg={a.northAngleDeg} className="h-full" />}
       </SheetCardPlan>
       <SheetCardFoot>
         <Badge variant={allDone ? "olive" : "default"}>{allDone ? t("allDone") : t("stepOf", { step: progress.current + 1, total: 4 })}</Badge>

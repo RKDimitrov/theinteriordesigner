@@ -4,6 +4,7 @@
  *
  *   npx -y tsx scripts/import-floor.ts <floor.json> --preview <out.svg>   draw it, write nothing
  *   npx -y tsx scripts/import-floor.ts <floor.json> --email <user email>  create or replace it in that account
+ *   … --name "<apartment name>"                                          use another name (a separate copy)
  *
  * The apartment is matched by name for that user: running it again replaces
  * its rooms (and their designs) instead of adding a second copy. No furniture
@@ -33,7 +34,9 @@ const value = (flag: string) => {
 const file = args.find((a) => a.endsWith(".json"));
 if (!file) throw new Error("usage: import-floor.ts <floor.json> (--preview <out.svg> | --email <email>)");
 
-const floor = Floor.parse(JSON.parse(readFileSync(file, "utf8")));
+const parsed = Floor.parse(JSON.parse(readFileSync(file, "utf8")));
+const rename = value("--name");
+const floor = rename ? { ...parsed, apartment: { ...parsed.apartment, name: rename } } : parsed;
 const rooms = floorRooms(floor);
 for (const r of rooms) {
   const checked = RoomInput.safeParse(r.shape);
