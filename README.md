@@ -15,6 +15,8 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | 4 | Design generation with Claude Opus 5 | done, awaiting your E2E run |
 | 5 | Validator and repair loop | done, awaiting your E2E run |
 | 6 | Deterministic layout solver, one model call per room | done, awaiting your E2E run |
+| 7 | Planner: 2D plan editor and 3D view with walkthrough, catalogue, designer suggestions | done |
+| 8 | Realistic 3D: asset pipeline, real furniture models, materials, fit-out, fixtures, daylight and lamps | done |
 
 ## Stack
 
@@ -26,7 +28,8 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
   - `prisma.config.ts` holds the migration datasource.
 - **Zod 4** at every boundary: form input, server actions, and JSON columns read back from the database.
 - **Claude**: `claude-sonnet-5` for trend research and design generation, escalating to `claude-opus-5` for a last repair. All model ids are env-configurable (see `.env.example`).
-- **next-intl**: English only for now. All strings live in `src/messages/en.json`, and the URLs have no locale prefix.
+- **next-intl**: English, German and Bulgarian. Every string lives in `src/messages/en.json`, `de.json` and `bg.json`; the URLs have no locale prefix.
+- **three.js** with @react-three/fiber 9, drei 10 and postprocessing for the 3D view.
 
 ## Setup
 
@@ -58,10 +61,10 @@ RaumPlan is a web app where you describe your apartment and get an AI-generated 
 | `npm run typecheck` | `next typegen` + `tsc --noEmit` |
 | `npm run lint` | ESLint (Next core-web-vitals + TypeScript) |
 | `npm test` | Vitest unit tests (`src/**/*.test.ts`, `scripts/**/*.test.ts`) |
-| `npm run test:e2e` | Playwright. Needs `npm run dev` already running (or `E2E_BASE_URL`). Runs desktop Chrome and a Pixel 7 profile. Set `E2E_GPU=1` to render 3D on the graphics card; headless Chrome otherwise renders on the CPU at about 1 frame a second. |
+| `npm run test:e2e` | Playwright. Needs `npm run dev` already running (or `E2E_BASE_URL`). Runs desktop Chrome and a Pixel 7 profile. Set `E2E_GPU=1` to render 3D on the graphics card; headless Chrome otherwise renders on the CPU at about 1 frame a second. On Windows, `E2E_GPU=1` adds `--use-angle=gl`, which fails to create a WebGL context on some NVIDIA drivers; leave it off there, or pass only `--enable-gpu --ignore-gpu-blocklist` (ANGLE on Direct3D) in a spec's `launchOptions`. `E2E_BROWSER_CHANNEL=chrome` uses the installed Chrome. |
 | `npm run db:migrate` | `prisma migrate dev`, used to create new migrations during development |
 | `npm run db:deploy` | `prisma migrate deploy` |
-| `node scripts/fetch-assets.mjs` | The asset pipeline: fetches what is missing among the assets listed in `assets/manifest/*.json`, compresses them (meshopt + WebP), and regenerates `src/components/planner/three/asset-catalogue.json`. Flags: `--force`, `--only <id>`, `--source <name>`, `--check` (offline consistency check), `--renders` (catalogue pictures, see step 3 below). See "3D assets" below. |
+| `node scripts/fetch-assets.mjs` | (On Node older than 22.18, run `node --experimental-strip-types scripts/fetch-assets.mjs`.) The asset pipeline: fetches what is missing among the assets listed in `assets/manifest/*.json`, compresses them (meshopt + WebP), and regenerates `src/components/planner/three/asset-catalogue.json`. Flags: `--force`, `--only <id>`, `--source <name>`, `--check` (offline consistency check), `--renders` (catalogue pictures, see step 3 below), `--find <category>` (Sketchfab candidates, see step 0 below). See "3D assets" below. |
 
 ## 3D assets
 
@@ -89,6 +92,16 @@ Kitchen and bathroom fixtures (kitchen runs, fridges, WCs, basins, showers, bath
 Outside the apartment the 3D view shows a plain ground and a soft sky that follows the time of day. The photographed surroundings were removed for now; `Apartment.surroundings` and `Room.wallOutlooks` stay in the database, unused.
 
 Wall, floor and ceiling materials come from `src/domain/materials/library.ts` (one list for the 3D materials and the picker) and are saved per room in `Room.finishes`, with accent walls by wall index. See `docs/superpowers/specs/2026-09-29-materials-c-design.md`.
+
+## Planner and 3D view
+
+The planner (`/apartments/:id/planner`) shows every room of the apartment on one sheet.
+
+- **2D plan:** draw rooms and walls, place doors, windows, radiators, sockets, switches and fixtures, measure, pin dimensions and notes. Wall dimensions sit outside the apartment's outer walls; on a wall two rooms share, they show only for the room in focus, inside it. Labels too long for their stretch are shortened or left out.
+- **Catalogue:** each card shows a photo of the real model that will be placed (the one chosen for the size and the style profile), with the footprint drawn to scale in the corner. "N models" lays out the category's models to place a specific one. Pictures are rendered by the asset pipeline (`--renders`), all from the same angle.
+- **Designer:** suggestions from the AI design appear as dashed ghosts whose labels keep clear of placed pieces and of each other. The designer does not propose seating groups, beds, desks or dining tables for hallways (and similar rules for bathrooms, storage rooms and kitchens; `unsuitedFor` in `src/domain/design/catalogue.ts`). Placing a piece by hand on a door swing shows a warning straight away.
+- **3D view:** orbit, walkthrough (WASD, sit, open doors, light switches, saved views) and a high-quality photo mode. Real furniture models chosen by style, PBR wall and floor materials, doors and windows from joinery profiles, sun by time of day and latitude, and lamps that come on after dark. Outside the apartment there is a plain ground and a soft sky.
+- **Speed:** in orbit mode the view draws only when something changes. The Scene tab has Auto / Low / Medium / High quality; Auto follows the measured frame rate and the choice is remembered in the browser. Low turns off ambient occlusion, glow and decor and uses at most three real-time lamps. Photos always render at High.
 
 ## Project layout
 
@@ -266,10 +279,10 @@ In development builds, every form has a dashed **"Fill sample data"** button. Cl
 
 ## Verifying phases 1–6
 
-1. Run `npm test`. There are 209 unit tests (geometry, room checks, profile, quiz, climate, daylight, renter rules, cost, prompt rendering, Open-Meteo clients, trend research, footprints and SAT, the walkway grid, every validator rule, the sample design, room facts, the design brief, the furniture catalogue, wall slots, the layout solver on five fixture rooms, autofix, the plan mapper and patches, the token budget of one generation, and both model loops with mocked Claude responses), and all pass. No test calls a real API.
+1. Run `npm test`. There are about 1 900 unit tests, most of them per-asset checks of the catalogue (geometry, room checks, profile, quiz, climate, daylight, renter rules, cost, prompt rendering, Open-Meteo clients, trend research, footprints and SAT, the walkway grid, every validator rule, the sample design, room facts, the design brief, the furniture catalogue, wall slots, the layout solver on five fixture rooms, autofix, the plan mapper and patches, the token budget of one generation, and both model loops with mocked Claude responses), and all pass. No test calls a real API.
 2. Run `npm run typecheck && npm run lint`. Both are clean.
 3. `npm run build` passes (checked with placeholder env vars).
-4. With `npm run dev` running, run `npm run test:e2e`. It runs 9 scenarios on desktop and mobile:
+4. With `npm run dev` running, run `npm run test:e2e`. Among the scenarios, on desktop and mobile:
    - create an apartment, add a room by dimensions with a door and a window, reload, and check the data persisted
    - check that overlapping openings block saving
    - draw a room by dragging on the canvas (desktop only)
