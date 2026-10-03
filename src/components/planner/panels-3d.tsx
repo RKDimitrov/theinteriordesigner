@@ -7,12 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { clamp } from "@/domain/geometry/units";
 import { QualityChoice } from "@/domain/planner/quality";
+import { DEFAULT_WALK_VIEW, WALK_EYE, WALK_FOV } from "@/domain/planner/walk-view";
+import { FillSampleButton } from "@/components/dev/fill-sample-button";
 import { FitOutBlock } from "./fit-out-controls";
 import { SelectionBlock } from "./inspector";
 import { usePlanner } from "./planner-context";
 import { FinishesBlock } from "./finishes-controls";
 import { LightsBlock } from "./lights-controls";
 import { useQuality } from "./three/use-quality";
+import { useWalkView } from "./three/use-walk-view";
 import { type Camera, CAMERA_PRESETS, type CameraPreset, type PlannerState, type SavedView, type WalkSpot } from "./state";
 
 const PRESETS: readonly CameraPreset[] = ["eye", "architect", "bird", "plan"];
@@ -296,6 +299,36 @@ function Finishes() {
 const QUALITY_CHOICES = QualityChoice.options;
 
 /** How much the 3D view draws: Auto follows the frame rate, or one level is held. */
+/** The walkthrough's field of view and eye height: narrower and lower feels truer to size. */
+function WalkViewBlock() {
+  const t = useTranslations("Planner");
+  const view = useWalkView();
+  return (
+    <div className="pl-blk" data-testid="planner-walk-view">
+      <h3>
+        <span>{t("walkView")}</span>
+        <span>
+          {view.fov}° · {view.eye} cm
+        </span>
+      </h3>
+      <label className="pl-sub">
+        <span>{t("walkFov")}</span>
+        <span>{view.fov}°</span>
+      </label>
+      <input type="range" min={WALK_FOV.min} max={WALK_FOV.max} step={1} value={view.fov} aria-label={t("walkFov")} data-testid="walk-fov" onChange={(e) => view.set({ fov: Number(e.target.value) })} style={{ accentColor: "var(--clay)" }} />
+      <label className="pl-sub">
+        <span>{t("walkEye")}</span>
+        <span>{view.eye} cm</span>
+      </label>
+      <input type="range" min={WALK_EYE.min} max={WALK_EYE.max} step={1} value={view.eye} aria-label={t("walkEye")} data-testid="walk-eye" onChange={(e) => view.set({ eye: Number(e.target.value) })} style={{ accentColor: "var(--clay)" }} />
+      <div className="pl-row" style={{ marginTop: 6 }}>
+        <FillSampleButton label={t("walkViewReset")} onFill={() => view.set(DEFAULT_WALK_VIEW)} />
+      </div>
+      <p className="pl-hint">{t("walkViewHint")}</p>
+    </div>
+  );
+}
+
 function QualityBlock() {
   const t = useTranslations("Planner");
   const quality = useQuality();
@@ -342,6 +375,7 @@ function Scene() {
       </div>
       <LightsBlock />
       <QualityBlock />
+      <WalkViewBlock />
       <div className="pl-blk">
         {(
           [

@@ -40,6 +40,7 @@ type Drag =
   | { kind: "room"; roomId: string; start: Vec; origin0: Vec; moved: boolean }
   | { kind: "rect"; start: Vec; cur: Vec }
   /** A press that only selected something; its pointer-up must not clear the selection. */
+  | { kind: "fixed"; roomId: string; id: string; start: Vec; x0: number; y0: number; moved: boolean }
   | { kind: "press" };
 
 interface Popover {
@@ -379,6 +380,19 @@ export function Stage2D() {
         dispatch({ type: "edit", fn: (pl) => mapItem(pl, d.roomId, d.id, (f) => ({ ...f, x: snap(d.x0 + dx), y: snap(d.y0 + dy) })) });
         return;
       }
+      case "fixed": {
+        const dx = w.x - d.start.x;
+        const dy = w.y - d.start.y;
+        if (!d.moved && Math.hypot(dx, dy) * k < 3) return;
+        d.moved = true;
+        const x = snap(d.x0 + dx);
+        const y = snap(d.y0 + dy);
+        dispatch({
+          type: "edit",
+          fn: (pl) => mapRoom(pl, d.roomId, (r) => ({ ...r, room: { ...r.room, fixedElements: r.room.fixedElements.map((f) => (f.id === d.id && (f.rect.x !== x || f.rect.y !== y) ? { ...f, rect: { ...f.rect, x, y } } : f)) } })),
+        });
+        return;
+      }
       case "rotate": {
         const ang = (Math.atan2(w.y - d.center.y, w.x - d.center.x) * 180) / Math.PI + 90;
         const r = turn(Math.round(ang / 15) * 15, 0);
@@ -521,7 +535,9 @@ export function Stage2D() {
     e.stopPropagation();
     paper.current?.setPointerCapture(e.pointerId);
     select({ kind: "fixed", roomId: r.room.id, id: f.id });
-    drag.current = { kind: "press" };
+    // Fixed elements drag like pieces; one drag is one undo step.
+    dispatch({ type: "gesture-start" });
+    drag.current = { kind: "fixed", roomId: r.room.id, id: f.id, start: toWorld(eventPoint(e)), x0: f.rect.x, y0: f.rect.y, moved: false };
   };
 
   const startRoomDrag = (r: PlanRoom, e: React.PointerEvent) => {

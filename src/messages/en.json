@@ -928,7 +928,12 @@
     "key_viewRight": "Turn the plan right",
     "key_toggle3d": "Switch 2D / 3D",
     "key_help": "This list",
-    "dimValue": "New length ({unit})"
+    "dimValue": "New length ({unit})",
+    "walkView": "Walkthrough view",
+    "walkFov": "Field of view",
+    "walkEye": "Eye height",
+    "walkViewReset": "Reset view",
+    "walkViewHint": "A narrower view and a lower eye show rooms and doors at the size they feel in person. 50° and 160 cm are close to a person standing."
   },
   "FitOut": {
     "title": "Doors & windows",

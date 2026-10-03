@@ -928,7 +928,12 @@
     "key_viewRight": "Plan nach rechts drehen",
     "key_toggle3d": "2D / 3D wechseln",
     "key_help": "Diese Liste",
-    "dimValue": "Neue Länge ({unit})"
+    "dimValue": "Neue Länge ({unit})",
+    "walkView": "Rundgang-Ansicht",
+    "walkFov": "Blickwinkel",
+    "walkEye": "Augenhöhe",
+    "walkViewReset": "Ansicht zurücksetzen",
+    "walkViewHint": "Ein engerer Blickwinkel und eine niedrigere Augenhöhe zeigen Räume und Türen so groß, wie sie sich vor Ort anfühlen. 50° und 160 cm entsprechen etwa einer stehenden Person."
   },
   "FitOut": {
     "title": "Türen & Fenster",

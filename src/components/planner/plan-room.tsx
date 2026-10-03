@@ -328,7 +328,7 @@ export function FixedHits({ room, onDown, selectedId }: { room: Room; onDown: (f
   return (
     <g>
       {room.fixedElements.map((f) => (
-        <g key={f.id} data-testid={`fixed-${f.id}`} onPointerDown={(e) => onDown(f, e)} style={{ cursor: "pointer" }}>
+        <g key={f.id} data-testid={`fixed-${f.id}`} onPointerDown={(e) => onDown(f, e)} style={{ cursor: "move" }}>
           <rect x={f.rect.x} y={f.rect.y} width={f.rect.w} height={f.rect.d} fill="transparent" />
           {f.id === selectedId && (
             <rect x={f.rect.x - 5} y={f.rect.y - 5} width={f.rect.w + 10} height={f.rect.d + 10} fill="none" stroke={CLAY} strokeWidth={1.3} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" />

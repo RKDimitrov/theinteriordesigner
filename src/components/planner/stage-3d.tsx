@@ -24,7 +24,7 @@ import { QUALITY } from "@/domain/planner/quality";
 import { skirtingPieces } from "@/domain/room/opening-parts";
 import { ceilingPatches } from "@/domain/room/roof";
 import { canStand, roomAt, sharedWallInfo, startSpot, type WalkRoom, type WallShare, windowSpot } from "@/domain/planner/walls3d";
-import { approach, EYE_SITTING, EYE_STANDING, shortestTurn, smoothstep } from "@/domain/planner/walk-motion";
+import { approach, EYE_SITTING, shortestTurn, smoothstep } from "@/domain/planner/walk-motion";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening, Room } from "@/domain/schemas/room";
 import { newSavedView } from "./panels-3d";
@@ -36,6 +36,7 @@ import { FlatSurface, RealSurface } from "./three/surface-materials";
 import { Opening3D } from "./three/openings3d";
 import { Fixed3D } from "./three/fixtures3d";
 import { Backdrop } from "./three/backdrop3d";
+import { walkViewStore } from "./three/use-walk-view";
 import { wallGeometry } from "./three/wall-geometry";
 import { RoomLights } from "./three/lights3d";
 import { PhotoCapture, type PhotoApi } from "./three/photo";
@@ -54,7 +55,6 @@ const YAW_PER_PX = 0.15;
 const PITCH_PER_PX = 0.12;
 const PITCH_MAX = 35;
 const DOOR_REACH = 190;
-const WALK_FOV = 62;
 
 /** Vertical field of view for a lens on a full-frame sensor. */
 const fovOf = (lens: Camera["lens"]) => (2 * Math.atan(12 / lens) * 180) / Math.PI;
@@ -769,7 +769,7 @@ function WalkControls({
   const pitch = useRef(start?.pitch ?? 0);
   const shown = useRef({ yaw: start?.yaw ?? 90, pitch: start?.pitch ?? 0 });
   const vel = useRef({ x: 0, y: 0 });
-  const eye0 = start?.eye ?? EYE_STANDING;
+  const eye0 = start?.eye ?? walkViewStore.read().eye;
   const eyeTarget = useRef(eye0);
   const eyeNow = useRef(eye0);
   const glide = useRef<{ from: Vec; to: Vec; yaw0: number; yaw1: number; pitch0: number; t: number } | null>(null);
@@ -804,7 +804,7 @@ function WalkControls({
     callbacks.current = { onSit, onSaveView, onPhoto };
   });
   const toggleSit = () => {
-    eyeTarget.current = eyeTarget.current > EYE_SITTING ? EYE_SITTING : EYE_STANDING;
+    eyeTarget.current = eyeTarget.current > EYE_SITTING ? EYE_SITTING : walkViewStore.read().eye;
     callbacks.current.onSit(eyeTarget.current <= EYE_SITTING);
   };
 
@@ -923,9 +923,11 @@ function WalkControls({
     const p = player.current;
     if (!p) return;
     const camera = state.camera as THREE.PerspectiveCamera;
-    if (camera.fov !== WALK_FOV) {
+    // The view's width is a setting (Scene tab); read each frame so a change shows at once.
+    const walkFov = walkViewStore.read().fov;
+    if (camera.fov !== walkFov) {
       // Wide view on foot; the orbit rig restores the chosen lens afterwards.
-      camera.fov = WALK_FOV;
+      camera.fov = walkFov;
       camera.updateProjectionMatrix();
     }
     const dt = Math.min(0.05, dtRaw);

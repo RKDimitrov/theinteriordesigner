@@ -20,5 +20,5 @@ export const smoothstep = (t: number): number => {
 };
 
 /** Eye height standing and sitting, in cm. */
-export const EYE_STANDING = 165;
+export const EYE_STANDING = 160;
 export const EYE_SITTING = 115;
