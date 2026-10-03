@@ -2,7 +2,7 @@ import type { FitOut } from "@/domain/room/fit-out";
 import type { ApartmentInput } from "@/domain/schemas/apartment";
 import { QUIZ_PAIRS } from "@/domain/profile/quiz";
 import type { StyleKey, StyleProfileInput } from "@/domain/schemas/profile";
-import type { RoomShape } from "@/domain/schemas/room";
+import type { RoofSlope, RoomShape } from "@/domain/schemas/room";
 
 /**
  * Template data for manual testing. Shown via dev-only "Fill sample data"
@@ -71,6 +71,7 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     ],
     fixedElements: [{ id: "pendant-1", label: "Pendant light", kind: "pendant", rect: { x: 190, y: 170, w: 40, d: 40 }, height: 90 }],
     wallOrientationOverrides: {},
+    roofSlopes: [],
   },
   {
     name: "Bedroom",
@@ -85,6 +86,7 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     ],
     fixedElements: [],
     wallOrientationOverrides: {},
+    roofSlopes: [],
   },
   {
     name: "Home office",
@@ -99,6 +101,7 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     ],
     fixedElements: [{ id: "fixed-1", label: "Chimney", kind: "chimney", rect: { x: 250, y: 100, w: 50, d: 60 }, height: 260 }],
     wallOrientationOverrides: {},
+    roofSlopes: [],
   },
   {
     name: "Kitchen",
@@ -116,6 +119,7 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
       { id: "pendant-1", label: "Pendant light", kind: "pendant", rect: { x: 170, y: 200, w: 40, d: 40 }, height: 90 },
     ],
     wallOrientationOverrides: {},
+    roofSlopes: [],
   },
   {
     name: "Bathroom",
@@ -134,6 +138,7 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
       { id: "pendant-1", label: "Ceiling light", kind: "pendant", rect: { x: 110, y: 110, w: 40, d: 40 }, height: 60 },
     ],
     wallOrientationOverrides: {},
+    roofSlopes: [],
   },
 ];
 
@@ -255,6 +260,28 @@ export const SAMPLE_MODELS: Readonly<Record<string, readonly string[]>> = {
 export function sampleModel(category: string, available: readonly string[], counter: number): string {
   const presets = (SAMPLE_MODELS[category] ?? []).filter((id) => available.includes(id));
   return samplePreset(presets.length ? presets : available, counter);
+}
+
+/**
+ * Roof slopes for the planner's "Fill sample" button: the classic attic
+ * (knee wall 170 cm, full height 90 cm in) on the two longest opposite walls,
+ * then a steeper roof on one wall, then none.
+ */
+export const SAMPLE_ROOF_SLOPES: readonly { kneeHeight: number; depth: number; walls: "two" | "one" | "none" }[] = [
+  { kneeHeight: 170, depth: 90, walls: "two" },
+  { kneeHeight: 100, depth: 160, walls: "one" },
+  { kneeHeight: 0, depth: 0, walls: "none" },
+];
+
+/** The sample slopes for a room outline: on its longest wall and the wall across from it. */
+export function sampleRoofSlopes(polygon: readonly { x: number; y: number }[], counter: number): RoofSlope[] {
+  const preset = samplePreset(SAMPLE_ROOF_SLOPES, counter);
+  if (preset.walls === "none") return [];
+  const n = polygon.length;
+  const lengths = polygon.map((p, i) => Math.hypot(polygon[(i + 1) % n]!.x - p.x, polygon[(i + 1) % n]!.y - p.y));
+  const longest = lengths.indexOf(Math.max(...lengths));
+  const walls = preset.walls === "two" && n === 4 ? [longest, (longest + 2) % 4] : [longest];
+  return walls.sort((a, b) => a - b).map((wallIndex) => ({ wallIndex, kneeHeight: preset.kneeHeight, depth: preset.depth }));
 }
 
 /** Preset at `counter`, cycling. Use for preset factories (functions cannot be cloned). */

@@ -838,7 +838,7 @@ const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection,
         const active = inScope(scope, r.room.id);
         return (
           <g key={r.room.id} transform={`translate(${o.x} ${o.y})`} data-room={r.room.id}>
-            <RoomShell room={r.room} layers={layers} dim={!active} />
+            <RoomShell room={r.room} layers={layers} dim={!active} k={k} />
             {/* Under the furniture, so a piece standing over a fixture still gets the click. */}
             {active && tool === "select" && (
               <FixedHits room={r.room} onDown={(f, e) => onFixedDown(r, f, e)} selectedId={selection?.kind === "fixed" && selection.roomId === r.room.id ? selection.id : null} />

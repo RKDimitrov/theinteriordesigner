@@ -112,3 +112,31 @@ describe("RoomInput schema", () => {
     expect(res.wallOrientationOverrides).toEqual({});
   });
 });
+
+describe("roof slopes", () => {
+  // 420 wide, 380 long, 260 high; wall 3 is the left wall.
+  const sloped = (over: Partial<RoomShape> = {}): RoomShape => ({ ...base(), roofSlopes: [{ wallIndex: 3, kneeHeight: 170, depth: 90 }], ...over });
+
+  it("accepts a slope along an existing wall, lower than the ceiling", () => {
+    expect(checkRoom(sloped())).toEqual([]);
+  });
+
+  it("rejects a slope on a missing wall, one as high as the ceiling, one deeper than the room, and two on one wall", () => {
+    const msg = (r: RoomShape) => checkRoom(r).map((i) => i.message).join(" | ");
+    expect(msg(sloped({ roofSlopes: [{ wallIndex: 7, kneeHeight: 170, depth: 90 }] }))).toMatch(/Wall 8 does not exist/);
+    expect(msg(sloped({ roofSlopes: [{ wallIndex: 3, kneeHeight: 260, depth: 90 }] }))).toMatch(/lower than the ceiling/);
+    expect(msg(sloped({ roofSlopes: [{ wallIndex: 3, kneeHeight: 170, depth: 500 }] }))).toMatch(/deeper than the room/);
+    expect(msg(sloped({ roofSlopes: [{ wallIndex: 3, kneeHeight: 170, depth: 90 }, { wallIndex: 3, kneeHeight: 150, depth: 60 }] }))).toMatch(/already has a roof slope/);
+  });
+
+  it("rejects a door or window that reaches above the roof", () => {
+    const tooTall = checkRoom(sloped({ openings: [{ ...door(), wallIndex: 3, offset: 50 }] }));
+    expect(tooTall.map((i) => i.message)).toContain("Door reaches above the roof slope");
+    const knee = checkRoom(sloped({ openings: [{ ...win({ sillHeight: 60, height: 100 }), wallIndex: 3, offset: 50 }] }));
+    expect(knee).toEqual([]);
+  });
+
+  it("defaults to no slopes", () => {
+    expect(RoomInput.parse({ name: "B", type: "bedroom", polygon: base().polygon, ceilingHeight: 260 }).roofSlopes).toEqual([]);
+  });
+});

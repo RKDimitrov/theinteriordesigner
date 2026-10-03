@@ -14,7 +14,7 @@ import { requireUserId } from "../auth";
 import { getApartment, setApartmentFitOut } from "../repo/apartments";
 import { createDesign, type DesignStatus, getDesign, updateDesign } from "../repo/designs";
 import { getProfile } from "../repo/profiles";
-import { getRoom, setRoomFinishes } from "../repo/rooms";
+import { getRoom, setRoomFinishes, setRoomPositions } from "../repo/rooms";
 
 const FitOutInput = z.object({ apartmentId: z.uuid(), fitOut: FitOut });
 
@@ -41,6 +41,20 @@ export async function saveRoomFinishesAction(input: unknown): Promise<ActionResu
   const saved = await Promise.all(parsed.data.rooms.map((r) => setRoomFinishes(userId, r.roomId, r.finishes)));
   if (saved.some((s) => !s)) return fail("Room not found");
   revalidatePath(`/apartments/${parsed.data.apartmentId}/planner`);
+  return ok(null);
+}
+
+const PositionsInput = z.object({
+  apartmentId: z.uuid(),
+  rooms: z.array(z.object({ roomId: z.uuid(), x: z.number().finite().min(-100_000).max(100_000), y: z.number().finite().min(-100_000).max(100_000) })).min(1).max(60),
+});
+
+/** Save where rooms sit on the apartment plan (after the user drags them). */
+export async function saveRoomPositionsAction(input: unknown): Promise<ActionResult<null>> {
+  const userId = await requireUserId();
+  const parsed = PositionsInput.safeParse(input);
+  if (!parsed.success) return fail("Invalid positions");
+  if (!(await setRoomPositions(userId, parsed.data.apartmentId, parsed.data.rooms))) return fail("Room not found");
   return ok(null);
 }
 

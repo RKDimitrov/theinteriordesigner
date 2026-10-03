@@ -211,3 +211,20 @@ describe("bed and dining", () => {
     expect(run([{ ...table, y: 200 }, { ...chair, y: 145 }])).toEqual([]);
   });
 });
+
+describe("headroom under a roof slope", () => {
+  // A 400 × 300 room, 210 high, with the roof down to 170 cm at the left wall over 90 cm.
+  const attic: RoomShape = { ...rectRoom({ name: "Attic", type: "bedroom", widthCm: 400, lengthCm: 300 }), ceilingHeight: 210, roofSlopes: [{ wallIndex: 3, kneeHeight: 170, depth: 90 }] };
+  const tall = (x: number): FurnitureItem => ({ ...SAMPLE_DESIGN.furniture[0]!, id: "wardrobe", name: "Wardrobe", category: "wardrobe", placement: "floor", w: 60, d: 100, h: 200, x, y: 150, rotation: 0, elevation: 0 });
+  const headroom = (f: FurnitureItem) => validateDesign(input({ ...SAMPLE_DESIGN, furniture: [f] }, { room: attic, mustKeep: [] })).filter((i) => i.code === "LOW_HEADROOM");
+
+  it("warns about a piece taller than the ceiling where it stands", () => {
+    const [issue] = headroom(tall(30));
+    expect(issue).toMatchObject({ severity: "warning", itemIds: ["wardrobe"], measured: 170 });
+  });
+
+  it("says nothing once the piece stands under the full height, or in a room without slopes", () => {
+    expect(headroom({ ...tall(300), h: 205 })).toEqual([]);
+    expect(validateDesign(input({ ...SAMPLE_DESIGN, furniture: [tall(30)] }, { room: { ...attic, roofSlopes: [] }, mustKeep: [] })).some((i) => i.code === "LOW_HEADROOM")).toBe(false);
+  });
+});

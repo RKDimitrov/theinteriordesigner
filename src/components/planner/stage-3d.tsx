@@ -23,6 +23,7 @@ import { type Material, resolveFinishes } from "@/domain/materials/library";
 import { roomLit, skyLight } from "@/domain/planner/lighting";
 import { QUALITY } from "@/domain/planner/quality";
 import { skirtingPieces } from "@/domain/room/opening-parts";
+import { ceilingPatches, wallTop } from "@/domain/room/roof";
 import { canStand, roomAt, startSpot, type WalkRoom, wallPieces, windowSpot } from "@/domain/planner/walls3d";
 import { approach, EYE_SITTING, EYE_STANDING, shortestTurn, smoothstep } from "@/domain/planner/walk-motion";
 import type { FurnitureItem } from "@/domain/schemas/design";
@@ -480,12 +481,9 @@ function Surface({ m, realistic, side }: { m: Material; realistic: boolean; side
 
 /** The ceiling, seen from below while walking through. Exposed beams run across the shorter span. */
 function Ceiling({ room, m, realistic }: { room: Room; m: Material; realistic: boolean }) {
-  const geo = useMemo(() => {
-    const shape = new THREE.Shape(room.polygon.map((p) => new THREE.Vector2(p.x, p.y)));
-    const g = cmUV(new THREE.ShapeGeometry(shape));
-    g.rotateX(Math.PI / 2);
-    return g;
-  }, [room.polygon]);
+  const sloped = (room.roofSlopes ?? []).length > 0;
+  const geo = useMemo(() => (sloped ? slopedCeiling(room) : flatCeiling(room)), [room, sloped]);
+  useEffect(() => () => geo.dispose(), [geo]);
   const beams = m.group === "beams";
   const b = useMemo(() => bbox(room.polygon), [room.polygon]);
   const acrossX = b.w <= b.d;
@@ -494,7 +492,7 @@ function Ceiling({ room, m, realistic }: { room: Room; m: Material; realistic: b
   const count = Math.max(1, Math.floor(run / 70));
   return (
     <group>
-      <mesh geometry={geo} position-y={room.ceilingHeight}>
+      <mesh geometry={geo} position-y={sloped ? 0 : room.ceilingHeight}>
         {beams ? <meshStandardMaterial color="#f4f1ea" roughness={0.95} side={THREE.DoubleSide} /> : <Surface m={m} realistic={realistic} side={THREE.DoubleSide} />}
       </mesh>
       {beams &&
@@ -511,6 +509,28 @@ function Ceiling({ room, m, realistic }: { room: Room; m: Material; realistic: b
         })}
     </group>
   );
+}
+
+function flatCeiling(room: Room): THREE.BufferGeometry {
+  const shape = new THREE.Shape(room.polygon.map((p) => new THREE.Vector2(p.x, p.y)));
+  const g = cmUV(new THREE.ShapeGeometry(shape));
+  g.rotateX(Math.PI / 2);
+  return g;
+}
+
+/** The ceiling under a roof: the flat middle and a sloped piece along each sloped wall, at their real heights. */
+function slopedCeiling(room: Room): THREE.BufferGeometry {
+  const positions: number[] = [];
+  for (const patch of ceilingPatches(room)) {
+    const contour = patch.polygon.map((p) => new THREE.Vector2(p.x, p.y));
+    for (const tri of THREE.ShapeUtils.triangulateShape(contour, [])) {
+      for (const i of tri) positions.push(patch.polygon[i]!.x, patch.heights[i]!, patch.polygon[i]!.y);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  g.computeVertexNormals();
+  return cmUV(g);
 }
 
 /** Hides its children while the camera is outside `wall` (dollhouse cutaway), unless folding is off or walking. */
@@ -536,12 +556,15 @@ function FoldGroup({ wall, origin, children }: { wall: Wall; origin: Vec; childr
 function Wall3D({ room, wall, m, realistic }: { room: Room; wall: Wall; m: Material; realistic: boolean }) {
   const pieces = useMemo(() => wallPieces(wall.length, room.ceilingHeight, room.openings.filter((o) => o.wallIndex === wall.index)), [wall, room.ceilingHeight, room.openings]);
   const side = sideSign(wall);
+  const top = useMemo(() => wallTop(room, wall), [room, wall]);
   const geo = useMemo(() => {
-    const parts = pieces.map((p) => new THREE.BoxGeometry(p.to - p.from, p.y1 - p.y0, W).translate((p.from + p.to) / 2, (p.y0 + p.y1) / 2, (-W / 2) * side));
+    // Under a roof slope the wall's top follows the ceiling; elsewhere the pieces are plain boxes.
+    const flat = top.every((p) => p.h >= room.ceilingHeight);
+    const parts = pieces.flatMap((p) => (flat ? [new THREE.BoxGeometry(p.to - p.from, p.y1 - p.y0, W).translate((p.from + p.to) / 2, (p.y0 + p.y1) / 2, (-W / 2) * side)] : slopedPiece(p, top, side)));
     const merged = parts.length ? mergeGeometries(parts) : new THREE.BufferGeometry();
     parts.forEach((g) => g.dispose());
     return cmUV(merged);
-  }, [pieces, side]);
+  }, [pieces, side, top, room.ceilingHeight]);
   useEffect(() => () => geo.dispose(), [geo]);
   const angle = -Math.atan2(wall.dir.y, wall.dir.x);
   return (
@@ -552,6 +575,35 @@ function Wall3D({ room, wall, m, realistic }: { room: Room; wall: Wall; m: Mater
       </mesh>
     </group>
   );
+}
+
+/** Height of a wall's top at `t` cm along it, from its profile. */
+function topAt(top: readonly { t: number; h: number }[], t: number): number {
+  for (let i = 1; i < top.length; i++) {
+    const a = top[i - 1]!;
+    const b = top[i]!;
+    if (t <= b.t) return a.h + ((b.h - a.h) * (t - a.t)) / Math.max(1e-6, b.t - a.t);
+  }
+  return top[top.length - 1]!.h;
+}
+
+/**
+ * One wall piece (beside, above or below an opening) whose top may run into
+ * the roof: its outline is cut by the wall's top profile, then given the
+ * wall's thickness. Pieces wholly under the roof line vanish.
+ */
+function slopedPiece(p: { from: number; to: number; y0: number; y1: number }, top: readonly { t: number; h: number }[], side: number): THREE.BufferGeometry[] {
+  const ts = [p.from, ...top.map((q) => q.t).filter((t) => t > p.from && t < p.to), p.to];
+  const heights = ts.map((t) => Math.min(p.y1, topAt(top, t)));
+  if (heights.every((h) => h <= p.y0 + 0.5)) return [];
+  const shape = new THREE.Shape();
+  shape.moveTo(p.from, p.y0);
+  shape.lineTo(p.to, p.y0);
+  for (let i = ts.length - 1; i >= 0; i--) shape.lineTo(ts[i]!, Math.max(p.y0, heights[i]!));
+  const g = new THREE.ExtrudeGeometry(shape, { depth: W, bevelEnabled: false });
+  // Extruded along +z from 0 to W; walls sit on the side away from the room.
+  if (side > 0) g.translate(0, 0, -W);
+  return [g.toNonIndexed()];
 }
 
 /** A door, window or radiator, with the planner's open doors and finishes. Click a door to open or close it. */

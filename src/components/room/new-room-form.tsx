@@ -24,8 +24,8 @@ import { createRoomAction } from "@/server/actions/rooms";
 
 const BUDGET = { min: 300, max: 8000, step: 100, initial: 1800 } as const;
 
-type Extras = Pick<RoomShape, "openings" | "fixedElements" | "wallOrientationOverrides">;
-const NO_EXTRAS: Extras = { openings: [], fixedElements: [], wallOrientationOverrides: {} };
+type Extras = Pick<RoomShape, "openings" | "fixedElements" | "wallOrientationOverrides" | "roofSlopes">;
+const NO_EXTRAS: Extras = { openings: [], fixedElements: [], wallOrientationOverrides: {}, roofSlopes: [] };
 
 interface NewRoomFormProps {
   apartmentId: string;

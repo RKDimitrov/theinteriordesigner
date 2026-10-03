@@ -9,6 +9,8 @@ const room: Room = {
   apartmentId: "a1",
   finishes: { wallOverrides: {} },
   wallOutlooks: {},
+  roofSlopes: [],
+  plan: null,
   sortOrder: 0,
   name: "Living",
   type: "living",

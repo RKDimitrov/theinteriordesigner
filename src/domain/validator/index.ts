@@ -8,6 +8,7 @@ import { bedAccessRule, diningRule } from "./rules/bed-dining";
 import { boundsRule } from "./rules/bounds";
 import { budgetRule, longevityRule, mustKeepRule, paletteRule, renterRule } from "./rules/budget-style";
 import { doorsRule, fixedElementsRule, fixtureClearanceRule, radiatorsRule, windowsRule } from "./rules/openings";
+import { headroomRule } from "./rules/headroom";
 import { overlapRule } from "./rules/overlap";
 import { referencesRule } from "./rules/references";
 import { walkwayRule } from "./rules/walkway";
@@ -27,6 +28,7 @@ export const RULES: readonly Rule[] = [
   fixedElementsRule,
   fixtureClearanceRule,
   wallItemsRule,
+  headroomRule,
   walkwayRule,
   bedAccessRule,
   diningRule,
@@ -47,6 +49,7 @@ export const LAYOUT_RULES: readonly Rule[] = [
   fixedElementsRule,
   fixtureClearanceRule,
   wallItemsRule,
+  headroomRule,
   walkwayRule,
   bedAccessRule,
   diningRule,

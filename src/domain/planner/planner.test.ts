@@ -96,7 +96,7 @@ describe("planner items", () => {
     expect(pruned.lighting[0]!.itemId).toBeUndefined();
     expect(pruned.longevity.trendItems).toEqual([]);
     const issues = validateDesign({
-      room: { name: "Study", type: "office", polygon: rectPolygon(300, 300), ceilingHeight: 250, openings: [], fixedElements: [], wallOrientationOverrides: {} },
+      room: { name: "Study", type: "office", polygon: rectPolygon(300, 300), ceilingHeight: 250, openings: [], fixedElements: [], wallOrientationOverrides: {}, roofSlopes: [] },
       design: pruned,
       mustKeep: [],
       budgetEur: null,

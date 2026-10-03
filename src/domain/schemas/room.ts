@@ -152,6 +152,18 @@ export const FixedElement = z.object({
 });
 export type FixedElement = z.infer<typeof FixedElement>;
 
+/**
+ * The roof cutting a room along one wall: the ceiling is `kneeHeight` cm high
+ * at that wall and rises in a straight plane to the room's full height
+ * `depth` cm into the room. See src/domain/room/roof.ts.
+ */
+export const RoofSlope = z.object({
+  wallIndex: z.number().int().nonnegative(),
+  kneeHeight: z.number().int().min(30).max(500),
+  depth: z.number().int().min(10).max(1000),
+});
+export type RoofSlope = z.infer<typeof RoofSlope>;
+
 export const RoomShape = z.object({
   name: z.string().trim().min(1, "Room name is required").max(60),
   type: RoomType,
@@ -162,6 +174,8 @@ export const RoomShape = z.object({
   fixedElements: z.array(FixedElement).max(30).default([]),
   /** Optional manual override of derived wall orientations, keyed by wall index. */
   wallOrientationOverrides: z.record(z.string(), Cardinal).default({}),
+  /** Where the roof cuts the ceiling, by wall. */
+  roofSlopes: z.array(RoofSlope).max(8).default([]),
 });
 export type RoomShape = z.infer<typeof RoomShape>;
 
@@ -173,5 +187,7 @@ export const Room = RoomShape.extend({
   finishes: RoomFinishes.default({ wallOverrides: {} }),
   /** What each wall looks onto (street, courtyard …); unset walls take the area's default. */
   wallOutlooks: WallOutlooks.default({}),
+  /** Where the room sits on the apartment plan (its origin, cm); null until placed. */
+  plan: z.object({ x: z.number(), y: z.number() }).nullable().default(null),
 });
 export type Room = z.infer<typeof Room>;

@@ -22,6 +22,7 @@ export function rectRoom(p: RectRoomParams): RoomShape {
     ceilingHeight: p.ceilingHeight ?? 250,
     openings: [],
     fixedElements: [],
+    roofSlopes: [],
     wallOrientationOverrides: {},
   };
 }

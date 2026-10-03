@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const IssueCode = z.enum([
   "OUT_OF_BOUNDS",
+  "LOW_HEADROOM",
   "OVERLAP",
   "DOOR_SWING_BLOCKED",
   "DOOR_PATH_BLOCKED",

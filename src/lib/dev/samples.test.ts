@@ -7,7 +7,7 @@ import { StyleProfileInput } from "@/domain/schemas/profile";
 import { FitOut } from "@/domain/room/fit-out";
 import { PIECE_MODELS } from "@/components/planner/three/assets";
 import { FurnitureCategory } from "@/domain/schemas/design";
-import { pickSample, SAMPLE_APARTMENTS, SAMPLE_FIT_OUTS, SAMPLE_MODELS, SAMPLE_PROFILES, SAMPLE_ROOMS, sampleModel } from "./samples";
+import { pickSample, SAMPLE_APARTMENTS, sampleRoofSlopes, SAMPLE_FIT_OUTS, SAMPLE_MODELS, SAMPLE_PROFILES, SAMPLE_ROOMS, sampleModel } from "./samples";
 
 describe("sample data", () => {
   it.each(SAMPLE_APARTMENTS.map((a) => [a.name, a] as const))("apartment %s is valid", (_, a) => {
@@ -51,6 +51,14 @@ describe("sample data", () => {
     expect(sampleModel("sofa", ["sofa_01", "sofa_02", "glam_velvet_sofa"], 0)).toBe("sofa_02");
     expect(sampleModel("sofa", ["sofa_01", "sofa_02", "glam_velvet_sofa"], 1)).toBe("glam_velvet_sofa");
     expect(sampleModel("desk", ["a", "b"], 3)).toBe("b");
+  });
+
+  it.each(SAMPLE_ROOMS.map((r) => [r.name, r] as const))("roof slope samples are valid for room %s", (_, r) => {
+    for (let n = 0; n < 3; n++) {
+      const roofSlopes = sampleRoofSlopes(r.polygon, n);
+      expect(RoomInput.safeParse({ ...r, ceilingHeight: Math.max(r.ceilingHeight, 210), roofSlopes, openings: [] }).error?.issues ?? []).toEqual([]);
+    }
+    expect(sampleRoofSlopes(r.polygon, 2)).toEqual([]);
   });
 
   it("cycles and returns copies", () => {

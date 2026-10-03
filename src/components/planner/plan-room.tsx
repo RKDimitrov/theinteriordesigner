@@ -11,6 +11,7 @@ import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { fitLabel, labelWidth, openingChain } from "@/domain/planner/dimensions";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { isCeilingKind, kitchenSlots } from "@/domain/room/fixtures";
+import { slopeBands } from "@/domain/room/roof";
 import type { FixedElement, Opening, Room } from "@/domain/schemas/room";
 
 const INK = "#2b2622";
@@ -29,6 +30,10 @@ interface Layers {
 export const FloorPattern = memo(function FloorPattern({ k }: { k: number }) {
   return (
     <defs>
+      {/* Under a roof slope: thin diagonal hatching. */}
+      <pattern id="pl-slope" patternUnits="userSpaceOnUse" width={12} height={12} patternTransform="rotate(45)">
+        <line x1={0} y1={0} x2={0} y2={12} stroke="#b8a58a" strokeWidth={1.2 / k} />
+      </pattern>
       <pattern id="pl-planks" patternUnits="userSpaceOnUse" width={120} height={20}>
         <rect width={120} height={20} fill="#f3e7d0" />
         <line x1={0} y1={19.6} x2={120} y2={19.6} stroke="#dcc9a8" strokeWidth={0.7 / k} />
@@ -38,12 +43,13 @@ export const FloorPattern = memo(function FloorPattern({ k }: { k: number }) {
 });
 
 /** Floor, walls as a solid band outside the interior line, and the openings cut into them. */
-export const RoomShell = memo(function RoomShell({ room, layers, dim }: { room: Room; layers: Layers; dim: boolean }) {
+export const RoomShell = memo(function RoomShell({ room, layers, dim, k = 1 }: { room: Room; layers: Layers; dim: boolean; k?: number }) {
   const walls = wallsOf(room.polygon);
   const outer = offsetPolygon(room.polygon, W);
   return (
     <g>
       <polygon points={pts(room.polygon)} fill={layers.floor ? "url(#pl-planks)" : SHEET} opacity={dim ? 0.4 : 1} data-testid={`room-floor-${room.id}`} />
+      <RoofSlopes room={room} k={k} dim={dim} />
       {room.fixedElements.map((f) => (
         <g key={f.id} opacity={dim ? 0.4 : 1}>
           <FixedMark f={f} />
@@ -58,6 +64,42 @@ export const RoomShell = memo(function RoomShell({ room, layers, dim }: { room: 
     </g>
   );
 });
+
+/**
+ * Where the roof cuts the ceiling: the strip along the wall is hatched, the
+ * line where the full height starts is dashed, and a small label gives the
+ * height at the wall and the full height.
+ */
+function RoofSlopes({ room, k, dim }: { room: Room; k: number; dim: boolean }) {
+  const bands = slopeBands(room);
+  if (bands.length === 0) return null;
+  const walls = wallsOf(room.polygon);
+  return (
+    <g pointerEvents="none" opacity={dim ? 0.4 : 1} data-roof-slopes={room.id}>
+      {bands.map((b) => {
+        const wall = walls[b.slope.wallIndex]!;
+        const [p, q] = b.line;
+        const mid = { x: (p.x + q.x) / 2 - wall.inward.x * (b.slope.depth / 2), y: (p.y + q.y) / 2 - wall.inward.y * (b.slope.depth / 2) };
+        let angle = (Math.atan2(wall.dir.y, wall.dir.x) * 180) / Math.PI;
+        if (angle > 90 || angle <= -90) angle += 180;
+        const fs = 8 / k;
+        const text = `${b.slope.kneeHeight} → ${room.ceilingHeight}`;
+        return (
+          <g key={b.slope.wallIndex}>
+            <polygon points={pts(b.polygon)} fill="url(#pl-slope)" opacity={0.7} />
+            <line x1={p.x} y1={p.y} x2={q.x} y2={q.y} stroke={INK} strokeWidth={1} strokeDasharray="6 4" vectorEffect="non-scaling-stroke" />
+            <g transform={`rotate(${angle} ${mid.x} ${mid.y})`}>
+              <rect x={mid.x - (text.length * fs * 0.32 + 3 / k)} y={mid.y - fs * 0.7} width={text.length * fs * 0.64 + 6 / k} height={fs * 1.4} fill={SHEET} opacity={0.9} />
+              <text x={mid.x} y={mid.y} fontSize={fs} textAnchor="middle" dominantBaseline="central" fill={INK} fontFamily="var(--mono)">
+                {text}
+              </text>
+            </g>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
 
 function OpeningMark({ walls, opening }: { walls: readonly Wall[]; opening: Opening }) {
   const span = openingSpan(walls, opening);

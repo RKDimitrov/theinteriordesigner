@@ -21,6 +21,8 @@ function toDomain(row: RoomRow): Room {
     wallOrientationOverrides: row.wallOrientationOverrides,
     finishes: row.finishes,
     wallOutlooks: row.wallOutlooks,
+    roofSlopes: row.roofSlopes,
+    plan: row.planX !== null && row.planY !== null ? { x: row.planX, y: row.planY } : null,
   });
 }
 
@@ -33,6 +35,7 @@ function toData(room: RoomInput) {
     openings: toJson(room.openings),
     fixedElements: toJson(room.fixedElements),
     wallOrientationOverrides: toJson(room.wallOrientationOverrides),
+    roofSlopes: toJson(room.roofSlopes),
   };
 }
 
@@ -67,6 +70,15 @@ export async function updateRoom(userId: string, roomId: string, room: RoomInput
 export async function deleteRoom(userId: string, roomId: string): Promise<boolean> {
   const { count } = await db.room.deleteMany({ where: { id: roomId, apartment: { userId } } });
   return count > 0;
+}
+
+/** Store where rooms sit on the apartment plan. Rooms of other users or apartments are left alone. */
+export async function setRoomPositions(userId: string, apartmentId: string, positions: readonly { roomId: string; x: number; y: number }[]): Promise<boolean> {
+  if (!isUuid(apartmentId) || positions.some((p) => !isUuid(p.roomId))) return false;
+  const counts = await db.$transaction(
+    positions.map((p) => db.room.updateMany({ where: { id: p.roomId, apartmentId, apartment: { userId } }, data: { planX: p.x, planY: p.y } })),
+  );
+  return counts.every((c) => c.count > 0);
 }
 
 /** Store the room's floor, wall and ceiling materials. */

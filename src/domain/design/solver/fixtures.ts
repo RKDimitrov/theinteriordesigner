@@ -45,6 +45,7 @@ export const HALLWAY: RoomShape = {
   ],
   fixedElements: [],
   wallOrientationOverrides: {},
+  roofSlopes: [],
 };
 
 export const HALLWAY_PLAN = plan([

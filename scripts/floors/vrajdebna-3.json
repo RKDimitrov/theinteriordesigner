@@ -1,0 +1,357 @@
+{
+  "apartment": {
+    "name": "Vrajdebna – 3rd floor",
+    "address": "Vrajdebna",
+    "city": "Sofia",
+    "country": "BG",
+    "floorLevel": 3,
+    "tenure": "own",
+    "northAngleDeg": 0
+  },
+  "rotate": 90,
+  "rooms": [
+    {
+      "key": "living",
+      "name": "Living room",
+      "type": "living",
+      "ceilingHeight": 210,
+      "x": 0,
+      "y": 0,
+      "w": 440,
+      "d": 535,
+      "roofSlopes": [
+        {
+          "wallIndex": 3,
+          "kneeHeight": 170,
+          "depth": 90
+        }
+      ],
+      "openings": [
+        {
+          "kind": "window",
+          "wall": 0,
+          "offset": 224,
+          "width": 200,
+          "height": 150,
+          "sillHeight": 50
+        },
+        {
+          "kind": "pass",
+          "wall": 2,
+          "offset": 247,
+          "width": 145,
+          "height": 185
+        },
+        {
+          "kind": "door",
+          "wall": 2,
+          "offset": 10,
+          "width": 90,
+          "hinge": "end"
+        }
+      ],
+      "fixed": [
+        {
+          "label": "Chimney",
+          "kind": "chimney",
+          "x": 400,
+          "y": 97,
+          "w": 40,
+          "d": 154,
+          "height": 210
+        }
+      ]
+    },
+    {
+      "key": "kitchen",
+      "name": "Kitchen",
+      "type": "kitchen",
+      "ceilingHeight": 210,
+      "x": 0,
+      "y": 547,
+      "w": 312,
+      "d": 228,
+      "roofSlopes": [
+        {
+          "wallIndex": 3,
+          "kneeHeight": 170,
+          "depth": 90
+        }
+      ],
+      "openings": [
+        {
+          "kind": "window",
+          "wall": 3,
+          "offset": 14,
+          "width": 180,
+          "height": 100,
+          "sillHeight": 60
+        },
+        {
+          "kind": "pass",
+          "wall": 0,
+          "offset": 48,
+          "width": 145,
+          "height": 185
+        }
+      ]
+    },
+    {
+      "key": "corridor",
+      "name": "Corridor",
+      "type": "hallway",
+      "ceilingHeight": 220,
+      "x": 324,
+      "y": 451,
+      "polygon": [
+        {
+          "x": 0,
+          "y": 96
+        },
+        {
+          "x": 128,
+          "y": 96
+        },
+        {
+          "x": 128,
+          "y": 0
+        },
+        {
+          "x": 206,
+          "y": 0
+        },
+        {
+          "x": 206,
+          "y": 311
+        },
+        {
+          "x": 187,
+          "y": 311
+        },
+        {
+          "x": 187,
+          "y": 437.5
+        },
+        {
+          "x": 0,
+          "y": 437.5
+        }
+      ],
+      "openings": [
+        {
+          "kind": "pass",
+          "wall": 0,
+          "offset": 16,
+          "width": 90
+        },
+        {
+          "kind": "pass",
+          "wall": 2,
+          "offset": 0,
+          "width": 75
+        },
+        {
+          "kind": "door",
+          "wall": 3,
+          "offset": 190,
+          "width": 80,
+          "height": 210,
+          "swing": "in",
+          "hinge": "start"
+        },
+        {
+          "kind": "pass",
+          "wall": 5,
+          "offset": 28.5,
+          "width": 80
+        },
+        {
+          "kind": "pass",
+          "wall": 6,
+          "offset": 102,
+          "width": 80
+        },
+        {
+          "kind": "pass",
+          "wall": 7,
+          "offset": 3.5,
+          "width": 90
+        }
+      ]
+    },
+    {
+      "key": "bedroom",
+      "name": "Main bedroom",
+      "type": "bedroom",
+      "ceilingHeight": 210,
+      "x": 452,
+      "y": 0,
+      "polygon": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 461,
+          "y": 0
+        },
+        {
+          "x": 461,
+          "y": 535
+        },
+        {
+          "x": 90,
+          "y": 535
+        },
+        {
+          "x": 90,
+          "y": 439
+        },
+        {
+          "x": 0,
+          "y": 439
+        }
+      ],
+      "roofSlopes": [
+        {
+          "wallIndex": 1,
+          "kneeHeight": 170,
+          "depth": 90
+        }
+      ],
+      "openings": [
+        {
+          "kind": "window",
+          "wall": 0,
+          "offset": 112,
+          "width": 200,
+          "height": 150,
+          "sillHeight": 50
+        },
+        {
+          "kind": "door",
+          "wall": 4,
+          "offset": 15,
+          "width": 75
+        }
+      ]
+    },
+    {
+      "key": "bathroom",
+      "name": "Bathroom",
+      "type": "bath",
+      "ceilingHeight": 210,
+      "x": 324,
+      "y": 900.5,
+      "w": 187,
+      "d": 284,
+      "openings": [
+        {
+          "kind": "window",
+          "wall": 2,
+          "offset": 30,
+          "width": 130,
+          "height": 110,
+          "sillHeight": 80
+        },
+        {
+          "kind": "door",
+          "wall": 0,
+          "offset": 5,
+          "width": 80
+        }
+      ]
+    },
+    {
+      "key": "room-right",
+      "name": "Room (undecided)",
+      "type": "other",
+      "ceilingHeight": 210,
+      "x": 523,
+      "y": 774.5,
+      "w": 390,
+      "d": 410,
+      "roofSlopes": [
+        {
+          "wallIndex": 1,
+          "kneeHeight": 170,
+          "depth": 90
+        }
+      ],
+      "openings": [
+        {
+          "kind": "window",
+          "wall": 1,
+          "offset": 103,
+          "width": 220,
+          "height": 100,
+          "sillHeight": 60
+        },
+        {
+          "kind": "door",
+          "wall": 3,
+          "offset": 314,
+          "width": 80
+        }
+      ],
+      "fixed": [
+        {
+          "label": "Column",
+          "kind": "column",
+          "x": 357,
+          "y": 397.5,
+          "w": 33,
+          "d": 12.5,
+          "height": 210
+        }
+      ]
+    },
+    {
+      "key": "room-laundry",
+      "name": "Room with laundry (undecided)",
+      "type": "other",
+      "ceilingHeight": 210,
+      "x": 0,
+      "y": 786.5,
+      "w": 312,
+      "d": 398,
+      "openings": [
+        {
+          "kind": "door",
+          "wall": 1,
+          "offset": 8.5,
+          "width": 90
+        }
+      ],
+      "fixed": [
+        {
+          "label": "Partition",
+          "kind": "built_in",
+          "x": 154,
+          "y": 0,
+          "w": 12,
+          "d": 35,
+          "height": 210
+        },
+        {
+          "label": "Partition",
+          "kind": "built_in",
+          "x": 154,
+          "y": 230,
+          "w": 12,
+          "d": 168,
+          "height": 210
+        },
+        {
+          "label": "Column",
+          "kind": "column",
+          "x": 0,
+          "y": 318,
+          "w": 40,
+          "d": 80,
+          "height": 210
+        }
+      ]
+    }
+  ]
+}

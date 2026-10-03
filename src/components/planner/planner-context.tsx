@@ -13,7 +13,7 @@ import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room, RoomShape } from "@/domain/schemas/room";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
 import { validateDesign } from "@/domain/validator";
-import { saveRoomFinishesAction, savePlannerRoomAction } from "@/server/actions/planner";
+import { saveRoomFinishesAction, savePlannerRoomAction, saveRoomPositionsAction } from "@/server/actions/planner";
 import { updateRoomAction } from "@/server/actions/rooms";
 import type { PlannerData } from "@/server/planner";
 import { type Action, type Annotation, initialState, type SavedView, type Plan, type PlannerState, type PlannerView, reducer, TOOL_KEY, TOOLS, type Units } from "./state";
@@ -118,9 +118,12 @@ function writeLocal(apartmentId: string, value: LocalPlan) {
   }
 }
 
+/** Positions saved with the rooms; rooms never placed are left out. */
+const storedOrigins = (rooms: readonly { room: Room }[]): Map<string, Vec> => new Map(rooms.flatMap((r) => (r.room.plan ? [[r.room.id, r.room.plan] as const] : [])));
+
 function initialPlan(data: PlannerData): Plan {
   const rooms = data.rooms.map((r) => ({ room: r.room, furniture: r.design?.furniture ?? [] }));
-  const origins = Object.fromEntries(layoutRooms(rooms.map((r) => ({ id: r.room.id, polygon: r.room.polygon }))));
+  const origins = Object.fromEntries(layoutRooms(rooms.map((r) => ({ id: r.room.id, polygon: r.room.polygon })), storedOrigins(rooms)));
   return { rooms, origins, annotations: [] };
 }
 
@@ -174,13 +177,33 @@ export function PlannerProvider({
       type: "edit",
       transient: true,
       fn: (p) => {
-        const known = new Map(Object.entries(local.origins ?? {}).filter(([id]) => p.rooms.some((r) => r.room.id === id)));
+        // Saved positions win; this device's positions fill in rooms not saved yet.
+        const stored = storedOrigins(p.rooms);
+        const known = new Map([...Object.entries(local.origins ?? {}).filter(([id]) => p.rooms.some((r) => r.room.id === id) && !stored.has(id)), ...stored]);
         const origins = Object.fromEntries(layoutRooms(p.rooms.map((r) => ({ id: r.room.id, polygon: r.room.polygon })), known));
         return { ...p, origins, annotations: local.annotations ?? [] };
       },
     });
     stage.current?.fit();
   }, [data.apartment.id, data.rooms]);
+
+  // Save room positions with the rooms once the user moves one; the first arrangement is not a change.
+  const savedOrigins = useRef<Record<string, Vec> | null>(null);
+  useEffect(() => {
+    if (!restored.current) return;
+    if (savedOrigins.current === null) {
+      savedOrigins.current = s.plan.origins;
+      return;
+    }
+    const before = savedOrigins.current;
+    const moved = Object.entries(s.plan.origins).filter(([id, o]) => !before[id] || before[id].x !== o.x || before[id].y !== o.y);
+    if (moved.length === 0) return;
+    const timer = window.setTimeout(() => {
+      savedOrigins.current = s.plan.origins;
+      void saveRoomPositionsAction({ apartmentId: data.apartment.id, rooms: moved.map(([roomId, o]) => ({ roomId, x: o.x, y: o.y })) }).catch(() => undefined);
+    }, 800);
+    return () => window.clearTimeout(timer);
+  }, [data.apartment.id, s.plan.origins]);
 
   useEffect(() => {
     if (!restored.current) return;
@@ -370,6 +393,7 @@ export function roomShape(room: Room): RoomShape {
     openings: room.openings,
     fixedElements: room.fixedElements,
     wallOrientationOverrides: room.wallOrientationOverrides,
+    roofSlopes: room.roofSlopes,
   };
 }
 

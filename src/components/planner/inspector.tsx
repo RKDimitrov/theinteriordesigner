@@ -14,6 +14,7 @@ import { OpeningStyleFields } from "./fit-out-controls";
 import { PieceLook } from "./piece-model-controls";
 import { FixedBlock, FixturePicker } from "./fixture-controls";
 import { BASIC_LAYERS, type LayerId, LAYERS, mapItem, mapRoom } from "./state";
+import { RoofBlock } from "./roof-controls";
 
 const LAYER_ICON: Record<LayerId, LucideIcon> = {
   walls: BrickWall,
@@ -46,6 +47,7 @@ export function Inspector2D() {
           <>
             {s.tool === "fixture" && <FixturePicker />}
             <SelectionBlock />
+            <RoofBlock />
             <LayersBlock />
           </>
         ) : (
