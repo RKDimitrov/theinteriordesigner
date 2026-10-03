@@ -71,3 +71,23 @@ describe("shared walls", () => {
     expect(cut).toBeDefined();
   });
 });
+
+describe("inner walls in the walkthrough", () => {
+  const pass = { id: "pass-9", kind: "door" as const, wallIndex: 0, offset: 100, width: 100, height: 200, hinge: "start" as const, swing: "none" as const };
+  const door = { ...pass, id: "door-9", offset: 20, width: 70, swing: "in" as const };
+  const base = room("living");
+  // A partition across the living room, 250 cm from its left edge, top to bottom.
+  const wall = { id: "iw-9", a: { x: 250, y: 0 }, b: { x: 250, y: 440 }, thickness: 12, openings: [pass, door] };
+  const withWall: WalkRoom[] = rooms.map((r) => (r.id === "living" ? { ...r, room: { ...r.room, innerWalls: [wall] } } : r));
+  const at = (x: number, y: number) => ({ x: base.origin.x + x, y: base.origin.y + y });
+
+  it("blocks the walker at the partition, but not in its passage", () => {
+    expect(canStand(at(250, 300), withWall, () => false)).toBe(false);
+    expect(canStand(at(250, 150), withWall, () => false)).toBe(true);
+  });
+
+  it("lets the walker through a door in it only when the door is open", () => {
+    expect(canStand(at(250, 55), withWall, () => false)).toBe(false);
+    expect(canStand(at(250, 55), withWall, () => true)).toBe(true);
+  });
+});

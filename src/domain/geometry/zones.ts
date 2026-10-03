@@ -6,6 +6,7 @@ import { rectPolygon } from "./polygon";
 import type { Vec } from "./vec";
 import { add, scale } from "./vec";
 import { wallsOf } from "./walls";
+import { innerWallFace, innerWallSolids } from "../room/inner-walls";
 
 /** Keep-clear areas derived from the room. Shared by the validator and the prompt facts. */
 export interface KeepClearZone {
@@ -32,7 +33,7 @@ function bandInside(walls: ReturnType<typeof wallsOf>, o: Pick<Opening, "wallInd
   return [span.start, span.end, add(span.end, inward), add(span.start, inward)];
 }
 
-export function keepClearZones(room: Pick<RoomShape, "polygon" | "openings" | "fixedElements">): KeepClearZone[] {
+export function keepClearZones(room: Pick<RoomShape, "polygon" | "openings" | "fixedElements"> & Partial<Pick<RoomShape, "innerWalls">>): KeepClearZone[] {
   const walls = wallsOf(room.polygon);
   const zones: KeepClearZone[] = [];
   for (const o of room.openings) {
@@ -54,6 +55,15 @@ export function keepClearZones(room: Pick<RoomShape, "polygon" | "openings" | "f
       if (radiatorStyle(o) === "convector") continue;
       const z = bandInside(walls, o, o.depth + RADIATOR_EXTRA_DEPTH_CM);
       if (z) zones.push({ kind: "radiator", refId: o.id, polygon: z, spanLength: o.width });
+    }
+  }
+  // Inner walls stand in the way like fixed elements; their doors swing like any other.
+  for (const w of room.innerWalls ?? []) {
+    innerWallSolids(w).forEach((polygon, i) => zones.push({ kind: "fixed", refId: `${w.id}:${i}`, polygon }));
+    const face = [innerWallFace(w)];
+    for (const o of w.openings) {
+      if (o.kind !== "door") continue;
+      for (const swing of doorSwings(face, o)) zones.push({ kind: "door_swing", refId: o.id, polygon: swing.polygon });
     }
   }
   for (const f of room.fixedElements) {

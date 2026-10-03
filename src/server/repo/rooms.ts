@@ -22,6 +22,8 @@ function toDomain(row: RoomRow): Room {
     finishes: row.finishes,
     wallOutlooks: row.wallOutlooks,
     roofSlopes: row.roofSlopes,
+    innerWalls: row.innerWalls,
+    floorZones: row.floorZones,
     plan: row.planX !== null && row.planY !== null ? { x: row.planX, y: row.planY } : null,
   });
 }
@@ -36,6 +38,8 @@ function toData(room: RoomInput) {
     fixedElements: toJson(room.fixedElements),
     wallOrientationOverrides: toJson(room.wallOrientationOverrides),
     roofSlopes: toJson(room.roofSlopes),
+    innerWalls: toJson(room.innerWalls),
+    floorZones: toJson(room.floorZones),
   };
 }
 

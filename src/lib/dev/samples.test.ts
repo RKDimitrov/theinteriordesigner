@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { RoomInput } from "@/domain/room/check-room";
+import { FloorZone } from "@/domain/schemas/room";
 import { isQuizComplete } from "@/domain/profile/quiz";
 import { profileStatus } from "@/domain/profile/status";
 import { ApartmentInput } from "@/domain/schemas/apartment";
@@ -7,7 +8,7 @@ import { StyleProfileInput } from "@/domain/schemas/profile";
 import { FitOut } from "@/domain/room/fit-out";
 import { PIECE_MODELS } from "@/components/planner/three/assets";
 import { FurnitureCategory } from "@/domain/schemas/design";
-import { pickSample, SAMPLE_APARTMENTS, sampleRoofSlopes, SAMPLE_FIT_OUTS, SAMPLE_MODELS, SAMPLE_PROFILES, SAMPLE_ROOMS, sampleModel } from "./samples";
+import { pickSample, SAMPLE_APARTMENTS, SAMPLE_ZONE_HEIGHTS, samplePreset, sampleRoofSlopes, SAMPLE_FIT_OUTS, SAMPLE_MODELS, SAMPLE_PROFILES, SAMPLE_ROOMS, sampleModel } from "./samples";
 
 describe("sample data", () => {
   it.each(SAMPLE_APARTMENTS.map((a) => [a.name, a] as const))("apartment %s is valid", (_, a) => {
@@ -59,6 +60,12 @@ describe("sample data", () => {
       expect(RoomInput.safeParse({ ...r, ceilingHeight: Math.max(r.ceilingHeight, 210), roofSlopes, openings: [] }).error?.issues ?? []).toEqual([]);
     }
     expect(sampleRoofSlopes(r.polygon, 2)).toEqual([]);
+  });
+
+  it("floor area sample heights are valid floor areas", () => {
+    for (let n = 0; n < SAMPLE_ZONE_HEIGHTS.length; n++) {
+      expect(FloorZone.safeParse({ id: "z", rect: { x: 0, y: 0, w: 100, d: 100 }, height: samplePreset(SAMPLE_ZONE_HEIGHTS, n) }).success).toBe(true);
+    }
   });
 
   it("cycles and returns copies", () => {

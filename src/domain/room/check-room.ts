@@ -5,6 +5,7 @@ import { EPS } from "../geometry/vec";
 import { wallsOf } from "../geometry/walls";
 import { RoomShape } from "../schemas/room";
 import { wallTop } from "./roof";
+import { innerWallFace } from "./inner-walls";
 
 export interface RoomIssue {
   path: (string | number)[];
@@ -108,6 +109,36 @@ export function checkRoom(room: RoomShape): RoomIssue[] {
       }
     });
   }
+
+  // Inner walls: inside the room, long enough, their openings on them.
+  (room.innerWalls ?? []).forEach((w, i) => {
+    const path = ["innerWalls", i];
+    if (ids.has(w.id)) issues.push({ path: [...path, "id"], message: "Duplicate id" });
+    ids.add(w.id);
+    const face = innerWallFace(w);
+    if (face.length < 20) issues.push({ path, message: "An inner wall must be at least 20 cm long" });
+    const mid = { x: (w.a.x + w.b.x) / 2, y: (w.a.y + w.b.y) / 2 };
+    // Ends may touch the outline; the middle and points just inside the ends must be in the room.
+    const nearEnd = (p: { x: number; y: number }, q: { x: number; y: number }) => ({ x: p.x + (q.x - p.x) * 0.02, y: p.y + (q.y - p.y) * 0.02 });
+    if (![mid, nearEnd(w.a, w.b), nearEnd(w.b, w.a)].every((p) => containsPoint(poly, p))) issues.push({ path, message: "An inner wall must stand inside the room" });
+    w.openings.forEach((o, j) => {
+      if (ids.has(o.id)) issues.push({ path: [...path, "openings", j, "id"], message: "Duplicate id" });
+      ids.add(o.id);
+      if (o.offset + o.width > face.length + EPS) issues.push({ path: [...path, "openings", j, "width"], message: `${label(o.kind)} does not fit on the inner wall` });
+    });
+  });
+
+  // Floor areas: inside the room and apart from each other.
+  const zones = room.floorZones ?? [];
+  zones.forEach((z, i) => {
+    const corners = rectPolygon(z.rect.w, z.rect.d, z.rect.x, z.rect.y);
+    if (!corners.every((c) => containsPoint(poly, c))) issues.push({ path: ["floorZones", i, "rect"], message: "A floor area lies outside the room" });
+    for (let j = 0; j < i; j++) {
+      const o = zones[j]!.rect;
+      const r = z.rect;
+      if (r.x < o.x + o.w && o.x < r.x + r.w && r.y < o.y + o.d && o.y < r.y + r.d) issues.push({ path: ["floorZones", i, "rect"], message: "Floor areas overlap" });
+    }
+  });
 
   room.fixedElements.forEach((f, i) => {
     if (ids.has(f.id)) issues.push({ path: ["fixedElements", i, "id"], message: "Duplicate id" });

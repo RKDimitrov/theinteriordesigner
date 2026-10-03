@@ -9,7 +9,7 @@ export type Mode = "2d" | "3d";
 export type Units = "cm" | "in";
 export type PlannerView = "calm" | "quiet" | "full";
 
-export const TOOLS = ["select", "pan", "wall", "room", "door", "window", "pass", "radiator", "socket", "switch", "fixture", "measure", "dimension", "label", "note"] as const;
+export const TOOLS = ["select", "pan", "wall", "room", "innerWall", "zone", "door", "window", "pass", "radiator", "socket", "switch", "fixture", "measure", "dimension", "label", "note"] as const;
 export type Tool = (typeof TOOLS)[number];
 
 /** Keyboard shortcut per tool. */
@@ -18,6 +18,8 @@ export const TOOL_KEY: Readonly<Record<Tool, string>> = {
   pan: "H",
   wall: "W",
   room: "R",
+  innerWall: "B",
+  zone: "G",
   door: "D",
   window: "N",
   pass: "P",
@@ -58,7 +60,7 @@ export interface Plan {
   annotations: Annotation[];
 }
 
-export type Selection = { kind: "item" | "opening" | "fixed"; roomId: string; id: string } | null;
+export type Selection = { kind: "item" | "opening" | "fixed" | "innerWall" | "zone"; roomId: string; id: string } | null;
 
 export interface Camera {
   eyeHeight: number;

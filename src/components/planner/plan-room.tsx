@@ -14,6 +14,9 @@ import { PLANNER_WALL_CM } from "@/domain/planner/layout";
 import { uprightAngle, type ViewRotation } from "@/domain/planner/view";
 import { isCeilingKind, kitchenSlots } from "@/domain/room/fixtures";
 import { slopeBands } from "@/domain/room/roof";
+import { allOpenings, innerWallFace } from "@/domain/room/inner-walls";
+import { zoneOutline } from "@/domain/room/floor-zones";
+import type { FloorZone, InnerWall } from "@/domain/schemas/room";
 import type { FixedElement, Opening, Room } from "@/domain/schemas/room";
 
 const INK = "#2b2622";
@@ -55,6 +58,9 @@ export const RoomShell = memo(function RoomShell({ room, layers, dim, k = 1 }: {
     <g>
       <polygon points={pts(room.polygon)} fill={layers.floor ? "url(#pl-planks)" : SHEET} opacity={dim ? 0.4 : 1} data-testid={`room-floor-${room.id}`} />
       <RoofSlopes room={room} k={k} dim={dim} />
+      {(room.floorZones ?? []).map((z) => (
+        <FloorZoneMark key={z.id} zone={z} k={k} dim={dim} />
+      ))}
       {room.fixedElements.map((f) => (
         <g key={f.id} opacity={dim ? 0.4 : 1}>
           <FixedMark f={f} />
@@ -66,9 +72,43 @@ export const RoomShell = memo(function RoomShell({ room, layers, dim, k = 1 }: {
         if (through ? !layers.openings : !layers.electrical) return null;
         return <OpeningMark key={o.id} walls={walls} opening={o} />;
       })}
+      {layers.walls &&
+        (room.innerWalls ?? []).map((w) => (
+          <g key={w.id} data-inner-wall={w.id}>
+            <polygon points={pts(innerWallBand(w))} fill={INK} />
+            {layers.openings && w.openings.map((o) => <OpeningMark key={o.id} walls={[innerWallFace(w)]} opening={o} />)}
+          </g>
+        ))}
     </g>
   );
 });
+
+/** An inner wall's outline: its thickness around its middle line. */
+function innerWallBand(w: InnerWall): Vec[] {
+  const face = innerWallFace(w);
+  const back = scale(face.inward, -w.thickness);
+  return [face.a, face.b, add(face.b, back), add(face.a, back)];
+}
+
+/** A raised or lowered floor area: dashed outline, light hatching and its height. */
+function FloorZoneMark({ zone, k, dim }: { zone: FloorZone; k: number; dim: boolean }) {
+  const rot = use(ViewRotationContext);
+  const { x, y, w, d } = zone.rect;
+  const cx = x + w / 2;
+  const cy = y + d / 2;
+  const fs = 9 / k;
+  return (
+    <g pointerEvents="none" opacity={dim ? 0.4 : 1} data-floor-zone={zone.id}>
+      <polygon points={pts(zoneOutline(zone))} fill="url(#pl-slope)" fillOpacity={0.5} stroke={INK} strokeWidth={1} strokeDasharray={zone.height > 0 ? "7 3" : "2 3"} vectorEffect="non-scaling-stroke" />
+      <g transform={`rotate(${-rot} ${cx} ${cy})`}>
+        <rect x={cx - fs * 1.8} y={cy - fs * 0.75} width={fs * 3.6} height={fs * 1.5} fill={SHEET} opacity={0.9} />
+        <text x={cx} y={cy} fontSize={fs} textAnchor="middle" dominantBaseline="central" fill={INK} fontFamily="var(--mono)">
+          {zone.height > 0 ? `+${zone.height}` : zone.height}
+        </text>
+      </g>
+    </g>
+  );
+}
 
 /**
  * Where the roof cuts the ceiling: the strip along the wall is hatched, the
@@ -368,11 +408,10 @@ function LeafMark({ leaf, glazed, fold }: { leaf: DoorSwing; glazed: boolean; fo
 
 /** Invisible wide hit areas for openings, drawn above furniture so they stay clickable. */
 export function OpeningHits({ room, onDown, selectedId }: { room: Room; onDown: (o: Opening, e: React.PointerEvent) => void; selectedId: string | null }) {
-  const walls = wallsOf(room.polygon);
   return (
     <g>
-      {room.openings.map((o) => {
-        const span = openingSpan(walls, o);
+      {allOpenings(room).map(({ opening: o, wall }) => {
+        const span = openingSpan([wall], { ...o, wallIndex: 0 });
         if (!span) return null;
         const band = wallBand(span.start, span.end, span.wall, 22, W + 10);
         const sel = o.id === selectedId;
@@ -385,6 +424,45 @@ export function OpeningHits({ room, onDown, selectedId }: { room: Room; onDown: 
           </g>
         );
       })}
+    </g>
+  );
+}
+
+/** Hit areas for inner walls: the wall itself to move it, and its two ends to change it once selected. */
+export function InnerWallHits({ room, k, onDown, selectedId }: { room: Room; k: number; onDown: (w: InnerWall, e: React.PointerEvent, end: "a" | "b" | null) => void; selectedId: string | null }) {
+  return (
+    <g>
+      {(room.innerWalls ?? []).map((w) => {
+        const sel = w.id === selectedId;
+        const r = Math.max(5, 7 / k);
+        return (
+          <g key={w.id} data-testid={`inner-wall-${w.id}`}>
+            <polygon points={pts(innerWallBand({ ...w, thickness: w.thickness + 16 }).map((p) => add(p, scale(innerWallFace(w).inward, 8))))} fill="transparent" style={{ cursor: "move" }} onPointerDown={(e) => onDown(w, e, null)} />
+            {sel && (
+              <>
+                <polygon points={pts(innerWallBand({ ...w, thickness: w.thickness + 8 }).map((p) => add(p, scale(innerWallFace(w).inward, 4))))} fill="none" stroke={CLAY} strokeWidth={1.3} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" pointerEvents="none" />
+                {(["a", "b"] as const).map((end) => (
+                  <circle key={end} cx={w[end].x} cy={w[end].y} r={r} fill={SHEET} stroke={CLAY} strokeWidth={1.5} vectorEffect="non-scaling-stroke" style={{ cursor: "crosshair" }} data-testid={`inner-wall-end-${end}`} onPointerDown={(e) => onDown(w, e, end)} />
+                ))}
+              </>
+            )}
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/** Hit areas for floor areas, under the furniture, with the selection outline. */
+export function ZoneHits({ room, onDown, selectedId }: { room: Room; onDown: (z: FloorZone, e: React.PointerEvent) => void; selectedId: string | null }) {
+  return (
+    <g>
+      {(room.floorZones ?? []).map((z) => (
+        <g key={z.id} data-testid={`zone-${z.id}`} onPointerDown={(e) => onDown(z, e)} style={{ cursor: "move" }}>
+          <rect x={z.rect.x} y={z.rect.y} width={z.rect.w} height={z.rect.d} fill="transparent" />
+          {z.id === selectedId && <rect x={z.rect.x - 4} y={z.rect.y - 4} width={z.rect.w + 8} height={z.rect.d + 8} fill="none" stroke={CLAY} strokeWidth={1.3} strokeDasharray="5 3" vectorEffect="non-scaling-stroke" />}
+        </g>
+      ))}
     </g>
   );
 }

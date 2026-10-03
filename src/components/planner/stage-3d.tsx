@@ -23,10 +23,12 @@ import { roomLit, skyLight } from "@/domain/planner/lighting";
 import { QUALITY } from "@/domain/planner/quality";
 import { skirtingPieces } from "@/domain/room/opening-parts";
 import { ceilingPatches } from "@/domain/room/roof";
-import { canStand, roomAt, sharedWallInfo, startSpot, type WalkRoom, type WallShare, windowSpot } from "@/domain/planner/walls3d";
+import { floorAt, zoneOutline } from "@/domain/room/floor-zones";
+import { allOpenings, innerWallFace } from "@/domain/room/inner-walls";
+import { canStand, openYaw, roomAt, sharedWallInfo, startSpot, type WalkRoom, type WallShare, windowSpot } from "@/domain/planner/walls3d";
 import { approach, EYE_SITTING, shortestTurn, smoothstep } from "@/domain/planner/walk-motion";
 import type { FurnitureItem } from "@/domain/schemas/design";
-import type { Opening, Room } from "@/domain/schemas/room";
+import type { FloorZone as FloorZoneT, InnerWall, Opening, Room } from "@/domain/schemas/room";
 import { newSavedView } from "./panels-3d";
 import { usePlanner } from "./planner-context";
 import { type Camera, type PlanRoom, type WalkSpot } from "./state";
@@ -413,10 +415,12 @@ function Room3D({ placed, shares }: { placed: Placed; shares?: WallShare[] }) {
   const walls = useMemo(() => wallsOf(room.polygon), [room.polygon]);
   const floorGeo = useMemo(() => {
     const shape = new THREE.Shape(room.polygon.map((p) => new THREE.Vector2(p.x, p.y)));
+    // Lowered floor areas are holes in the floor, with their own floor further down.
+    for (const z of room.floorZones ?? []) if (z.height < 0) shape.holes.push(new THREE.Path(zoneOutline(z).map((p) => new THREE.Vector2(p.x, p.y))));
     const g = new THREE.ShapeGeometry(shape);
     g.rotateX(Math.PI / 2);
     return g;
-  }, [room.polygon]);
+  }, [room.polygon, room.floorZones]);
   const trim = s.fitOut.trim;
   const lit = roomLit(room.id, s.lightsSwitched, s.scene.hour);
   // Fixtures against a wall fold away with it in the cut-away view.
@@ -435,6 +439,9 @@ function Room3D({ placed, shares }: { placed: Placed; shares?: WallShare[] }) {
       <mesh geometry={floorGeo} receiveShadow>
         <Surface m={finish.floor} realistic={s.scene.realistic} side={THREE.DoubleSide} />
       </mesh>
+      {(room.floorZones ?? []).map((z) => (
+        <FloorZone3D key={z.id} zone={z} m={finish.floor} realistic={s.scene.realistic} />
+      ))}
       {s.walking && <Ceiling room={room} m={finish.ceiling} realistic={s.scene.realistic} />}
       {walls.map((w) => (
         <FoldGroup key={w.index} wall={w} origin={origin}>
@@ -461,8 +468,11 @@ function Room3D({ placed, shares }: { placed: Placed; shares?: WallShare[] }) {
         .map((f) => (
           <Fixed3D key={f.id} f={f} ceiling={room.ceilingHeight} realistic={s.scene.realistic} lit={lit} />
         ))}
+      {(room.innerWalls ?? []).map((w) => (
+        <InnerWall3D key={w.id} room={room} wall={w} m={finish.wall(0)} realistic={s.scene.realistic} />
+      ))}
       {r.furniture.map((f) => (
-        <Piece3D key={f.id} roomId={room.id} f={f} ceiling={room.ceilingHeight} showLabel={s.scene.labels} />
+        <Piece3D key={f.id} roomId={room.id} f={f} ceiling={room.ceilingHeight} showLabel={s.scene.labels} lift={floorAt(room, f)} />
       ))}
     </group>
   );
@@ -570,6 +580,41 @@ function Wall3D({ room, wall, m, realistic, share }: { room: Room; wall: Wall; m
   );
 }
 
+/** A wall standing inside the room, centred on its line, with its doors and passages. */
+function InnerWall3D({ room, wall, m, realistic }: { room: Room; wall: InnerWall; m: Material; realistic: boolean }) {
+  const face = useMemo(() => innerWallFace(wall), [wall]);
+  const geo = useMemo(() => wallGeometry({ polygon: room.polygon, ceilingHeight: room.ceilingHeight, roofSlopes: room.roofSlopes, openings: wall.openings }, face, undefined, wall.thickness), [room.polygon, room.ceilingHeight, room.roofSlopes, wall.openings, wall.thickness, face]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  return (
+    <>
+      <group position={[face.a.x, 0, face.a.y]} rotation-y={-Math.atan2(face.dir.y, face.dir.x)}>
+        <mesh geometry={geo} castShadow receiveShadow>
+          <Surface m={m} realistic={realistic} />
+          {!realistic && <Edges color={INK} threshold={15} />}
+        </mesh>
+      </group>
+      {wall.openings.map((o) => (
+        <RoomOpening key={o.id} roomId={room.id} walls={[face]} o={o} ceiling={room.ceilingHeight} />
+      ))}
+    </>
+  );
+}
+
+/** A raised floor area as a slab with the floor's finish on top; a lowered one as a floor further down. */
+function FloorZone3D({ zone, m, realistic }: { zone: FloorZoneT; m: Material; realistic: boolean }) {
+  const { x, y, w, d } = zone.rect;
+  const h = Math.abs(zone.height);
+  const geo = useMemo(() => cmUV(new THREE.BoxGeometry(w, h, d)), [w, h, d]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  const top = zone.height > 0 ? zone.height : 0;
+  return (
+    <mesh geometry={geo} position={[x + w / 2, top - h / 2, y + d / 2]} castShadow={zone.height > 0} receiveShadow>
+      <Surface m={m} realistic={realistic} />
+      {!realistic && <Edges color={INK} threshold={15} />}
+    </mesh>
+  );
+}
+
 /** A door, window or radiator, with the planner's open doors and finishes. Click a door to open or close it. */
 function RoomOpening({ roomId, walls, o, ceiling }: { roomId: string; walls: readonly Wall[]; o: Opening; ceiling: number }) {
   const { s, dispatch } = usePlanner();
@@ -596,12 +641,13 @@ function RoomOpening({ roomId, walls, o, ceiling }: { roomId: string; walls: rea
   );
 }
 
-function Piece3D({ roomId, f, ceiling, showLabel }: { roomId: string; f: FurnitureItem; ceiling: number; showLabel: boolean }) {
+function Piece3D({ roomId, f, ceiling, showLabel, lift = 0 }: { roomId: string; f: FurnitureItem; ceiling: number; showLabel: boolean; lift?: number }) {
   const { s, data, dispatch } = usePlanner();
   const selected = s.selection?.kind === "item" && s.selection.id === f.id && s.selection.roomId === roomId;
   const rug = f.placement === "floor_covering";
   const h = rug ? 1 : Math.max(1, Math.min(f.h, ceiling));
-  const y = f.placement === "wall" ? f.elevation + h / 2 : f.placement === "ceiling" ? ceiling - h / 2 : h / 2 + (rug ? 0.5 : 0);
+  // Pieces on a raised or lowered floor area stand at its height.
+  const y = f.placement === "wall" ? f.elevation + h / 2 : f.placement === "ceiling" ? ceiling - h / 2 : h / 2 + (rug ? 0.5 : 0) + lift;
   const lit = roomLit(roomId, s.lightsSwitched, s.scene.hour);
   const decor = QUALITY[useQuality().level].decor;
   const box = (
@@ -772,6 +818,7 @@ function WalkControls({
   const eye0 = start?.eye ?? walkViewStore.read().eye;
   const eyeTarget = useRef(eye0);
   const eyeNow = useRef(eye0);
+  const groundNow = useRef(0);
   const glide = useRef<{ from: Vec; to: Vec; yaw0: number; yaw1: number; pitch0: number; t: number } | null>(null);
   const keys = useRef<Record<string, boolean>>({});
   const lastLoc = useRef<string | null>(null);
@@ -782,10 +829,9 @@ function WalkControls({
     // The nearest door or light switch within reach.
     let best: { key: string; roomId: string; kind: "door" | "switch"; d: number } | null = null;
     for (const r of rooms) {
-      const walls = wallsOf(r.room.polygon);
-      for (const o of r.room.openings) {
+      for (const { opening: o, wall } of allOpenings(r.room)) {
         if (!(o.kind === "door" && o.swing !== "none") && o.kind !== "switch") continue;
-        const span = openingSpan(walls, o);
+        const span = openingSpan([wall], { ...o, wallIndex: 0 });
         if (!span) continue;
         const c = { x: r.origin.x + (span.start.x + span.end.x) / 2, y: r.origin.y + (span.start.y + span.end.y) / 2 };
         const d = Math.hypot(c.x - p.x, c.y - p.y);
@@ -919,7 +965,14 @@ function WalkControls({
   }, [gl, coarse]);
 
   useFrame((state, dtRaw) => {
-    player.current ??= startSpot(rooms, isOpen);
+    if (!player.current) {
+      player.current = startSpot(rooms, isOpen);
+      // A fresh walk turns away from a wall right in front; a saved view keeps its own direction.
+      if (player.current && !start) {
+        yaw.current = openYaw(player.current, rooms, isOpen);
+        shown.current = { yaw: yaw.current, pitch: pitch.current };
+      }
+    }
     const p = player.current;
     if (!p) return;
     const camera = state.camera as THREE.PerspectiveCamera;
@@ -980,7 +1033,11 @@ function WalkControls({
     eyeNow.current = approach(eyeNow.current, eyeTarget.current, EYE_RATE, dt);
 
     const q = player.current!;
-    const eye = eyeNow.current;
+    // On a raised or lowered floor area the eye goes up or down with it, eased like a step.
+    const here0 = roomAt(q, rooms);
+    const ground = here0 ? floorAt(here0.room, { x: q.x - here0.origin.x, y: q.y - here0.origin.y }) : 0;
+    groundNow.current = approach(groundNow.current, ground, EYE_RATE * 2, dt);
+    const eye = eyeNow.current + groundNow.current;
     camera.position.set(q.x, eye, q.y);
     const a = (shown.current.yaw * Math.PI) / 180;
     const pt = (shown.current.pitch * Math.PI) / 180;

@@ -62,6 +62,10 @@ model Room {
   wallOutlooks             Json      @default("{}")
   /// RoofSlope[]: where the roof cuts the ceiling, by wall (src/domain/room/roof.ts)
   roofSlopes               Json      @default("[]")
+  /// InnerWall[]: walls standing inside the room (src/domain/room/inner-walls.ts)
+  innerWalls               Json      @default("[]")
+  /// FloorZone[]: raised or lowered parts of the floor (src/domain/room/floor-zones.ts)
+  floorZones               Json      @default("[]")
   /// Where the room sits on the apartment plan (cm); null until placed
   planX                    Float?
   planY                    Float?

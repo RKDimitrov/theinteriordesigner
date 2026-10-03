@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Bath, Box, BrickWall, Columns2, DoorClosed, DoorOpen, Hand, Heater, MousePointer2, MoveHorizontal, PlugZap, Ruler, Square, StickyNote, ToggleLeft, Type, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bath, Box, BrickWall, Columns2, Layers2, PanelLeftDashed, DoorClosed, DoorOpen, Hand, Heater, MousePointer2, MoveHorizontal, PlugZap, Ruler, Square, StickyNote, ToggleLeft, Type, type LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ const ICON: Record<Tool, LucideIcon> = {
   pan: Hand,
   wall: BrickWall,
   room: Square,
+  innerWall: PanelLeftDashed,
+  zone: Layers2,
   door: DoorOpen,
   window: Columns2,
   pass: DoorClosed,
@@ -30,7 +32,7 @@ const ICON: Record<Tool, LucideIcon> = {
 const ADVANCED: ReadonlySet<Tool> = new Set(["pass", "radiator", "socket", "switch", "measure", "dimension", "label", "note"]);
 
 const GROUPS: readonly { n: string; key: "group1" | "group2" | "group4"; tools: readonly Tool[] }[] = [
-  { n: "01", key: "group1", tools: ["wall", "room"] },
+  { n: "01", key: "group1", tools: ["wall", "room", "innerWall", "zone"] },
   { n: "02", key: "group2", tools: ["door", "window", "pass", "radiator", "socket", "switch", "fixture"] },
   { n: "04", key: "group4", tools: ["measure", "dimension", "label", "note"] },
 ];
@@ -120,7 +122,7 @@ export function ToolRail({ onCategory }: { onCategory: (g: CatalogueGroup) => vo
 function ToolButton({ tool, active, onPick }: { tool: Tool; active: boolean; onPick: (tool: Tool) => void }) {
   const t = useTranslations("Planner");
   const Icon = ICON[tool];
-  const hint = tool === "wall" ? t("wallHint") : tool === "room" ? t("roomHint") : "";
+  const hint = tool === "wall" ? t("wallHint") : tool === "room" ? t("roomHint") : tool === "innerWall" ? t("innerWallHint") : tool === "zone" ? t("zoneHint") : "";
   return (
     <button type="button" className={`pl-tool${ADVANCED.has(tool) ? " adv-t" : ""}`} aria-pressed={active} data-testid={`planner-tool-${tool}`} onClick={() => onPick(tool)}>
       <Icon className="ic" />

@@ -10,6 +10,8 @@ const room: Room = {
   finishes: { wallOverrides: {} },
   wallOutlooks: {},
   roofSlopes: [],
+  innerWalls: [],
+  floorZones: [],
   plan: null,
   sortOrder: 0,
   name: "Living",

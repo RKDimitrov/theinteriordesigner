@@ -72,6 +72,8 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     fixedElements: [{ id: "pendant-1", label: "Pendant light", kind: "pendant", rect: { x: 190, y: 170, w: 40, d: 40 }, height: 90 }],
     wallOrientationOverrides: {},
     roofSlopes: [],
+    innerWalls: [],
+    floorZones: [],
   },
   {
     name: "Bedroom",
@@ -87,6 +89,8 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     fixedElements: [],
     wallOrientationOverrides: {},
     roofSlopes: [],
+    innerWalls: [],
+    floorZones: [],
   },
   {
     name: "Home office",
@@ -102,6 +106,8 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     fixedElements: [{ id: "fixed-1", label: "Chimney", kind: "chimney", rect: { x: 250, y: 100, w: 50, d: 60 }, height: 260 }],
     wallOrientationOverrides: {},
     roofSlopes: [],
+    innerWalls: [],
+    floorZones: [],
   },
   {
     name: "Kitchen",
@@ -120,6 +126,8 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     ],
     wallOrientationOverrides: {},
     roofSlopes: [],
+    innerWalls: [],
+    floorZones: [],
   },
   {
     name: "Bathroom",
@@ -139,6 +147,8 @@ export const SAMPLE_ROOMS: readonly RoomShape[] = [
     ],
     wallOrientationOverrides: {},
     roofSlopes: [],
+    innerWalls: [],
+    floorZones: [],
   },
 ];
 
@@ -283,6 +293,9 @@ export function sampleRoofSlopes(polygon: readonly { x: number; y: number }[], c
   const walls = preset.walls === "two" && n === 4 ? [longest, (longest + 2) % 4] : [longest];
   return walls.sort((a, b) => a - b).map((wallIndex) => ({ wallIndex, kneeHeight: preset.kneeHeight, depth: preset.depth }));
 }
+
+/** Floor area heights for the planner's "Fill sample" button: a raised step, a sunken shower tray, a platform (cm). */
+export const SAMPLE_ZONE_HEIGHTS: readonly number[] = [15, -5, 40];
 
 /** Preset at `counter`, cycling. Use for preset factories (functions cannot be cloned). */
 export function samplePreset<T>(list: readonly T[], counter: number): T {

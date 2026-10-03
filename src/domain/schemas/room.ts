@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { WallOutlooks } from "../context/outside";
 import { RoomFinishes } from "../materials/library";
-import { Cm, Id, Polygon, PositiveCm } from "./common";
+import { Cm, Id, Point, Polygon, PositiveCm } from "./common";
 
 export const RoomType = z.enum([
   "living",
@@ -164,6 +164,37 @@ export const RoofSlope = z.object({
 });
 export type RoofSlope = z.infer<typeof RoofSlope>;
 
+/**
+ * A wall standing inside a room (a partition), from `a` to `b` in room
+ * coordinates, centred on that line. Its doors, windows and passages are
+ * measured from `a` and use wall index 0. See src/domain/room/inner-walls.ts.
+ */
+export const InnerWall = z.object({
+  id: Id,
+  a: Point,
+  b: Point,
+  thickness: z.number().int().min(4).max(40).default(12),
+  openings: z.array(Opening).max(12).default([]),
+});
+export type InnerWall = z.infer<typeof InnerWall>;
+
+/**
+ * Part of a room's floor that is higher or lower than the rest (a step, a
+ * platform, a sunken area), `height` cm relative to the room's floor.
+ * See src/domain/room/floor-zones.ts.
+ */
+export const FloorZone = z.object({
+  id: Id,
+  rect: z.object({ x: z.number(), y: z.number(), w: PositiveCm, d: PositiveCm }),
+  height: z
+    .number()
+    .int()
+    .min(-60)
+    .max(100)
+    .refine((h) => h !== 0, "A floor area must be higher or lower than the floor"),
+});
+export type FloorZone = z.infer<typeof FloorZone>;
+
 export const RoomShape = z.object({
   name: z.string().trim().min(1, "Room name is required").max(60),
   type: RoomType,
@@ -176,6 +207,10 @@ export const RoomShape = z.object({
   wallOrientationOverrides: z.record(z.string(), Cardinal).default({}),
   /** Where the roof cuts the ceiling, by wall. */
   roofSlopes: z.array(RoofSlope).max(8).default([]),
+  /** Walls standing inside the room. */
+  innerWalls: z.array(InnerWall).max(20).default([]),
+  /** Raised or lowered parts of the floor. */
+  floorZones: z.array(FloorZone).max(20).default([]),
 });
 export type RoomShape = z.infer<typeof RoomShape>;
 

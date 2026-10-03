@@ -110,7 +110,7 @@ export function floorRooms(floor: Floor): FloorResult[] {
       return { id: `fixed-${k + 1}`, label: f.label, kind: f.kind, rect: { x: round(b.x - box.x), y: round(b.y - box.y), w: Math.max(1, Math.round(b.w)), d: Math.max(1, Math.round(b.d)) }, height: Math.round(f.height) };
     });
     const roofSlopes = r.roofSlopes.map((s) => ({ ...s, wallIndex: wallOf(s.wallIndex) })).sort((a, b) => a.wallIndex - b.wallIndex);
-    const shape: RoomShape = { name: r.name, type: r.type, polygon, ceilingHeight: r.ceilingHeight, openings, fixedElements, wallOrientationOverrides: {}, roofSlopes };
+    const shape: RoomShape = { name: r.name, type: r.type, polygon, ceilingHeight: r.ceilingHeight, openings, fixedElements, wallOrientationOverrides: {}, roofSlopes, innerWalls: [], floorZones: [] };
     return { key: r.key, shape, origin };
   });
 }

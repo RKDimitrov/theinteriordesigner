@@ -3,7 +3,8 @@ import { containsPoint } from "../geometry/polygon";
 import { add, dot, scale, sub, type Vec } from "../geometry/vec";
 import { wallsOf } from "../geometry/walls";
 import type { FurnitureItem } from "../schemas/design";
-import type { Opening, Room } from "../schemas/room";
+import { innerWallFace } from "../room/inner-walls";
+import type { FixedElement, InnerWall, Opening, Room } from "../schemas/room";
 
 /** A solid part of a wall: `from`–`to` cm along the wall, `y0`–`y1` cm above the floor. */
 export interface WallPiece {
@@ -114,7 +115,10 @@ export function canStand(p: Vec, rooms: readonly WalkRoom[], isOpen: (roomId: st
     const walls = wallsOf(r.room.polygon);
     // Distance to each wall segment, not its whole line: L-shaped rooms have walls whose line crosses the room.
     if (containsPoint(r.room.polygon, local) && walls.every((w) => segmentDistance(local, w.a, w.b) >= WALK_MARGIN_CM)) {
-      const blocked = r.furniture.some((f) => f.placement === "floor" && containsPoint(itemFootprint({ ...f, w: f.w + 30, d: f.d + 30 }), local));
+      const blocked =
+        r.furniture.some((f) => f.placement === "floor" && containsPoint(itemFootprint({ ...f, w: f.w + 30, d: f.d + 30 }), local)) ||
+        (r.room.innerWalls ?? []).some((w) => nearInnerWall(local, w, (id) => isOpen(r.id, id))) ||
+        (r.room.fixedElements ?? []).some((f) => blocksWalk(f, local));
       if (!blocked) return true;
     }
     for (const o of r.room.openings) {
@@ -128,6 +132,33 @@ export function canStand(p: Vec, rooms: readonly WalkRoom[], isOpen: (roomId: st
     }
   }
   return false;
+}
+
+/**
+ * Too close to the solid part of an inner wall? Passages and open doors on
+ * it leave a gap the walker can pass through; closed doors are solid.
+ */
+/** Fixed elements the walker keeps clear of: everything standing on the floor except the shower, which can be stepped into. */
+const WALK_THROUGH_FIXED: ReadonlySet<string> = new Set(["pendant", "chandelier", "shower"]);
+/** How far (cm) the walker's body stays from a fixed element. */
+const FIXED_MARGIN_CM = 15;
+
+function blocksWalk(f: FixedElement, p: Vec): boolean {
+  if (WALK_THROUGH_FIXED.has(f.kind)) return false;
+  const m = FIXED_MARGIN_CM;
+  return p.x > f.rect.x - m && p.x < f.rect.x + f.rect.w + m && p.y > f.rect.y - m && p.y < f.rect.y + f.rect.d + m;
+}
+
+function nearInnerWall(p: Vec, w: InnerWall, isOpen: (id: string) => boolean): boolean {
+  const face = innerWallFace(w);
+  const along = dot(sub(p, w.a), face.dir);
+  const across = Math.abs(dot(sub(p, w.a), face.inward));
+  const reach = WALK_MARGIN_CM + w.thickness / 2;
+  if (along < -reach || along > face.length + reach || across >= reach) return false;
+  const inGap = w.openings.some((o) => o.kind === "door" && (o.swing === "none" || isOpen(o.id)) && along > o.offset + 8 && along < o.offset + o.width - 8);
+  if (inGap) return false;
+  // Past either end the wall is a post: keep the walker clear of its corners too.
+  return segmentDistance(p, w.a, w.b) < reach;
 }
 
 /** Shortest distance from `p` to the segment a–b. */
@@ -156,6 +187,29 @@ export function startSpot(rooms: readonly WalkRoom[], isOpen: (roomId: string, o
     }
   }
   return null;
+}
+
+/** Clear walking distance (cm) from `p` straight ahead at `yaw` (0 looks toward plan +x, 90 toward -y), up to `max`. */
+function clearAhead(p: Vec, yaw: number, rooms: readonly WalkRoom[], isOpen: (roomId: string, openingId: string) => boolean, max = 600): number {
+  const a = (yaw * Math.PI) / 180;
+  const f = { x: Math.cos(a), y: -Math.sin(a) };
+  for (let d = 10; d <= max; d += 10) if (!canStand(add(p, scale(f, d)), rooms, isOpen)) return d - 10;
+  return max;
+}
+
+/**
+ * Which way to face at the start of a walk: of the eight compass directions,
+ * the one with the longest clear view, so the walk opens looking into the
+ * room (often across it into a corner) rather than at a wall close in front.
+ * The usual 90 stays unless another direction sees clearly further.
+ */
+export function openYaw(p: Vec, rooms: readonly WalkRoom[], isOpen: (roomId: string, openingId: string) => boolean): number {
+  let best = { yaw: 90, d: clearAhead(p, 90, rooms, isOpen) };
+  for (const yaw of [270, 0, 180, 45, 135, 225, 315]) {
+    const d = clearAhead(p, yaw, rooms, isOpen);
+    if (d > best.d + 20) best = { yaw, d };
+  }
+  return best.yaw;
 }
 
 /** How far in front of a window the walker stops to look out. */

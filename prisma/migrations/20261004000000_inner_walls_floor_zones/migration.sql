@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Room" ADD COLUMN "innerWalls" JSONB NOT NULL DEFAULT '[]',
+ADD COLUMN "floorZones" JSONB NOT NULL DEFAULT '[]';

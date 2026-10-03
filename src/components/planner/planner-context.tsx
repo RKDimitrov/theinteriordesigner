@@ -11,6 +11,7 @@ import { floorOrigins } from "@/domain/planner/floor-layout";
 import { layoutRooms } from "@/domain/planner/layout";
 import type { ViewRotation } from "@/domain/planner/view";
 import { checkRoom, type RoomIssue } from "@/domain/room/check-room";
+import { removeOpening } from "@/domain/room/inner-walls";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room, RoomShape } from "@/domain/schemas/room";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
@@ -463,6 +464,8 @@ export function roomShape(room: Room): RoomShape {
     fixedElements: room.fixedElements,
     wallOrientationOverrides: room.wallOrientationOverrides,
     roofSlopes: room.roofSlopes,
+    innerWalls: room.innerWalls,
+    floorZones: room.floorZones,
   };
 }
 
@@ -477,7 +480,11 @@ export function removeSelected(p: Plan, sel: NonNullable<PlannerState["selection
           ? { ...r, furniture: r.furniture.filter((f) => f.id !== sel.id) }
           : sel.kind === "fixed"
             ? { ...r, room: { ...r.room, fixedElements: r.room.fixedElements.filter((f) => f.id !== sel.id) } }
-            : { ...r, room: { ...r.room, openings: r.room.openings.filter((o) => o.id !== sel.id) } },
+            : sel.kind === "innerWall"
+              ? { ...r, room: { ...r.room, innerWalls: r.room.innerWalls.filter((w) => w.id !== sel.id) } }
+              : sel.kind === "zone"
+                ? { ...r, room: { ...r.room, floorZones: r.room.floorZones.filter((z) => z.id !== sel.id) } }
+                : { ...r, room: removeOpening(r.room, sel.id) },
     ),
   };
 }

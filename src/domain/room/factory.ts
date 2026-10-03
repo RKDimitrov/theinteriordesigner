@@ -23,6 +23,8 @@ export function rectRoom(p: RectRoomParams): RoomShape {
     openings: [],
     fixedElements: [],
     roofSlopes: [],
+    innerWalls: [],
+    floorZones: [],
     wallOrientationOverrides: {},
   };
 }

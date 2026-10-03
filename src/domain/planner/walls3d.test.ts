@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { rectPolygon } from "../geometry/polygon";
 import type { Room } from "../schemas/room";
-import { canStand, roomAt, startSpot, wallPieces, type WalkRoom, WINDOW_STAND_CM, windowSpot } from "./walls3d";
+import { canStand, openYaw, roomAt, startSpot, wallPieces, type WalkRoom, WINDOW_STAND_CM, windowSpot } from "./walls3d";
 
 describe("wallPieces", () => {
   it("leaves a full wall alone", () => {
@@ -47,6 +47,8 @@ const room = (id: string, openings: Room["openings"] = []): Room => ({
   finishes: { wallOverrides: {} },
   wallOutlooks: {},
   roofSlopes: [],
+  innerWalls: [],
+  floorZones: [],
   plan: null,
 });
 
@@ -106,10 +108,30 @@ describe("walkthrough collision", () => {
     expect(canStand({ x: 150, y: 150 }, withSofa, closed)).toBe(false);
   });
 
+  it("keeps clear of columns, built-ins and partitions, but not of lights or the shower", () => {
+    const fixed = (kind: Room["fixedElements"][number]["kind"]) => [{ id: kind, label: kind, kind, rect: { x: 130, y: 130, w: 40, d: 40 }, height: 250 }];
+    const withFixed = (kind: Room["fixedElements"][number]["kind"]): WalkRoom[] => [{ id: "A", room: { ...room("A"), fixedElements: fixed(kind) }, origin: { x: 0, y: 0 }, furniture: [] }];
+    expect(canStand({ x: 150, y: 150 }, withFixed("column"), closed)).toBe(false);
+    expect(canStand({ x: 150, y: 120 }, withFixed("built_in"), closed)).toBe(false);
+    expect(canStand({ x: 150, y: 90 }, withFixed("built_in"), closed)).toBe(true);
+    expect(canStand({ x: 150, y: 150 }, withFixed("pendant"), closed)).toBe(true);
+    expect(canStand({ x: 150, y: 150 }, withFixed("shower"), closed)).toBe(true);
+  });
+
   it("finds a free starting spot and names the room", () => {
     const p = startSpot(rooms, closed)!;
     expect(canStand(p, rooms, closed)).toBe(true);
     expect(roomAt(p, rooms)?.id).toBe("A");
+  });
+
+  it("faces the longest clear view at the start, not a wall right in front", () => {
+    // An inner wall 40 cm in front of the middle of a single room (yaw 90 looks toward plan -y).
+    const walled: WalkRoom[] = [{ id: "A", room: { ...room("A"), innerWalls: [{ id: "iw", a: { x: 0, y: 110 }, b: { x: 300, y: 110 }, thickness: 12, openings: [] }] }, origin: { x: 0, y: 0 }, furniture: [] }];
+    // It turns away from the wall: towards plan +y, straight or across into a corner.
+    expect([225, 270, 315]).toContain(openYaw({ x: 150, y: 150 }, walled, closed));
+    // Near the end of a long, narrow room it looks down its length.
+    const long: WalkRoom[] = [{ id: "A", room: { ...room("A"), polygon: rectPolygon(800, 200) }, origin: { x: 0, y: 0 }, furniture: [] }];
+    expect(openYaw({ x: 100, y: 100 }, long, closed)).toBe(0);
   });
 });
 

@@ -43,8 +43,8 @@ function slopedPiece(p: { from: number; to: number; y0: number; y1: number }, to
   return [g.toNonIndexed()];
 }
 
-export function wallGeometry(room: RoofRoom & { openings: readonly Opening[] }, wall: Wall, share?: WallShare): THREE.BufferGeometry {
-  const thickness = share?.shared ? W / 2 : W;
+export function wallGeometry(room: RoofRoom & { openings: readonly Opening[] }, wall: Wall, share?: WallShare, ownThickness?: number): THREE.BufferGeometry {
+  const thickness = ownThickness ?? (share?.shared ? W / 2 : W);
   const pieces = wallPieces(wall.length, room.ceilingHeight, [...room.openings.filter((o) => o.wallIndex === wall.index), ...(share?.cuts ?? [])]);
   const side = sideSign(wall);
   const top = wallTop(room, wall);

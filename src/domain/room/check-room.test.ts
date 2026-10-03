@@ -140,3 +140,30 @@ describe("roof slopes", () => {
     expect(RoomInput.parse({ name: "B", type: "bedroom", polygon: base().polygon, ceilingHeight: 260 }).roofSlopes).toEqual([]);
   });
 });
+
+describe("inner walls and floor areas", () => {
+  const wall = { id: "iw-1", a: { x: 200, y: 0 }, b: { x: 200, y: 380 }, thickness: 12, openings: [] as Opening[] };
+  const msgs = (r: RoomShape) => checkRoom(r).map((i) => i.message).join(" | ");
+
+  it("accepts a partition across the room with a passage on it", () => {
+    const pass: Opening = { ...door({ id: "pass-1", wallIndex: 0, offset: 100, width: 120 }), swing: "none" } as Opening;
+    expect(checkRoom({ ...base(), innerWalls: [{ ...wall, openings: [pass] }] })).toEqual([]);
+  });
+
+  it("rejects an inner wall outside the room, a very short one, and an opening that does not fit on it", () => {
+    expect(msgs({ ...base(), innerWalls: [{ ...wall, b: { x: 200, y: 600 } }] })).toMatch(/inside the room/);
+    expect(msgs({ ...base(), innerWalls: [{ ...wall, b: { x: 200, y: 10 } }] })).toMatch(/at least 20 cm/);
+    expect(msgs({ ...base(), innerWalls: [{ ...wall, openings: [door({ id: "d9", wallIndex: 0, offset: 350, width: 90 })] }] })).toMatch(/does not fit/);
+  });
+
+  it("rejects duplicate ids between the outline's openings and an inner wall's", () => {
+    expect(msgs({ ...base(), openings: [door()], innerWalls: [{ ...wall, openings: [door({ wallIndex: 0, offset: 10 })] }] })).toMatch(/Duplicate id/);
+  });
+
+  it("accepts floor areas inside the room, and rejects ones outside or overlapping", () => {
+    const zone = { id: "z1", rect: { x: 10, y: 10, w: 100, d: 80 }, height: 15 };
+    expect(checkRoom({ ...base(), floorZones: [zone] })).toEqual([]);
+    expect(msgs({ ...base(), floorZones: [{ ...zone, rect: { x: 400, y: 10, w: 100, d: 80 } }] })).toMatch(/outside the room/);
+    expect(msgs({ ...base(), floorZones: [zone, { ...zone, id: "z2", rect: { x: 50, y: 50, w: 100, d: 80 } }] })).toMatch(/overlap/);
+  });
+});

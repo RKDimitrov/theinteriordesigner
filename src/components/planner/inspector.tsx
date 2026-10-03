@@ -5,7 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { clampOffset } from "@/domain/room/openings-edit";
-import { wallsOf } from "@/domain/geometry/walls";
+import { findOpening, updateOpening } from "@/domain/room/inner-walls";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Opening } from "@/domain/schemas/room";
 import { DesignerTab } from "./designer-tab";
@@ -15,6 +15,7 @@ import { PieceLook } from "./piece-model-controls";
 import { FixedBlock, FixturePicker } from "./fixture-controls";
 import { BASIC_LAYERS, type LayerId, LAYERS, mapItem, mapRoom } from "./state";
 import { RoofBlock } from "./roof-controls";
+import { InnerWallBlock, ZoneBlock } from "./inner-controls";
 
 const LAYER_ICON: Record<LayerId, LucideIcon> = {
   walls: BrickWall,
@@ -70,8 +71,16 @@ export function SelectionBlock() {
     if (f) return <ItemBlock roomId={room.room.id} f={f} calm={view === "calm"} />;
   }
   if (sel?.kind === "opening" && room) {
-    const o = room.room.openings.find((x) => x.id === sel.id);
-    if (o) return <OpeningBlock roomId={room.room.id} o={o} wallLength={wallsOf(room.room.polygon)[o.wallIndex]?.length ?? 0} ceiling={room.room.ceilingHeight} />;
+    const found = findOpening(room.room, sel.id);
+    if (found) return <OpeningBlock roomId={room.room.id} o={found.opening} wallLength={found.wall.length} onInner={found.host !== "outer"} ceiling={room.room.ceilingHeight} />;
+  }
+  if (sel?.kind === "innerWall" && room) {
+    const w = room.room.innerWalls.find((x) => x.id === sel.id);
+    if (w) return <InnerWallBlock roomId={room.room.id} w={w} />;
+  }
+  if (sel?.kind === "zone" && room) {
+    const z = room.room.floorZones.find((x) => x.id === sel.id);
+    if (z) return <ZoneBlock roomId={room.room.id} z={z} />;
   }
   if (sel?.kind === "fixed" && room) {
     const f = room.room.fixedElements.find((x) => x.id === sel.id);
@@ -191,7 +200,7 @@ function ItemBlock({ roomId, f, calm }: { roomId: string; f: FurnitureItem; calm
   );
 }
 
-function OpeningBlock({ roomId, o, wallLength, ceiling }: { roomId: string; o: Opening; wallLength: number; ceiling: number }) {
+function OpeningBlock({ roomId, o, wallLength, onInner, ceiling }: { roomId: string; o: Opening; wallLength: number; onInner: boolean; ceiling: number }) {
   const t = useTranslations("Planner");
   const tk = useTranslations("OpeningKind");
   const tst = useTranslations("SocketType");
@@ -202,15 +211,11 @@ function OpeningBlock({ roomId, o, wallLength, ceiling }: { roomId: string; o: O
       fn: (p) =>
         mapRoom(p, roomId, (r) => ({
           ...r,
-          room: {
-            ...r.room,
-            openings: r.room.openings.map((x) => {
-              if (x.id !== o.id) return x;
-              const next = { ...x, ...patch } as Opening;
-              const width = Math.min(next.width, Math.floor(wallLength));
-              return { ...next, width, offset: clampOffset(next.offset, width, wallLength) };
-            }),
-          },
+          room: updateOpening(r.room, o.id, (x) => {
+            const next = { ...x, ...patch } as Opening;
+            const width = Math.min(next.width, Math.floor(wallLength));
+            return { ...next, width, offset: clampOffset(next.offset, width, wallLength) };
+          }),
         })),
     });
   const title = o.kind === "door" && o.swing === "none" ? t("tool_pass") : tk(o.kind);
@@ -219,7 +224,7 @@ function OpeningBlock({ roomId, o, wallLength, ceiling }: { roomId: string; o: O
     <div className="pl-blk" data-testid="planner-selection">
       <h3>
         <span>{t("selected")}</span>
-        <span>{t("onWall", { n: o.wallIndex + 1 })}</span>
+        <span>{onInner ? t("innerWall") : t("onWall", { n: o.wallIndex + 1 })}</span>
       </h3>
       <div className="pl-selhead">
         <i style={{ background: o.kind === "window" ? "#dbe6ee" : o.kind === "door" ? "#b58a60" : "#fbf6ec" }} />
