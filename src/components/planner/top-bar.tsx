@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Box, Download, Layers, Magnet, Redo2, Scan, Sparkles, Undo2 } from "lucide-react";
+import { ArrowLeft, Box, Download, Keyboard, Layers, Magnet, Redo2, RotateCcw, RotateCw, Scan, Sparkles, Undo2 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
@@ -116,6 +116,15 @@ export function TopBar() {
             </button>
             <button type="button" onClick={() => stage.current?.fit()} aria-label={t("fit")} title={t("fit")}>
               <Scan className="ic" />
+            </button>
+            <button type="button" onClick={() => stage.current?.rotateView(-1)} aria-label={t("key_viewLeft")} title={`${t("key_viewLeft")} (Shift+Q)`} data-testid="planner-rotate-left">
+              <RotateCcw className="ic" />
+            </button>
+            <button type="button" onClick={() => stage.current?.rotateView(1)} aria-label={t("key_viewRight")} title={`${t("key_viewRight")} (Shift+E)`} data-testid="planner-rotate-right">
+              <RotateCw className="ic" />
+            </button>
+            <button type="button" onClick={() => dispatch({ type: "set", patch: { helpOpen: true } })} aria-label={t("keysTitle")} title={`${t("keysTitle")} (?)`} data-testid="planner-keys-open">
+              <Keyboard className="ic" />
             </button>
           </div>
           <div className="pl-tg pl-units adv" role="radiogroup" aria-label={t("units")}>

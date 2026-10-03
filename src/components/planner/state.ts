@@ -149,6 +149,8 @@ export interface PlannerState {
   doorsOpen: Record<string, boolean>;
   savedViews: SavedView[];
   walking: boolean;
+  /** The keyboard shortcuts panel. */
+  helpOpen: boolean;
   /** Where the next walkthrough starts (a saved view); null starts in the first room. */
   walkStart: WalkSpot | null;
   /** Apartment defaults for doors, windows and radiators; saved to the apartment. */
@@ -204,6 +206,7 @@ export function initialState(plan: Plan, scope: "all" | string, drawerOpen: bool
     doorsOpen: {},
     savedViews: [],
     walking: false,
+    helpOpen: false,
     walkStart: null,
     fitOut,
   };

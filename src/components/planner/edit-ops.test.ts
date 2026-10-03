@@ -1,0 +1,86 @@
+import { describe, expect, it } from "vitest";
+import { rectPolygon } from "@/domain/geometry/polygon";
+import { cataloguePieces, newPlannerItem } from "@/domain/planner/items";
+import type { Opening, Room } from "@/domain/schemas/room";
+import { copySelection, nudgeSelection, PASTE_OFFSET_CM, pasteClip, turnSelection } from "./edit-ops";
+import type { Plan } from "./state";
+
+const door: Opening = { id: "door-1", kind: "door", wallIndex: 0, offset: 50, width: 90, height: 200, hinge: "start", swing: "in" };
+const room = (id: string): Room => ({
+  id,
+  apartmentId: "a",
+  sortOrder: 0,
+  name: id,
+  type: "living",
+  polygon: rectPolygon(400, 300),
+  ceilingHeight: 250,
+  openings: [door],
+  fixedElements: [{ id: "built_in-1", label: "Shelf", kind: "built_in", rect: { x: 10, y: 10, w: 60, d: 30 }, height: 200 }],
+  wallOrientationOverrides: {},
+  roofSlopes: [],
+  finishes: { wallOverrides: {} },
+  wallOutlooks: {},
+  plan: null,
+});
+const sofa = newPlannerItem(cataloguePieces([]).find((p) => p.key === "sofa-medium")!, { x: 200, y: 150 }, "Sofa", []);
+const plan: Plan = {
+  rooms: [
+    { room: room("r1"), furniture: [sofa] },
+    { room: room("r2"), furniture: [] },
+  ],
+  origins: { r1: { x: 0, y: 0 }, r2: { x: 412, y: 0 } },
+  annotations: [],
+};
+
+describe("copy and paste", () => {
+  it("pastes a piece next to the original with a fresh id", () => {
+    const clip = copySelection(plan, { kind: "item", roomId: "r1", id: sofa.id })!;
+    const res = pasteClip(plan, clip)!;
+    const copy = res.plan.rooms[0]!.furniture.find((f) => f.id === res.selection.id)!;
+    expect(copy.id).not.toBe(sofa.id);
+    expect({ x: copy.x, y: copy.y }).toEqual({ x: sofa.x + PASTE_OFFSET_CM, y: sofa.y + PASTE_OFFSET_CM });
+  });
+
+  it("pastes into the room under the pointer, at the pointer", () => {
+    const clip = copySelection(plan, { kind: "item", roomId: "r1", id: sofa.id })!;
+    const res = pasteClip(plan, clip, { at: { x: 600, y: 100 } })!;
+    expect(res.selection.roomId).toBe("r2");
+    const copy = res.plan.rooms[1]!.furniture[0]!;
+    expect({ x: copy.x, y: copy.y }).toEqual({ x: 188, y: 100 });
+  });
+
+  it("pastes an opening next to the original on its wall, or on the wall nearest the pointer", () => {
+    const clip = copySelection(plan, { kind: "opening", roomId: "r1", id: "door-1" })!;
+    const beside = pasteClip(plan, clip)!;
+    expect(beside.plan.rooms[0]!.room.openings.find((o) => o.id === beside.selection.id)).toMatchObject({ wallIndex: 0, offset: 150, width: 90 });
+    // A point near the right wall of the second room.
+    const there = pasteClip(plan, clip, { at: { x: 412 + 395, y: 150 } })!;
+    expect(there.plan.rooms[1]!.room.openings.find((o) => o.id === there.selection.id)).toMatchObject({ wallIndex: 1, offset: 105 });
+  });
+
+  it("pastes a fixed element centred on the pointer", () => {
+    const clip = copySelection(plan, { kind: "fixed", roomId: "r1", id: "built_in-1" })!;
+    const res = pasteClip(plan, clip, { at: { x: 100, y: 200 } })!;
+    expect(res.plan.rooms[0]!.room.fixedElements.find((f) => f.id === res.selection.id)!.rect).toEqual({ x: 70, y: 185, w: 60, d: 30 });
+  });
+
+  it("copies nothing without a selection", () => {
+    expect(copySelection(plan, null)).toBeNull();
+  });
+});
+
+describe("nudge and turn", () => {
+  it("moves a piece, and slides an opening only along its wall", () => {
+    expect(nudgeSelection(plan, { kind: "item", roomId: "r1", id: sofa.id }, 10, -1).rooms[0]!.furniture[0]).toMatchObject({ x: 210, y: 149 });
+    const slid = nudgeSelection(plan, { kind: "opening", roomId: "r1", id: "door-1" }, 10, 25);
+    expect(slid.rooms[0]!.room.openings[0]!.offset).toBe(60);
+    // Never past the wall's end.
+    expect(nudgeSelection(plan, { kind: "opening", roomId: "r1", id: "door-1" }, 1000, 0).rooms[0]!.room.openings[0]!.offset).toBe(310);
+  });
+
+  it("turns a piece and leaves openings alone", () => {
+    expect(turnSelection(plan, { kind: "item", roomId: "r1", id: sofa.id }, 45).rooms[0]!.furniture[0]!.rotation).toBe(45);
+    expect(turnSelection(plan, { kind: "item", roomId: "r1", id: sofa.id }, -45).rooms[0]!.furniture[0]!.rotation).toBe(315);
+    expect(turnSelection(plan, { kind: "opening", roomId: "r1", id: "door-1" }, 45)).toBe(plan);
+  });
+});

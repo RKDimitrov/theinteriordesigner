@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { createContext, memo, use } from "react";
 import { pts, wallBand } from "@/components/plan-view/shapes";
 import { type DoorSwing, doorLeaves, openingSpan } from "@/domain/geometry/openings";
 import { doorStyle, radiatorStyle, slides, windowStyle } from "@/domain/room/fit-out";
@@ -9,7 +9,9 @@ import { m2 } from "@/domain/geometry/units";
 import { add, cross, scale, sub, type Vec } from "@/domain/geometry/vec";
 import { type Wall, wallsOf } from "@/domain/geometry/walls";
 import { fitLabel, labelWidth, openingChain } from "@/domain/planner/dimensions";
+import type { DimensionTarget } from "@/domain/room/edit-dimensions";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
+import { uprightAngle, type ViewRotation } from "@/domain/planner/view";
 import { isCeilingKind, kitchenSlots } from "@/domain/room/fixtures";
 import { slopeBands } from "@/domain/room/roof";
 import type { FixedElement, Opening, Room } from "@/domain/schemas/room";
@@ -18,6 +20,9 @@ const INK = "#2b2622";
 const SHEET = "#fbf6ec";
 const CLAY = "#c8794a";
 const W = PLANNER_WALL_CM;
+
+/** How far the plan view is turned; labels turn back so they stay upright. */
+export const ViewRotationContext = createContext<ViewRotation>(0);
 
 interface Layers {
   walls: boolean;
@@ -71,6 +76,7 @@ export const RoomShell = memo(function RoomShell({ room, layers, dim, k = 1 }: {
  * height at the wall and the full height.
  */
 function RoofSlopes({ room, k, dim }: { room: Room; k: number; dim: boolean }) {
+  const rot = use(ViewRotationContext);
   const bands = slopeBands(room);
   if (bands.length === 0) return null;
   const walls = wallsOf(room.polygon);
@@ -80,8 +86,7 @@ function RoofSlopes({ room, k, dim }: { room: Room; k: number; dim: boolean }) {
         const wall = walls[b.slope.wallIndex]!;
         const [p, q] = b.line;
         const mid = { x: (p.x + q.x) / 2 - wall.inward.x * (b.slope.depth / 2), y: (p.y + q.y) / 2 - wall.inward.y * (b.slope.depth / 2) };
-        let angle = (Math.atan2(wall.dir.y, wall.dir.x) * 180) / Math.PI;
-        if (angle > 90 || angle <= -90) angle += 180;
+        const angle = uprightAngle((Math.atan2(wall.dir.y, wall.dir.x) * 180) / Math.PI, rot);
         const fs = 8 / k;
         const text = `${b.slope.kneeHeight} → ${room.ceilingHeight}`;
         return (
@@ -385,13 +390,13 @@ export function OpeningHits({ room, onDown, selectedId }: { room: Room; onDown: 
 }
 
 /** Mono dimension with slash ticks and a sheet knockout behind the label. `off` is cm outside the wall; negative is inside the room. */
-function Dim({ a, b, wall, off, label, k }: { a: Vec; b: Vec; wall: Wall; off: number; label: string | null; k: number }) {
+function Dim({ a, b, wall, off, label, k, onPick }: { a: Vec; b: Vec; wall: Wall; off: number; label: string | null; k: number; onPick?: (e: React.MouseEvent) => void }) {
   const o = scale(wall.inward, -off);
   const p = add(a, o);
   const q = add(b, o);
   const mid = add(p, scale(sub(q, p), 0.5));
-  let angle = (Math.atan2(wall.dir.y, wall.dir.x) * 180) / Math.PI;
-  if (angle > 90 || angle <= -90) angle += 180;
+  const rot = use(ViewRotationContext);
+  const angle = uprightAngle((Math.atan2(wall.dir.y, wall.dir.x) * 180) / Math.PI, rot);
   const fs = 10 / k;
   const tick = scale(add(wall.dir, scale(wall.inward, -1)), 4 / k);
   const tw = labelWidth(label ?? "", fs) + 6 / k;
@@ -402,7 +407,13 @@ function Dim({ a, b, wall, off, label, k }: { a: Vec; b: Vec; wall: Wall; off: n
         <line key={i} x1={e.x - tick.x} y1={e.y - tick.y} x2={e.x + tick.x} y2={e.y + tick.y} stroke={INK} strokeWidth={1} vectorEffect="non-scaling-stroke" />
       ))}
       {label !== null && (
-        <g transform={`rotate(${angle} ${mid.x} ${mid.y})`}>
+        <g
+          transform={`rotate(${angle} ${mid.x} ${mid.y})`}
+          // A figure that can be changed: click it to type a new value.
+          {...(onPick
+            ? { pointerEvents: "all", style: { cursor: "text" }, role: "button", "data-dim-edit": "", onPointerDown: (e: React.PointerEvent) => e.stopPropagation(), onClick: onPick }
+            : {})}
+        >
           <rect x={mid.x - tw / 2} y={mid.y - fs * 0.7} width={tw} height={fs * 1.4} fill={SHEET} />
           <text x={mid.x} y={mid.y} fontSize={fs} textAnchor="middle" dominantBaseline="central" fill={INK} fontFamily="var(--mono)">
             {label}
@@ -430,6 +441,7 @@ export const RoomDimensions = memo(function RoomDimensions({
   kindLabel,
   shared,
   focus,
+  onEdit,
 }: {
   room: Room;
   k: number;
@@ -439,6 +451,8 @@ export const RoomDimensions = memo(function RoomDimensions({
   shared: readonly boolean[];
   /** The whole room, one of its walls (by index), or nothing is being worked on. */
   focus: "room" | number | null;
+  /** Click on a figure to change it: what it measures, its current length (cm) and where it was clicked. */
+  onEdit?: (target: DimensionTarget, cm: number, e: React.MouseEvent) => void;
 }) {
   const walls = wallsOf(room.polygon);
   const fs = 10 / k;
@@ -452,13 +466,17 @@ export const RoomDimensions = memo(function RoomDimensions({
         const chain = openingChain(w.length, ops);
         return (
           <g key={w.index}>
-            <Dim a={w.a} b={w.b} wall={w} off={inside ? -(chain.length ? INSIDE_LENGTH_CM : INSIDE_CHAIN_CM) : W + 40} label={len(w.length)} k={k} />
+            <Dim a={w.a} b={w.b} wall={w} off={inside ? -(chain.length ? INSIDE_LENGTH_CM : INSIDE_CHAIN_CM) : W + 40} label={len(w.length)} k={k} onPick={onEdit && ((e) => onEdit({ kind: "wall", wallIndex: w.index }, w.length, e))} />
             {chain.map((c, i) => {
               const size = len(c.to - c.from);
               const o = c.opening === null ? undefined : ops[c.opening];
               // A stretch too short for its label keeps its ticks and drops the words, then the number.
               const label = fitLabel(o ? [`${size} ${kindLabel(o)}`, size] : [size], c.to - c.from, fs, 6 / k);
-              return <Dim key={i} a={pointAt(c.from)} b={pointAt(c.to)} wall={w} off={inside ? -INSIDE_CHAIN_CM : W + 18} label={label} k={k} />;
+              // The opening itself, the stretch before the next opening, or the stretch after the last one.
+              const next = ops[chain.slice(i + 1).find((x) => x.opening !== null)?.opening ?? -1];
+              const prev = ops[[...chain.slice(0, i)].reverse().find((x) => x.opening !== null)?.opening ?? -1];
+              const target: DimensionTarget | null = o ? { kind: "opening", openingId: o.id } : next ? { kind: "before", openingId: next.id } : prev ? { kind: "after", openingId: prev.id } : null;
+              return <Dim key={i} a={pointAt(c.from)} b={pointAt(c.to)} wall={w} off={inside ? -INSIDE_CHAIN_CM : W + 18} label={label} k={k} onPick={onEdit && target ? (e) => onEdit(target, c.to - c.from, e) : undefined} />;
             })}
           </g>
         );
@@ -475,6 +493,7 @@ export function WallGrip({ room, onDown }: { room: Room; onDown: (e: React.Point
 
 /** Sheet box with the room name (serif) and area (mono), at the room's centre. Click-through, so pieces under it stay reachable. */
 export function RoomLabel({ room, k }: { room: Room; k: number }) {
+  const rot = use(ViewRotationContext);
   const b = bbox(room.polygon);
   const c = { x: b.x + b.w / 2, y: b.y + b.d / 2 };
   const name = room.name;
@@ -484,7 +503,7 @@ export function RoomLabel({ room, k }: { room: Room; k: number }) {
   const w = Math.max(name.length * fsName * 0.5, areaText.length * fsArea * 0.62) + 16 / k;
   const h = fsName + fsArea + 12 / k;
   return (
-    <g pointerEvents="none" data-room-label={room.id}>
+    <g pointerEvents="none" data-room-label={room.id} transform={`rotate(${-rot} ${c.x} ${c.y})`}>
       <rect x={c.x - w / 2} y={c.y - h / 2} width={w} height={h} fill={SHEET} stroke={INK} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
       <text x={c.x} y={c.y - h / 2 + 5 / k + fsName * 0.85} fontSize={fsName} textAnchor="middle" fill={INK} fontFamily="var(--serif)">
         {name}

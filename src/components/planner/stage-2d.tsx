@@ -2,7 +2,7 @@
 
 import { Copy, RotateCw, Sparkles, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import { memo, use, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { toast as sonner } from "sonner";
 import { convexOverlap, itemFootprint } from "@/domain/geometry/obb";
 import { area, bbox, containsPoint, rectPolygon, toClockwise } from "@/domain/geometry/polygon";
@@ -14,13 +14,15 @@ import { labelWidth, sharedWalls } from "@/domain/planner/dimensions";
 import { newPlannerItem, snapTo, SYMBOL_OF, turn } from "@/domain/planner/items";
 import { type Box, placeLabels } from "@/domain/planner/label-layout";
 import { PLANNER_WALL_CM, roomsBounds } from "@/domain/planner/layout";
+import { rotatePoint, rulerAxes, screenToWorld, turnView, uprightAngle, worldToScreen } from "@/domain/planner/view";
+import { type DimensionTarget, editDimension } from "@/domain/room/edit-dimensions";
 import { FIXTURE_SPEC, placeCeilingFixture, placeFixture } from "@/domain/room/fixtures";
 import { clampOffset, newOpening, newPassThrough, nextId, withFitOutStyle } from "@/domain/room/openings-edit";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { FixedElement, Opening, OpeningKind } from "@/domain/schemas/room";
 import { createRoomAction } from "@/server/actions/rooms";
 import { PX_PER_CM, removeSelected, roomBox, SNAP_CM, usePlanner, useView, ZOOM_MAX, ZOOM_MIN } from "./planner-context";
-import { FixedHits, FloorPattern, OpeningHits, RoomDimensions, RoomLabel, RoomShell, WallGrip } from "./plan-room";
+import { FixedHits, FloorPattern, OpeningHits, RoomDimensions, RoomLabel, RoomShell, ViewRotationContext, WallGrip } from "./plan-room";
 import { inScope, mapItem, mapRoom, type Plan, type PlanRoom, type Tool } from "./state";
 import { PieceSymbol } from "./symbols";
 import { PIECE_MODELS } from "./three/assets";
@@ -41,11 +43,13 @@ type Drag =
   | { kind: "press" };
 
 interface Popover {
-  kind: "label" | "note";
+  kind: "label" | "note" | "dim";
   screen: Vec;
   world: Vec;
   roomId?: string;
   value: string;
+  /** For a dimension: what the figure measures. */
+  target?: DimensionTarget;
 }
 
 export function Stage2D() {
@@ -97,9 +101,15 @@ export function Stage2D() {
     const w = el.clientWidth;
     const h = el.clientHeight;
     const b = scopeBox() ?? { x: 0, y: 0, w: 400, d: 300 };
-    const zoom = clamp(Math.min(w / ((b.w + FIT_PAD_CM * 2) * PX_PER_CM), h / ((b.d + FIT_PAD_CM * 2) * PX_PER_CM)), ZOOM_MIN, 2.5);
-    const kk = PX_PER_CM * zoom;
-    setV(() => ({ zoom, pan: { x: w / 2 - (b.x + b.w / 2) * kk, y: h / 2 - (b.y + b.d / 2) * kk - 10 } }));
+    setV((cur) => {
+      // A quarter-turned view swaps the plan's width and depth on screen.
+      const turned = cur.rot === 90 || cur.rot === 270;
+      const [bw, bd] = turned ? [b.d, b.w] : [b.w, b.d];
+      const zoom = clamp(Math.min(w / ((bw + FIT_PAD_CM * 2) * PX_PER_CM), h / ((bd + FIT_PAD_CM * 2) * PX_PER_CM)), ZOOM_MIN, 2.5);
+      const kk = PX_PER_CM * zoom;
+      const c = rotatePoint({ x: b.x + b.w / 2, y: b.y + b.d / 2 }, cur.rot);
+      return { ...cur, zoom, pan: { x: w / 2 - c.x * kk, y: h / 2 - c.y * kk - 10 } };
+    });
   }, [scopeBox, setV]);
 
   const zoomAt = useCallback(
@@ -108,14 +118,72 @@ export function Stage2D() {
         const zoom = clamp(cur.zoom * factor, ZOOM_MIN, ZOOM_MAX);
         const m = at ?? { x: (paper.current?.clientWidth ?? 0) / 2, y: (paper.current?.clientHeight ?? 0) / 2 };
         const r = zoom / cur.zoom;
-        return { zoom, pan: { x: m.x - (m.x - cur.pan.x) * r, y: m.y - (m.y - cur.pan.y) * r } };
+        return { ...cur, zoom, pan: { x: m.x - (m.x - cur.pan.x) * r, y: m.y - (m.y - cur.pan.y) * r } };
       });
     },
     [setV],
   );
 
-  const toWorld = useCallback((p: Vec): Vec => ({ x: (p.x - v.pan.x) / k, y: (p.y - v.pan.y) / k }), [v.pan, k]);
-  useImperativeHandle(stage, () => ({ zoomBy: (f) => zoomAt(f), fit, toWorld }), [zoomAt, fit, toWorld]);
+  const view = useMemo(() => ({ k, pan: v.pan, rot: v.rot }), [k, v.pan, v.rot]);
+  const toWorld = useCallback((p: Vec): Vec => screenToWorld(p, view), [view]);
+  const toScreen = useCallback((p: Vec): Vec => worldToScreen(p, view), [view]);
+
+  /** Turns the view a quarter, keeping the middle of the stage where it is. */
+  const rotateView = useCallback(
+    (dir: 1 | -1) => {
+      const el = paper.current;
+      const mid = { x: (el?.clientWidth ?? 0) / 2, y: (el?.clientHeight ?? 0) / 2 };
+      setV((cur) => {
+        const kk = PX_PER_CM * cur.zoom;
+        const centre = screenToWorld(mid, { k: kk, pan: cur.pan, rot: cur.rot });
+        const rot = turnView(cur.rot, dir);
+        const c = rotatePoint(centre, rot);
+        return { ...cur, rot, pan: { x: mid.x - c.x * kk, y: mid.y - c.y * kk } };
+      });
+    },
+    [setV],
+  );
+  // The view's turn is kept per apartment on this device.
+  const rotKey = `rp-plan-rot:${data.apartment.id}`;
+  const rotLoaded = useRef(false);
+  useEffect(() => {
+    try {
+      const saved = Number(window.localStorage.getItem(rotKey));
+      if (saved === 90 || saved === 180 || saved === 270) setV((cur) => ({ ...cur, rot: saved }));
+    } catch {
+      // Storage blocked: the view starts unturned.
+    }
+    rotLoaded.current = true;
+  }, [rotKey, setV]);
+  useEffect(() => {
+    if (!rotLoaded.current) return;
+    try {
+      window.localStorage.setItem(rotKey, String(v.rot));
+    } catch {
+      // Not remembered.
+    }
+  }, [rotKey, v.rot]);
+
+  const cursorRef = useRef<Vec | null>(null);
+  const wallPtsRef = useRef<Vec[]>([]);
+  const createRoomRef = useRef<(pts: Vec[]) => Promise<void>>(async () => undefined);
+  useImperativeHandle(
+    stage,
+    () => ({
+      zoomBy: (f) => zoomAt(f),
+      fit,
+      toWorld,
+      cursor: () => cursorRef.current,
+      drawing: () => wallPtsRef.current.length > 0,
+      finish: () => {
+        if (wallPtsRef.current.length >= 3) void createRoomRef.current(wallPtsRef.current);
+        setWallPts([]);
+      },
+      back: () => setWallPts((ps) => ps.slice(0, -1)),
+      rotateView,
+    }),
+    [zoomAt, fit, toWorld, rotateView],
+  );
 
   // Fit on load (once the stage has a size) and whenever the scope changes.
   const fitted = useRef<string | null>(null);
@@ -225,6 +293,10 @@ export function Stage2D() {
     dispatch({ type: "select", selection: { kind: "fixed", roomId, id: fixed.id } });
   };
 
+  useEffect(() => {
+    wallPtsRef.current = wallPts;
+  }, [wallPts]);
+
   const createRoom = async (polygonWorld: Vec[]) => {
     const poly = toClockwise(polygonWorld.map(snapV));
     const b = bbox(poly);
@@ -245,6 +317,10 @@ export function Stage2D() {
     dispatch({ type: "add-room", room: { room: res.data, furniture: [] }, origin: { x: b.x, y: b.y } });
     toast(t("roomAdded", { name: res.data.name }));
   };
+
+  useEffect(() => {
+    createRoomRef.current = createRoom;
+  });
 
   /* ---- pointer handling ---- */
   const tool = s.tool;
@@ -269,6 +345,7 @@ export function Stage2D() {
     const sp = eventPoint(e);
     const w = toWorld(sp);
     setCursor(w);
+    cursorRef.current = w;
     const d = drag.current;
     if (!d) {
       const kind = OPENING_TOOLS[tool];
@@ -455,6 +532,16 @@ export function Stage2D() {
     drag.current = { kind: "room", roomId: r.room.id, start: toWorld(eventPoint(e)), origin0: plan.origins[r.room.id] ?? { x: 0, y: 0 }, moved: false };
   };
 
+  /** Opens the small input on a clicked dimension, with its current value in the plan's units. */
+  const editDim = useCallback(
+    (roomId: string, target: DimensionTarget, cm: number, e: React.MouseEvent) => {
+      const rect = paper.current?.getBoundingClientRect();
+      const screen = { x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) };
+      setPopover({ kind: "dim", screen, world: { x: 0, y: 0 }, roomId, target, value: len(cm) });
+    },
+    [len],
+  );
+
   const submitPopover = () => {
     const p = popover;
     setPopover(null);
@@ -464,6 +551,16 @@ export function Stage2D() {
     if (p.kind === "label" && p.roomId) {
       const roomId = p.roomId;
       dispatch({ type: "edit", fn: (pl) => mapRoom(pl, roomId, (r) => (r.room.name === value ? r : { ...r, room: { ...r.room, name: value.slice(0, 60) } })) });
+    } else if (p.kind === "dim" && p.roomId && p.target) {
+      // Typed in the plan's units; rooms are stored in cm.
+      const cm = Number(value.replace(",", ".")) * (unit === "in" ? 2.54 : 1);
+      const roomId = p.roomId;
+      const target = p.target;
+      const r = plan.rooms.find((x) => x.room.id === roomId);
+      if (!r) return;
+      const res = editDimension(r.room, target, cm);
+      if (!res.ok) return toast(res.reason);
+      dispatch({ type: "edit", fn: (pl) => mapRoom(pl, roomId, (x) => ({ ...x, room: { ...x.room, polygon: res.room.polygon, openings: res.room.openings } })) });
     } else if (p.kind === "note") {
       const id = nextId("note", plan.annotations.map((x) => x.id));
       dispatch({ type: "edit", fn: (pl) => ({ ...pl, annotations: [...pl.annotations, { id, kind: "note", a: p.world, text: value.slice(0, 200) }] }) });
@@ -482,11 +579,11 @@ export function Stage2D() {
   const ftb = useMemo(() => {
     if (!selected) return null;
     const o = plan.origins[selected.r.room.id] ?? { x: 0, y: 0 };
-    const corners = itemFootprint(selected.f).map((p) => ({ x: (p.x + o.x) * k + v.pan.x, y: (p.y + o.y) * k + v.pan.y }));
+    const corners = itemFootprint(selected.f).map((p) => toScreen({ x: p.x + o.x, y: p.y + o.y }));
     const xs = corners.map((c) => c.x);
     const top = Math.min(...corners.map((c) => c.y));
     return { x: Math.max(120, (Math.min(...xs) + Math.max(...xs)) / 2) + 24, y: Math.max(34, top - 50 + 24) };
-  }, [selected, plan.origins, k, v.pan]);
+  }, [selected, plan.origins, toScreen]);
 
   const act = (a: "rot" | "dup" | "swap" | "del") => {
     if (!selected) return;
@@ -518,10 +615,12 @@ export function Stage2D() {
   const M = 50 * k;
   const m = 10 * k;
   const step = v.zoom < 0.7 ? 100 : 50;
-  const ticksX: number[] = [];
-  const ticksY: number[] = [];
-  for (let cm = Math.ceil(-v.pan.x / k / step) * step; cm * k + v.pan.x < size.w; cm += step) ticksX.push(cm);
-  for (let cm = Math.ceil(-v.pan.y / k / step) * step; cm * k + v.pan.y < size.h; cm += step) ticksY.push(cm);
+  // Rulers label the plan coordinate that runs along each screen axis, which a turned view swaps.
+  const axes = rulerAxes(v.rot);
+  const ticksX: { cm: number; px: number }[] = [];
+  const ticksY: { cm: number; px: number }[] = [];
+  for (let cm = Math.ceil(-v.pan.x / k / step) * step; cm * k + v.pan.x < size.w; cm += step) ticksX.push({ cm: cm * axes.x.sign, px: v.pan.x + cm * k });
+  for (let cm = Math.ceil(-v.pan.y / k / step) * step; cm * k + v.pan.y < size.h; cm += step) ticksY.push({ cm: cm * axes.y.sign, px: v.pan.y + cm * k });
 
   const suggestions = hidden.has("suggestions")
     ? []
@@ -545,11 +644,16 @@ export function Stage2D() {
   const ghostLabels = (() => {
     const fs = 8 / k;
     const texts = suggestions.map(({ roomId, sg }) => ({ id: `${roomId}-${sg.id}`, sgId: sg.id, text: `✦ ${sg.name.toLowerCase()}`, anchor: boundsOf(roomId, sg.item!) }));
-    const requests = texts.map((g) => ({ id: g.id, anchor: g.anchor, w: labelWidth(g.text, fs) + 8 / k, h: fs * 1.7 }));
+    // On a quarter-turned view a label's width runs along the plan's y.
+    const turned = v.rot === 90 || v.rot === 270;
+    const requests = texts.map((g) => {
+      const [lw, lh] = [labelWidth(g.text, fs) + 8 / k, fs * 1.7];
+      return { id: g.id, anchor: g.anchor, w: turned ? lh : lw, h: turned ? lw : lh };
+    });
     // Rugs lie under everything; a label may sit on one.
     const pieces = hidden.has("furniture") ? [] : scopeRooms.flatMap((r) => r.furniture.filter((f) => f.placement !== "floor_covering").map((f) => boundsOf(r.room.id, f)));
     const at = placeLabels(requests, pieces, 3 / k);
-    return texts.map((g, i) => ({ ...g, ...at[g.id]!, w: requests[i]!.w, h: requests[i]!.h }));
+    return texts.map((g, i) => ({ ...g, ...at[g.id]!, w: turned ? requests[i]!.h : requests[i]!.w, h: turned ? requests[i]!.w : requests[i]!.h }));
   })();
 
   const hint = s.armed ? t("hint_place", { name: pieceName(pieces.find((p) => p.key === s.armed)!) }) : t(`hint_${tool}`);
@@ -558,15 +662,15 @@ export function Stage2D() {
     <div className="pl-stage" data-testid="planner-stage">
       <div className="pl-corner">{unit}</div>
       <div className="pl-rx" style={{ backgroundSize: `${10 * k}px 6px`, backgroundPositionX: `${v.pan.x}px` }} aria-hidden>
-        {ticksX.map((cm) => (
-          <span key={cm} className="tk" style={{ left: v.pan.x + cm * k }}>
+        {ticksX.map(({ cm, px }) => (
+          <span key={px} className="tk" style={{ left: px }}>
             {len(cm)}
           </span>
         ))}
       </div>
       <div className="pl-ry" style={{ backgroundSize: `6px ${10 * k}px`, backgroundPositionY: `${v.pan.y}px` }} aria-hidden>
-        {ticksY.map((cm) => (
-          <span key={cm} className="tk" style={{ top: v.pan.y + cm * k }}>
+        {ticksY.map(({ cm, px }) => (
+          <span key={px} className="tk" style={{ top: px }}>
             {len(cm)}
           </span>
         ))}
@@ -592,11 +696,12 @@ export function Stage2D() {
       >
         <svg role="img" aria-label={t("planLabel", { name: scopeName })}>
           <FloorPattern k={k} />
-          <g transform={`translate(${v.pan.x} ${v.pan.y}) scale(${k})`}>
+          <g transform={`translate(${v.pan.x} ${v.pan.y}) scale(${k}) rotate(${v.rot})`}>
+            <ViewRotationContext value={v.rot}>
             {reference && bounds && !hidden.has("reference") && (
               <image href={reference} x={bounds.x} y={bounds.y} width={bounds.w} height={bounds.d} opacity={0.45} preserveAspectRatio="xMidYMid meet" />
             )}
-            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onFixedDown={startFixedDown} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} />
+            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onFixedDown={startFixedDown} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} onEditDim={editDim} />
             {suggestions.map(({ roomId, sg }) => {
               const o = plan.origins[roomId] ?? { x: 0, y: 0 };
               const f = sg.item!;
@@ -617,7 +722,7 @@ export function Stage2D() {
             })}
             {/* Ghost names, on top and moved clear of placed pieces, other ghosts and each other. */}
             {ghostLabels.map((l) => (
-              <g key={l.id} pointerEvents="none" data-testid={`designer-suggestion-label-${l.sgId}`}>
+              <g key={l.id} pointerEvents="none" data-testid={`designer-suggestion-label-${l.sgId}`} transform={`rotate(${-v.rot} ${l.x} ${l.y})`}>
                 <rect x={l.x - l.w / 2} y={l.y - l.h / 2} width={l.w} height={l.h} fill="#fbf6ec" fillOpacity={0.92} stroke={CLAY} strokeWidth={0.8} vectorEffect="non-scaling-stroke" />
                 <text x={l.x} y={l.y} fontSize={8 / k} textAnchor="middle" dominantBaseline="central" fill={CLAY_DARK} fontFamily="var(--mono)">
                   {l.text}
@@ -629,7 +734,7 @@ export function Stage2D() {
             {plan.annotations
               .filter((a) => a.kind === "note")
               .map((a) => (
-                <text key={a.id} x={a.a.x} y={a.a.y} fontSize={16 / k} fill="#2b2622" fontStyle="italic" fontFamily="var(--serif)">
+                <text key={a.id} x={a.a.x} y={a.a.y} fontSize={16 / k} fill="#2b2622" fontStyle="italic" fontFamily="var(--serif)" transform={`rotate(${-v.rot} ${a.a.x} ${a.a.y})`}>
                   {a.text}
                 </text>
               ))}
@@ -659,6 +764,7 @@ export function Stage2D() {
               />
             )}
             {hoverWall && <line x1={hoverWall.a.x} y1={hoverWall.a.y} x2={hoverWall.b.x} y2={hoverWall.b.y} stroke={CLAY} strokeWidth={4} vectorEffect="non-scaling-stroke" />}
+            </ViewRotationContext>
           </g>
         </svg>
       </div>
@@ -666,7 +772,7 @@ export function Stage2D() {
       <svg className="pl-compass" viewBox="-30 -30 60 60" aria-hidden>
         <circle r={26} fill="#fbf6ec" stroke="#2b2622" strokeWidth={1.2} />
         <circle r={21} fill="none" stroke="#b8a58a" strokeDasharray="2 3" />
-        <g transform={`rotate(${data.apartment.northAngleDeg})`}>
+        <g transform={`rotate(${data.apartment.northAngleDeg + v.rot})`}>
           <path d="M0 -20L6 4 0 0-6 4Z" fill={CLAY} stroke="#2b2622" strokeWidth={1} />
           <path d="M0 20L4 4 0 0-4 4Z" fill="#fbf6ec" stroke="#2b2622" strokeWidth={1} />
           <text y={-22} x={-3} fontFamily="var(--mono)" fontSize={8} fontWeight={600}>
@@ -709,6 +815,12 @@ export function Stage2D() {
         </div>
       )}
 
+      {tool === "wall" && wallPts.length >= 3 && (
+        <button type="button" className="pl-finish" data-testid="planner-finish-room" onClick={() => stage.current?.finish()}>
+          {t("finishRoom")} <kbd>Enter</kbd>
+        </button>
+      )}
+
       <div className="pl-tg pl-zfl calm-only" role="group" aria-label={t("zoom")}>
         <button type="button" onClick={() => zoomAt(1.2)} aria-label={t("zoomIn")}>
           +
@@ -732,7 +844,10 @@ export function Stage2D() {
         >
           <input
             autoFocus
-            aria-label={popover.kind === "label" ? t("roomName") : t("noteLabel")}
+            aria-label={popover.kind === "label" ? t("roomName") : popover.kind === "dim" ? t("dimValue", { unit }) : t("noteLabel")}
+            data-testid={popover.kind === "dim" ? "dim-input" : undefined}
+            inputMode={popover.kind === "dim" ? "decimal" : undefined}
+            onFocus={(e) => popover.kind === "dim" && e.currentTarget.select()}
             placeholder={popover.kind === "note" ? t("notePlaceholder") : undefined}
             value={popover.value}
             maxLength={popover.kind === "label" ? 60 : 200}
@@ -778,8 +893,8 @@ function FreeDim({ a, b, k, label, accent }: { a: Vec; b: Vec; k: number; label:
   const len = Math.hypot(d.x, d.y) || 1;
   const n = { x: -d.y / len, y: d.x / len };
   const tick = 4 / k;
-  let angle = (Math.atan2(d.y, d.x) * 180) / Math.PI;
-  if (angle > 90 || angle <= -90) angle += 180;
+  const rot = use(ViewRotationContext);
+  const angle = uprightAngle((Math.atan2(d.y, d.x) * 180) / Math.PI, rot);
   const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   const fs = 10 / k;
   const tw = label.length * fs * 0.62 + 6 / k;
@@ -813,12 +928,13 @@ interface RoomsLayerProps {
   onRoomDown: (r: PlanRoom, e: React.PointerEvent) => void;
   len: (cm: number) => string;
   kindLabel: (o: Opening) => string;
+  onEditDim: (roomId: string, target: DimensionTarget, cm: number, e: React.MouseEvent) => void;
 }
 
 const LAYER_ORDER: Record<FurnitureItem["placement"], number> = { floor_covering: 0, floor: 1, wall: 2, ceiling: 3 };
 
 /** Every room: shell, furniture, labels, dimensions and the selection box. */
-const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onRoomDown, len, kindLabel }: RoomsLayerProps) {
+const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onRoomDown, len, kindLabel, onEditDim }: RoomsLayerProps) {
   const off = new Set(hidden);
   const layers = { walls: !off.has("walls"), openings: !off.has("openings"), electrical: !off.has("electrical"), floor: !off.has("floor") };
   // Dimension lines sit 30 and 52 cm outside a wall; on a wall two rooms share, that is the neighbour's floor.
@@ -877,6 +993,7 @@ const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection,
                 len={len}
                 kindLabel={kindLabel}
                 shared={shared[r.room.id] ?? []}
+                onEdit={tool === "select" ? (target, cm, e) => onEditDim(r.room.id, target, cm, e) : undefined}
                 focus={scope === r.room.id ? "room" : selection?.kind === "opening" && selection.roomId === r.room.id ? (r.room.openings.find((op) => op.id === selection.id)?.wallIndex ?? null) : null}
               />
             )}

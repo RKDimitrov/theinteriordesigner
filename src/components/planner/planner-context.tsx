@@ -8,6 +8,7 @@ import type { Vec } from "@/domain/geometry/vec";
 import { blankDesign, type CataloguePiece, cataloguePieces, withFurniture } from "@/domain/planner/items";
 import { fromLegacy } from "@/domain/materials/library";
 import { layoutRooms } from "@/domain/planner/layout";
+import type { ViewRotation } from "@/domain/planner/view";
 import { checkRoom, type RoomIssue } from "@/domain/room/check-room";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room, RoomShape } from "@/domain/schemas/room";
@@ -16,7 +17,9 @@ import { validateDesign } from "@/domain/validator";
 import { saveRoomFinishesAction, savePlannerRoomAction, saveRoomPositionsAction } from "@/server/actions/planner";
 import { updateRoomAction } from "@/server/actions/rooms";
 import type { PlannerData } from "@/server/planner";
-import { type Action, type Annotation, initialState, type SavedView, type Plan, type PlannerState, type PlannerView, reducer, TOOL_KEY, TOOLS, type Units } from "./state";
+import { copySelection, type Clip, nudgeSelection, pasteClip, turnSelection } from "./edit-ops";
+import { matchShortcut } from "./shortcuts";
+import { type Action, type Annotation, initialState, type SavedView, type Plan, type PlannerState, type PlannerView, reducer, TOOLS, type Units } from "./state";
 
 /* ---------- plan context ---------- */
 
@@ -60,6 +63,8 @@ export function usePlanner(): PlannerCtx {
 export interface ViewState {
   zoom: number;
   pan: Vec;
+  /** Quarter turns of the plan view; the rooms do not change. */
+  rot: ViewRotation;
 }
 
 export interface StageApi {
@@ -67,6 +72,16 @@ export interface StageApi {
   fit: () => void;
   /** Screen (stage-relative px) to apartment cm. */
   toWorld: (p: Vec) => Vec;
+  /** The pointer on the plan (apartment cm), or null when it is off the plan. */
+  cursor: () => Vec | null;
+  /** True while the wall tool has corners down. */
+  drawing: () => boolean;
+  /** Close the outline being drawn into a room. */
+  finish: () => void;
+  /** Take back the last corner drawn. */
+  back: () => void;
+  /** Turn the plan view a quarter: 1 clockwise, −1 back. */
+  rotateView: (dir: 1 | -1) => void;
 }
 
 interface ViewCtx {
@@ -149,7 +164,7 @@ export function PlannerProvider({
     const valid = arm !== null && cataloguePieces(data.mustKeep).some((p) => p.key === arm);
     return valid ? { ...st, armed: arm, drawerOpen: true } : st;
   });
-  const [v, setViewState] = useState<ViewState>({ zoom: 1, pan: { x: 0, y: 0 } });
+  const [v, setViewState] = useState<ViewState>({ zoom: 1, pan: { x: 0, y: 0 }, rot: 0 });
   const setV = useCallback((fn: (v: ViewState) => ViewState) => setViewState(fn), []);
   const stage = useRef<StageApi | null>(null);
   const units: Units = s.units;
@@ -303,45 +318,98 @@ export function PlannerProvider({
 
   /* ---- keyboard ---- */
   const sRef = useRef(s);
+  const clip = useRef<Clip | null>(null);
+  const toastRef = useRef<(m: string) => void>(() => undefined);
+  const tRef = useRef(t);
   useEffect(() => {
     sRef.current = s;
+    tRef.current = t;
   });
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement | null;
       if (el && (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName))) return;
       const st = sRef.current;
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        dispatch({ type: e.shiftKey ? "redo" : "undo" });
-        return;
+      // The walkthrough has its own keys.
+      if (st.walking) return;
+      const action = matchShortcut(e, st.mode === "2d" && !!stage.current?.drawing());
+      if (!action) return;
+      const sel = st.selection;
+      const done = () => e.preventDefault();
+      switch (action) {
+        case "undo":
+        case "redo":
+          done();
+          return dispatch({ type: action });
+        case "copy": {
+          const c = copySelection(st.plan, sel);
+          if (!c) return;
+          done();
+          clip.current = c;
+          return toastRef.current(tRef.current("copied"));
+        }
+        case "paste":
+        case "duplicate": {
+          const c = action === "paste" ? clip.current : copySelection(st.plan, sel);
+          if (!c) return;
+          done();
+          const at = action === "paste" && st.mode === "2d" ? (stage.current?.cursor() ?? undefined) : undefined;
+          const res = pasteClip(st.plan, c, { at });
+          if (!res) return;
+          dispatch({ type: "edit", fn: () => res.plan });
+          return dispatch({ type: "select", selection: res.selection });
+        }
+        case "delete":
+          if (!sel) return;
+          done();
+          dispatch({ type: "edit", fn: (p) => removeSelected(p, sel) });
+          return dispatch({ type: "select", selection: null });
+        case "escape":
+          dispatch({ type: "set", patch: { selection: null, armed: null, swapFor: null, helpOpen: false } });
+          if (st.tool !== "select") dispatch({ type: "tool", tool: "select" });
+          return;
+        case "finish":
+          if (st.mode !== "2d" || !stage.current?.drawing()) return;
+          done();
+          return stage.current.finish();
+        case "back":
+          done();
+          return stage.current?.back();
+        case "nudgeLeft":
+        case "nudgeRight":
+        case "nudgeUp":
+        case "nudgeDown": {
+          if (!sel || st.mode !== "2d") return;
+          done();
+          const step = e.shiftKey ? 10 : 1;
+          const [dx, dy] = { nudgeLeft: [-step, 0], nudgeRight: [step, 0], nudgeUp: [0, -step], nudgeDown: [0, step] }[action];
+          // Arrows move on screen, which the plan view may have turned.
+          const v = stage.current?.toWorld({ x: dx!, y: dy! });
+          const o = stage.current?.toWorld({ x: 0, y: 0 });
+          const len = v && o ? Math.hypot(v.x - o.x, v.y - o.y) || 1 : 1;
+          const mx = v && o ? Math.round(((v.x - o.x) / len) * step) : dx!;
+          const my = v && o ? Math.round(((v.y - o.y) / len) * step) : dy!;
+          return dispatch({ type: "edit", fn: (p) => nudgeSelection(p, sel, mx, my) });
+        }
+        case "turnLeft":
+        case "turnRight":
+          if (sel?.kind !== "item") return;
+          done();
+          return dispatch({ type: "edit", fn: (p) => turnSelection(p, sel, action === "turnLeft" ? -45 : 45) });
+        case "viewLeft":
+        case "viewRight":
+          if (st.mode !== "2d") return;
+          done();
+          return stage.current?.rotateView(action === "viewLeft" ? -1 : 1);
+        case "toggle3d":
+          return dispatch({ type: "mode", mode: st.mode === "2d" ? "3d" : "2d" });
+        case "help":
+          done();
+          return dispatch({ type: "set", patch: { helpOpen: !st.helpOpen } });
+        default:
+          if (st.mode !== "2d") return;
+          return dispatch({ type: "tool", tool: action.slice(5) as (typeof TOOLS)[number] });
       }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") {
-        e.preventDefault();
-        dispatch({ type: "redo" });
-        return;
-      }
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key === "Escape") {
-        dispatch({ type: "set", patch: { selection: null, armed: null, swapFor: null } });
-        if (st.tool !== "select") dispatch({ type: "tool", tool: "select" });
-        return;
-      }
-      if (e.key === "Delete" || e.key === "Backspace") {
-        const sel = st.selection;
-        if (!sel) return;
-        e.preventDefault();
-        dispatch({ type: "edit", fn: (p) => removeSelected(p, sel) });
-        dispatch({ type: "select", selection: null });
-        return;
-      }
-      if (e.key === "3") {
-        dispatch({ type: "mode", mode: st.mode === "2d" ? "3d" : "2d" });
-        return;
-      }
-      if (st.mode !== "2d") return;
-      const tool = TOOLS.find((k) => TOOL_KEY[k].toLowerCase() === e.key.toLowerCase());
-      if (tool) dispatch({ type: "tool", tool });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

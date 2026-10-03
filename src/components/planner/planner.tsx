@@ -9,6 +9,7 @@ import type { PlannerData } from "@/server/planner";
 import "./planner.css";
 import { CatalogueDrawer } from "./catalogue-drawer";
 import { Inspector2D } from "./inspector";
+import { KeyboardHelp } from "./keyboard-help";
 import { CameraPanel, Inspector3D } from "./panels-3d";
 import { PlannerProvider, usePlanner } from "./planner-context";
 import { Stage2D } from "./stage-2d";
@@ -99,6 +100,7 @@ function Shell({ opens3d }: { opens3d: Opens3d }) {
           </>
         )}
       </div>
+      <KeyboardHelp />
       {toastMessage && (
         <div className="pl-toast" role="status">
           {toastMessage}
