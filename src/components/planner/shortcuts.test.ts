@@ -39,6 +39,14 @@ describe("matchShortcut", () => {
     expect(matchShortcut(press("?", { shift: true }), false)).toBe("help");
   });
 
+  it("lists Shift and Ctrl held while drawing, without making them commands", () => {
+    expect(matchShortcut(press("Shift", { shift: true }), false)).toBeNull();
+    expect(matchShortcut(press("Control", { ctrl: true }), false)).toBeNull();
+    const held = SHORTCUTS.filter((s) => s.hold).map((s) => s.action);
+    expect(held).toEqual(["straight", "noSnap"]);
+    expect(shortcutLabel(SHORTCUTS.find((s) => s.action === "noSnap")!, true)).toBe("⌘");
+  });
+
   it("gives every key combination one meaning", () => {
     const seen = new Map<string, string>();
     for (const s of SHORTCUTS) {

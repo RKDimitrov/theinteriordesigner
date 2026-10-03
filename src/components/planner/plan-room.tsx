@@ -570,7 +570,7 @@ export function WallGrip({ room, onDown }: { room: Room; onDown: (e: React.Point
 }
 
 /** Handles on the room's corners: drag one to move that corner, tilting the two walls that meet there. */
-export function CornerHandles({ room, k, onDown }: { room: Room; k: number; onDown: (index: number, e: React.PointerEvent) => void }) {
+export function CornerHandles({ room, k, onDown, selected = null }: { room: Room; k: number; onDown: (index: number, e: React.PointerEvent) => void; selected?: number | null }) {
   const s = Math.max(4, 6 / k);
   return (
     <g>
@@ -581,12 +581,13 @@ export function CornerHandles({ room, k, onDown }: { room: Room; k: number; onDo
           y={p.y - s}
           width={s * 2}
           height={s * 2}
-          fill={SHEET}
+          fill={i === selected ? CLAY : SHEET}
           stroke={CLAY}
           strokeWidth={1.5}
           vectorEffect="non-scaling-stroke"
           style={{ cursor: "crosshair" }}
           data-testid={`room-corner-${i}`}
+          data-selected={i === selected ? "" : undefined}
           onPointerDown={(e) => onDown(i, e)}
         />
       ))}
@@ -594,8 +595,29 @@ export function CornerHandles({ room, k, onDown }: { room: Room; k: number; onDo
   );
 }
 
+/** Snapping guides: dashed lines from what a point lined up with, and a ring when it landed on a corner. */
+export function SnapGuides({ lines, ring, k }: { lines: readonly { from: Vec; to: Vec }[]; ring?: Vec; k: number }) {
+  return (
+    <g pointerEvents="none" data-testid="snap-guides">
+      {lines.map((l, i) => (
+        <line key={i} x1={l.from.x} y1={l.from.y} x2={l.to.x} y2={l.to.y} stroke={CLAY} strokeWidth={1} strokeDasharray="4 3" vectorEffect="non-scaling-stroke" />
+      ))}
+      {ring && <circle cx={ring.x} cy={ring.y} r={7 / k} fill="none" stroke={CLAY} strokeWidth={1.5} vectorEffect="non-scaling-stroke" data-testid="snap-ring" />}
+    </g>
+  );
+}
+
+/** The selected wall, drawn over the wall band. */
+export function WallHighlight({ room, index }: { room: Room; index: number }) {
+  const n = room.polygon.length;
+  const a = room.polygon[index];
+  const b = room.polygon[(index + 1) % n];
+  if (!a || !b) return null;
+  return <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={CLAY} strokeWidth={6} strokeLinecap="round" vectorEffect="non-scaling-stroke" pointerEvents="none" data-testid={`wall-selected-${index}`} />;
+}
+
 /** Sheet box with the room name (serif) and area (mono), at the room's centre. Click-through, so pieces under it stay reachable. */
-export function RoomLabel({ room, k }: { room: Room; k: number }) {
+export function RoomLabel({ room, k, onSelect, selected = false }: { room: Room; k: number; onSelect?: (e: React.PointerEvent) => void; selected?: boolean }) {
   const rot = use(ViewRotationContext);
   const b = bbox(room.polygon);
   const c = { x: b.x + b.w / 2, y: b.y + b.d / 2 };
@@ -607,7 +629,21 @@ export function RoomLabel({ room, k }: { room: Room; k: number }) {
   const h = fsName + fsArea + 12 / k;
   return (
     <g pointerEvents="none" data-room-label={room.id} transform={`rotate(${-rot} ${c.x} ${c.y})`}>
-      <rect x={c.x - w / 2} y={c.y - h / 2} width={w} height={h} fill={SHEET} stroke={INK} strokeWidth={1.2} vectorEffect="non-scaling-stroke" />
+      {/* Only the box itself takes clicks (to select the room), so pieces around it stay reachable. */}
+      <rect
+        x={c.x - w / 2}
+        y={c.y - h / 2}
+        width={w}
+        height={h}
+        fill={SHEET}
+        stroke={selected ? CLAY : INK}
+        strokeWidth={selected ? 2.4 : 1.2}
+        vectorEffect="non-scaling-stroke"
+        pointerEvents={onSelect ? "all" : "none"}
+        style={onSelect ? { cursor: "pointer" } : undefined}
+        onPointerDown={onSelect}
+        data-testid={onSelect ? `room-label-${room.id}` : undefined}
+      />
       <text x={c.x} y={c.y - h / 2 + 5 / k + fsName * 0.85} fontSize={fsName} textAnchor="middle" fill={INK} fontFamily="var(--serif)">
         {name}
       </text>

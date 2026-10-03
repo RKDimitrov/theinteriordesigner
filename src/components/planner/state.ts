@@ -60,7 +60,15 @@ export interface Plan {
   annotations: Annotation[];
 }
 
-export type Selection = { kind: "item" | "opening" | "fixed" | "innerWall" | "zone"; roomId: string; id: string } | null;
+/**
+ * What is selected. A corner or a wall is named by its number in the room's
+ * outline (as a string); a room by its own id; an annotation (dimension line,
+ * note) belongs to the plan, not a room, so its roomId is PLAN_LEVEL.
+ */
+export type Selection = { kind: "item" | "opening" | "fixed" | "innerWall" | "zone" | "corner" | "wall" | "room" | "annotation"; roomId: string; id: string } | null;
+
+/** roomId of selections that belong to the whole plan (annotations). */
+export const PLAN_LEVEL = "";
 
 export interface Camera {
   eyeHeight: number;
@@ -71,8 +79,8 @@ export interface Camera {
 }
 
 export const CAMERA_PRESETS = {
-  eye: { eyeHeight: 165, rotation: 330, tilt: 80, lens: 24, distance: 1.35 },
-  architect: { eyeHeight: 165, rotation: 325, tilt: 58, lens: 35, distance: 1 },
+  eye: { eyeHeight: 168, rotation: 330, tilt: 80, lens: 24, distance: 1.35 },
+  architect: { eyeHeight: 168, rotation: 325, tilt: 58, lens: 35, distance: 1 },
   bird: { eyeHeight: 400, rotation: 340, tilt: 35, lens: 35, distance: 0.75 },
   plan: { eyeHeight: 250, rotation: 0, tilt: 0, lens: 85, distance: 1 },
 } as const satisfies Record<string, Camera>;
@@ -166,6 +174,8 @@ export type Action =
   | { type: "undo" }
   | { type: "redo" }
   | { type: "add-room"; room: PlanRoom; origin: Vec }
+  /** A room deleted on the server: gone from the plan and from every undo step, so undo cannot bring back a room that no longer exists. */
+  | { type: "remove-room"; roomId: string }
   | { type: "set"; patch: Partial<Omit<PlannerState, "plan" | "past" | "future" | "gestureBase">> }
   | { type: "tool"; tool: Tool }
   | { type: "scope"; scope: "all" | string }
@@ -255,6 +265,23 @@ export function reducer(s: PlannerState, a: Action): PlannerState {
         visible3d: s.scope === "all" ? [...s.visible3d, a.room.room.id] : s.visible3d,
       };
     }
+    case "remove-room": {
+      const drop = (p: Plan): Plan => {
+        if (!p.rooms.some((r) => r.room.id === a.roomId)) return p;
+        const origins = Object.fromEntries(Object.entries(p.origins).filter(([id]) => id !== a.roomId));
+        return { ...p, rooms: p.rooms.filter((r) => r.room.id !== a.roomId), origins };
+      };
+      return {
+        ...s,
+        plan: drop(s.plan),
+        past: s.past.map(drop),
+        future: s.future.map(drop),
+        gestureBase: s.gestureBase && drop(s.gestureBase),
+        visible3d: s.visible3d.filter((id) => id !== a.roomId),
+        scope: s.scope === a.roomId ? "all" : s.scope,
+        selection: s.selection?.roomId === a.roomId ? null : s.selection,
+      };
+    }
     case "set":
       return { ...s, ...a.patch };
     case "tool":
@@ -286,11 +313,24 @@ export function reducer(s: PlannerState, a: Action): PlannerState {
   }
 }
 
-function keepSelection(plan: Plan, sel: Selection): Selection {
+/** The selection, if what it names still exists in `plan` (after undo or redo). */
+export function keepSelection(plan: Plan, sel: Selection): Selection {
   if (!sel) return null;
+  if (sel.kind === "annotation") return plan.annotations.some((a) => a.id === sel.id) ? sel : null;
   const room = plan.rooms.find((r) => r.room.id === sel.roomId);
   if (!room) return null;
-  const exists = sel.kind === "item" ? room.furniture.some((f) => f.id === sel.id) : room.room.openings.some((o) => o.id === sel.id);
+  const r = room.room;
+  const n = Number(sel.id);
+  const exists = {
+    item: () => room.furniture.some((f) => f.id === sel.id),
+    opening: () => r.openings.some((o) => o.id === sel.id) || r.innerWalls.some((w) => w.openings.some((o) => o.id === sel.id)),
+    fixed: () => r.fixedElements.some((f) => f.id === sel.id),
+    innerWall: () => r.innerWalls.some((w) => w.id === sel.id),
+    zone: () => r.floorZones.some((z) => z.id === sel.id),
+    corner: () => Number.isInteger(n) && n >= 0 && n < r.polygon.length,
+    wall: () => Number.isInteger(n) && n >= 0 && n < r.polygon.length,
+    room: () => true,
+  }[sel.kind]();
   return exists ? sel : null;
 }
 

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { memo, use, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { toast as sonner } from "sonner";
 import { convexOverlap, itemFootprint } from "@/domain/geometry/obb";
+import { type Guide, snapOffset, snapPoint, snapStraight, type SnapTargets } from "@/domain/planner/snap";
 import { area, bbox, containsPoint, rectPolygon, toClockwise } from "@/domain/geometry/polygon";
 import { clamp, m2 } from "@/domain/geometry/units";
 import { distance, sub, type Vec } from "@/domain/geometry/vec";
@@ -23,8 +24,8 @@ import type { FurnitureItem } from "@/domain/schemas/design";
 import type { FixedElement, FloorZone, InnerWall, Opening, OpeningKind } from "@/domain/schemas/room";
 import { createRoomAction } from "@/server/actions/rooms";
 import { PX_PER_CM, removeSelected, roomBox, SNAP_CM, usePlanner, useView, ZOOM_MAX, ZOOM_MIN } from "./planner-context";
-import { CornerHandles, FixedHits, FloorPattern, InnerWallHits, OpeningHits, RoomDimensions, RoomLabel, RoomShell, ViewRotationContext, WallGrip, ZoneHits } from "./plan-room";
-import { inScope, mapItem, mapRoom, type Plan, type PlanRoom, type Tool } from "./state";
+import { CornerHandles, SnapGuides, WallHighlight, FixedHits, FloorPattern, InnerWallHits, OpeningHits, RoomDimensions, RoomLabel, RoomShell, ViewRotationContext, WallGrip, ZoneHits } from "./plan-room";
+import { inScope, mapItem, mapRoom, PLAN_LEVEL, type Plan, type PlanRoom, type Selection, type Tool } from "./state";
 import { PieceSymbol } from "./symbols";
 import { PIECE_MODELS } from "./three/assets";
 
@@ -76,7 +77,10 @@ export function Stage2D() {
   const [rect, setRect] = useState<{ a: Vec; b: Vec } | null>(null);
   /** Where the inner wall being drawn starts (apartment cm), and its room. */
   const [innerStart, setInnerStart] = useState<{ roomId: string; p: Vec } | null>(null);
-  const [shiftDown, setShiftDown] = useState(false);
+  /** Snapping feedback while drawing or dragging: guide lines and a ring on an exact corner. */
+  const [guides, setGuides] = useState<{ lines: Guide[]; ring?: Vec } | null>(null);
+  /** Where the next point of a wall or inner wall would land, for the preview line. */
+  const [preview, setPreview] = useState<Vec | null>(null);
   const [panning, setPanning] = useState(false);
 
   const k = PX_PER_CM * v.zoom;
@@ -219,11 +223,75 @@ export function Stage2D() {
     setToolSeen(s.tool);
     setWallPts([]);
     setInnerStart(null);
+    setPreview(null);
+    setGuides(null);
     setMeasure(null);
     setDimStart(null);
     setHoverWall(null);
     setPopover(null);
   }
+
+  /* ---- snapping to what is already drawn ---- */
+  /** Reach of snapping, in screen pixels. */
+  const SNAP_PX = 8;
+  type Keys = { shiftKey: boolean; ctrlKey: boolean; metaKey: boolean };
+  interface Skip {
+    roomId?: string;
+    /** A corner being dragged: it and its two walls are left out. */
+    corner?: number;
+    wholeRoom?: boolean;
+    /** A piece, fixed element or inner wall being moved. */
+    id?: string;
+  }
+  /** Corners and walls of every room, inner-wall ends and the corners of fixed elements and pieces (apartment cm), minus what is moving. */
+  const snapTargets = (skip: Skip = {}, extra: readonly Vec[] = []): SnapTargets => {
+    const points: Vec[] = [...extra];
+    const segments: [Vec, Vec][] = [];
+    for (const r of plan.rooms) {
+      if (skip.wholeRoom && r.room.id === skip.roomId) continue;
+      const o = plan.origins[r.room.id] ?? { x: 0, y: 0 };
+      const at = (p: Vec) => ({ x: p.x + o.x, y: p.y + o.y });
+      const poly = r.room.polygon.map(at);
+      const n = poly.length;
+      const mine = r.room.id === skip.roomId && skip.corner !== undefined;
+      poly.forEach((p, i) => {
+        if (!(mine && i === skip.corner)) points.push(p);
+        if (!(mine && (i === skip.corner || (i + 1) % n === skip.corner))) segments.push([p, poly[(i + 1) % n]!]);
+      });
+      for (const w of r.room.innerWalls) if (w.id !== skip.id) points.push(at(w.a), at(w.b));
+      for (const f of r.room.fixedElements) if (f.id !== skip.id) points.push(...rectPolygon(f.rect.w, f.rect.d, f.rect.x, f.rect.y).map(at));
+      for (const f of r.furniture) if (f.id !== skip.id) points.push(...itemFootprint(f).map(at));
+    }
+    return { points, segments };
+  };
+  /** Snapping is off with the Snap toggle, or while Ctrl (Cmd) is held. */
+  const snapOff = (e: Keys) => !s.snap || e.ctrlKey || e.metaKey;
+  /**
+   * Where a drawn or dragged point lands (apartment cm): on a corner or wall
+   * nearby, or lined up with corners; with Shift, straight (0, 45, 90°) from
+   * one of `anchors`. Shows the guides it used.
+   */
+  const landPoint = (w: Vec, e: Keys, anchors: readonly Vec[] = [], skip: Skip = {}, extra: readonly Vec[] = []): Vec => {
+    if (snapOff(e)) {
+      setGuides(null);
+      return e.shiftKey && anchors.length > 0 ? snapStraight(w, anchors, { points: [], segments: [] }, 0).p : snapV(w);
+    }
+    const t = snapTargets(skip, extra);
+    const g = snapV(w);
+    const res = e.shiftKey && anchors.length > 0 ? snapStraight(g, anchors, t, SNAP_PX / k) : snapPoint(g, t, SNAP_PX / k);
+    setGuides(res.guides.length > 0 || res.ring ? { lines: res.guides, ring: res.ring } : null);
+    return res.p;
+  };
+  /** How far to shift a moving shape, given by its corners (apartment cm), so it lines up with what is around it. */
+  const landShift = (corners: readonly Vec[], e: Keys, skip: Skip): { dx: number; dy: number } => {
+    if (snapOff(e)) {
+      setGuides(null);
+      return { dx: 0, dy: 0 };
+    }
+    const res = snapOffset(corners, snapTargets(skip), SNAP_PX / k);
+    setGuides(res.guides.length > 0 ? { lines: res.guides } : null);
+    return { dx: res.dx, dy: res.dy };
+  };
 
   /* ---- geometry helpers ---- */
   const local = (roomId: string, w: Vec): Vec => {
@@ -317,16 +385,6 @@ export function Stage2D() {
     wallPtsRef.current = wallPts;
   }, [wallPts]);
 
-  // Shift keeps an inner wall being drawn straight; the preview follows it.
-  useEffect(() => {
-    const on = (e: KeyboardEvent) => setShiftDown(e.shiftKey);
-    window.addEventListener("keydown", on);
-    window.addEventListener("keyup", on);
-    return () => {
-      window.removeEventListener("keydown", on);
-      window.removeEventListener("keyup", on);
-    };
-  }, []);
 
   const createRoom = async (polygonWorld: Vec[]) => {
     const poly = toClockwise(polygonWorld.map(snapV));
@@ -363,7 +421,7 @@ export function Stage2D() {
     const w = toWorld(sp);
     paper.current?.setPointerCapture(e.pointerId);
     if (tool === "room" || tool === "zone") {
-      const a = snapV(w);
+      const a = landPoint(w, e);
       drag.current = { kind: "rect", start: a, cur: a };
       setRect({ a, b: a });
       return;
@@ -379,6 +437,10 @@ export function Stage2D() {
     cursorRef.current = w;
     const d = drag.current;
     if (!d) {
+      // Drawing tools show where the next point would land, lined up with what is already drawn.
+      if (tool === "wall") setPreview(landPoint(w, e, wallPts.slice(-1), {}, wallPts));
+      else if (tool === "innerWall") setPreview(landPoint(w, e, innerStart ? [innerStart.p] : []));
+      else if (tool === "room" || tool === "zone") landPoint(w, e);
       const kind = OPENING_TOOLS[tool];
       if (kind) {
         const hit = wallHit(w);
@@ -407,7 +469,18 @@ export function Stage2D() {
         const dy = w.y - d.start.y;
         if (!d.moved && Math.hypot(dx, dy) * k < 3) return;
         d.moved = true;
-        dispatch({ type: "edit", fn: (pl) => mapItem(pl, d.roomId, d.id, (f) => ({ ...f, x: snap(d.x0 + dx), y: snap(d.y0 + dy) })) });
+        let x = snap(d.x0 + dx);
+        let y = snap(d.y0 + dy);
+        const pr = plan.rooms.find((r) => r.room.id === d.roomId);
+        const item = pr?.furniture.find((f) => f.id === d.id);
+        if (item) {
+          // Its edges line up with walls and with the pieces around it.
+          const o = plan.origins[d.roomId] ?? { x: 0, y: 0 };
+          const shift = landShift(itemFootprint({ ...item, x, y }).map((p) => ({ x: p.x + o.x, y: p.y + o.y })), e, { id: d.id });
+          x += shift.dx;
+          y += shift.dy;
+        }
+        dispatch({ type: "edit", fn: (pl) => mapItem(pl, d.roomId, d.id, (f) => ({ ...f, x, y })) });
         return;
       }
       case "fixed": {
@@ -415,8 +488,15 @@ export function Stage2D() {
         const dy = w.y - d.start.y;
         if (!d.moved && Math.hypot(dx, dy) * k < 3) return;
         d.moved = true;
-        const x = snap(d.x0 + dx);
-        const y = snap(d.y0 + dy);
+        let x = snap(d.x0 + dx);
+        let y = snap(d.y0 + dy);
+        const fe = plan.rooms.find((r) => r.room.id === d.roomId)?.room.fixedElements.find((f) => f.id === d.id);
+        if (fe) {
+          const o = plan.origins[d.roomId] ?? { x: 0, y: 0 };
+          const shift = landShift(rectPolygon(fe.rect.w, fe.rect.d, x + o.x, y + o.y), e, { id: d.id });
+          x += shift.dx;
+          y += shift.dy;
+        }
         dispatch({
           type: "edit",
           fn: (pl) => mapRoom(pl, d.roomId, (r) => ({ ...r, room: { ...r.room, fixedElements: r.room.fixedElements.map((f) => (f.id === d.id && (f.rect.x !== x || f.rect.y !== y) ? { ...f, rect: { ...f.rect, x, y } } : f)) } })),
@@ -428,7 +508,13 @@ export function Stage2D() {
         const dy = w.y - d.start.y;
         if (!d.moved && Math.hypot(dx, dy) * k < 3) return;
         d.moved = true;
-        const p = { x: snap(d.p0.x + dx), y: snap(d.p0.y + dy) };
+        // Lands on or lines up with other rooms' corners and walls; Shift keeps one of its walls straight.
+        const o = plan.origins[d.roomId] ?? { x: 0, y: 0 };
+        const own = plan.rooms.find((r) => r.room.id === d.roomId)?.room.polygon ?? [];
+        const nb = own.length;
+        const anchors = nb ? [own[(d.index - 1 + nb) % nb]!, own[(d.index + 1) % nb]!].map((q) => ({ x: q.x + o.x, y: q.y + o.y })) : [];
+        const wp = landPoint({ x: d.p0.x + o.x + dx, y: d.p0.y + o.y + dy }, e, anchors, { roomId: d.roomId, corner: d.index });
+        const p = { x: wp.x - o.x, y: wp.y - o.y };
         dispatch({
           type: "edit",
           fn: (pl) =>
@@ -463,15 +549,22 @@ export function Stage2D() {
         if (!d.moved && Math.hypot(dx, dy) * k < 3) return;
         d.moved = true;
         // An end follows the pointer (Shift keeps the wall straight); the wall itself moves whole.
+        const o = plan.origins[d.roomId] ?? { x: 0, y: 0 };
+        const world = (p: Vec) => ({ x: p.x + o.x, y: p.y + o.y });
+        const back = (p: Vec) => ({ x: p.x - o.x, y: p.y - o.y });
         const move = (p: Vec) => ({ x: snap(p.x + dx), y: snap(p.y + dy) });
         let a = d.end === "b" ? d.a0 : move(d.a0);
         let b = d.end === "a" ? d.b0 : move(d.b0);
-        if (d.end && e.shiftKey) {
-          const fixed = d.end === "a" ? b : a;
-          const free = d.end === "a" ? a : b;
-          const straight = Math.abs(free.x - fixed.x) > Math.abs(free.y - fixed.y) ? { x: free.x, y: fixed.y } : { x: fixed.x, y: free.y };
-          if (d.end === "a") a = straight;
-          else b = straight;
+        if (d.end) {
+          // The end lands on walls and corners; Shift keeps the wall straight from its other end.
+          const fixed = d.end === "a" ? d.b0 : d.a0;
+          const free = back(landPoint(world({ x: (d.end === "a" ? d.a0 : d.b0).x + dx, y: (d.end === "a" ? d.a0 : d.b0).y + dy }), e, [world(fixed)], { id: d.id }));
+          if (d.end === "a") a = free;
+          else b = free;
+        } else {
+          const shift = landShift([world(a), world(b)], e, { id: d.id });
+          a = { x: a.x + shift.dx, y: a.y + shift.dy };
+          b = { x: b.x + shift.dx, y: b.y + shift.dy };
         }
         dispatch({ type: "edit", fn: (pl) => mapRoom(pl, d.roomId, (r) => ({ ...r, room: { ...r.room, innerWalls: r.room.innerWalls.map((iw) => (iw.id === d.id ? { ...iw, a, b } : iw)) } })) });
         return;
@@ -504,12 +597,16 @@ export function Stage2D() {
         const dy = w.y - d.start.y;
         if (!d.moved && Math.hypot(dx, dy) * k < 3) return;
         d.moved = true;
-        const origin = { x: snap(d.origin0.x + dx), y: snap(d.origin0.y + dy) };
+        const raw = { x: snap(d.origin0.x + dx), y: snap(d.origin0.y + dy) };
+        // The room's corners line up with the rooms around it.
+        const poly = plan.rooms.find((r) => r.room.id === d.roomId)?.room.polygon ?? [];
+        const shift = landShift(poly.map((p) => ({ x: p.x + raw.x, y: p.y + raw.y })), e, { roomId: d.roomId, wholeRoom: true });
+        const origin = { x: raw.x + shift.dx, y: raw.y + shift.dy };
         dispatch({ type: "edit", fn: (pl) => ({ ...pl, origins: { ...pl.origins, [d.roomId]: origin } }) });
         return;
       }
       case "rect": {
-        d.cur = snapV(w);
+        d.cur = landPoint(w, e);
         setRect({ a: d.start, b: d.cur });
         return;
       }
@@ -520,11 +617,18 @@ export function Stage2D() {
     const d = drag.current;
     drag.current = null;
     setPanning(false);
+    setGuides(null);
     if (paper.current?.hasPointerCapture(e.pointerId)) paper.current.releasePointerCapture(e.pointerId);
     const w = toWorld(eventPoint(e));
     if (d?.kind === "press") return;
     if (d && d.kind !== "pan" && d.kind !== "rect") {
       dispatch({ type: "gesture-end" });
+      // A press on a room's wall band that did not move the room selects that wall.
+      if (d.kind === "room" && !d.moved) {
+        const r = plan.rooms.find((x) => x.room.id === d.roomId);
+        const hit = r ? nearestWall(wallsOf(r.room.polygon), local(r.room.id, d.start), Infinity) : null;
+        if (r && hit) select({ kind: "wall", roomId: r.room.id, id: String(hit.wall.index) });
+      }
       return;
     }
     if (d?.kind === "rect" && tool === "zone") {
@@ -555,7 +659,7 @@ export function Stage2D() {
         if (!measure || measure.b) return setMeasure({ a: snapV(w) });
         return setMeasure({ ...measure, b: snapV(w) });
       case "innerWall": {
-        const p = snapV(w);
+        const p = landPoint(w, e, innerStart ? [innerStart.p] : []);
         if (!innerStart) {
           const r = roomAt(w);
           if (!r) return toast(t("placeInside"));
@@ -563,7 +667,7 @@ export function Stage2D() {
         }
         const start = innerStart;
         setInnerStart(null);
-        const end = e.shiftKey ? straightFrom(start.p, p) : p;
+        const end = p;
         if (distance(start.p, end) < 20) return toast(t("innerWallShort"));
         return addInnerWall(start.roomId, start.p, end);
       }
@@ -578,7 +682,8 @@ export function Stage2D() {
         return;
       }
       case "wall": {
-        const p = snapV(w);
+        // Lands on corners and walls already drawn (and this wall's own points); Shift keeps it straight from the last point.
+        const p = landPoint(w, e, wallPts.slice(-1), {}, wallPts);
         const first = wallPts[0];
         if (first && wallPts.length >= 3 && distance(first, p) * k < 12) {
           void createRoom(wallPts);
@@ -631,9 +736,6 @@ export function Stage2D() {
     drag.current = { kind: "opening", roomId: r.room.id, id: o.id, start: toWorld(eventPoint(e)), offset0: o.offset, moved: false };
   };
 
-  /** The point `p` moved onto the straight line across or down from `from`. */
-  const straightFrom = (from: Vec, p: Vec): Vec => (Math.abs(p.x - from.x) > Math.abs(p.y - from.y) ? { x: p.x, y: from.y } : { x: from.x, y: p.y });
-
   const addInnerWall = (roomId: string, aWorld: Vec, bWorld: Vec) => {
     const r = plan.rooms.find((x) => x.room.id === roomId);
     if (!r) return;
@@ -665,12 +767,22 @@ export function Stage2D() {
     drag.current = { kind: "innerWall", roomId: r.room.id, id: wall.id, start: toWorld(eventPoint(e)), a0: wall.a, b0: wall.b, end, moved: false };
   };
 
+  /** Selects without dragging; the pointer-up must not clear it. */
+  const pressSelect = (selection: NonNullable<Selection>, e: React.PointerEvent) => {
+    if (tool !== "select" || e.button !== 0) return;
+    e.stopPropagation();
+    paper.current?.setPointerCapture(e.pointerId);
+    select(selection);
+    drag.current = { kind: "press" };
+  };
+
   const startCornerDown = (r: PlanRoom, index: number, e: React.PointerEvent) => {
     if (tool !== "select" || e.button !== 0) return;
     const p0 = r.room.polygon[index];
     if (!p0) return;
     e.stopPropagation();
     paper.current?.setPointerCapture(e.pointerId);
+    select({ kind: "corner", roomId: r.room.id, id: String(index) });
     dispatch({ type: "gesture-start" });
     drag.current = { kind: "corner", roomId: r.room.id, index, start: toWorld(eventPoint(e)), p0, moved: false };
   };
@@ -874,7 +986,7 @@ export function Stage2D() {
             {reference && bounds && !hidden.has("reference") && (
               <image href={reference} x={bounds.x} y={bounds.y} width={bounds.w} height={bounds.d} opacity={0.45} preserveAspectRatio="xMidYMid meet" />
             )}
-            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onFixedDown={startFixedDown} onInnerWallDown={startInnerWallDown} onZoneDown={startZoneDown} onCornerDown={startCornerDown} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} onEditDim={editDim} />
+            <RoomsLayer plan={plan} scope={s.scope} hidden={s.hidden} k={k} selection={s.selection} tool={tool} onItemDown={startItemDrag} onRotateDown={startRotate} onOpeningDown={startOpeningDrag} onFixedDown={startFixedDown} onInnerWallDown={startInnerWallDown} onZoneDown={startZoneDown} onCornerDown={startCornerDown} onRoomSelect={(r, e) => pressSelect({ kind: "room", roomId: r.room.id, id: r.room.id }, e)} onRoomDown={startRoomDrag} len={len} kindLabel={(o) => (o.kind === "door" && o.swing === "none" ? t("passShort") : tk(o.kind).toLowerCase())} onEditDim={editDim} />
             {suggestions.map(({ roomId, sg }) => {
               const o = plan.origins[roomId] ?? { x: 0, y: 0 };
               const f = sg.item!;
@@ -903,11 +1015,36 @@ export function Stage2D() {
               </g>
             ))}
             {!hidden.has("dimensions") &&
-              plan.annotations.filter((a) => a.kind === "dimension" && a.b).map((a) => <FreeDim key={a.id} a={a.a} b={a.b!} k={k} label={len(distance(a.a, a.b!))} />)}
+              plan.annotations
+                .filter((a) => a.kind === "dimension" && a.b)
+                .map((a) => (
+                  <FreeDim
+                    key={a.id}
+                    a={a.a}
+                    b={a.b!}
+                    k={k}
+                    label={len(distance(a.a, a.b!))}
+                    accent={s.selection?.kind === "annotation" && s.selection.id === a.id}
+                    onDown={(e) => pressSelect({ kind: "annotation", roomId: PLAN_LEVEL, id: a.id }, e)}
+                    testId={`annotation-${a.id}`}
+                  />
+                ))}
             {plan.annotations
               .filter((a) => a.kind === "note")
               .map((a) => (
-                <text key={a.id} x={a.a.x} y={a.a.y} fontSize={16 / k} fill="#2b2622" fontStyle="italic" fontFamily="var(--serif)" transform={`rotate(${-v.rot} ${a.a.x} ${a.a.y})`}>
+                <text
+                  key={a.id}
+                  x={a.a.x}
+                  y={a.a.y}
+                  fontSize={16 / k}
+                  fill={s.selection?.kind === "annotation" && s.selection.id === a.id ? CLAY_DARK : "#2b2622"}
+                  fontStyle="italic"
+                  fontFamily="var(--serif)"
+                  transform={`rotate(${-v.rot} ${a.a.x} ${a.a.y})`}
+                  style={tool === "select" ? { cursor: "pointer" } : undefined}
+                  onPointerDown={(e) => pressSelect({ kind: "annotation", roomId: PLAN_LEVEL, id: a.id }, e)}
+                  data-testid={`annotation-${a.id}`}
+                >
                   {a.text}
                 </text>
               ))}
@@ -917,8 +1054,8 @@ export function Stage2D() {
               <line
                 x1={innerStart.p.x}
                 y1={innerStart.p.y}
-                x2={(shiftDown ? straightFrom(innerStart.p, snapV(cursor)) : snapV(cursor)).x}
-                y2={(shiftDown ? straightFrom(innerStart.p, snapV(cursor)) : snapV(cursor)).y}
+                x2={(preview ?? snapV(cursor)).x}
+                y2={(preview ?? snapV(cursor)).y}
                 stroke={CLAY}
                 strokeWidth={12}
                 strokeOpacity={0.6}
@@ -926,7 +1063,7 @@ export function Stage2D() {
             )}
             {wallPts.length > 0 && (
               <polyline
-                points={[...wallPts, ...(cursor ? [snapV(cursor)] : [])].map((p) => `${p.x},${p.y}`).join(" ")}
+                points={[...wallPts, ...(cursor ? [preview ?? snapV(cursor)] : [])].map((p) => `${p.x},${p.y}`).join(" ")}
                 fill="none"
                 stroke={CLAY}
                 strokeWidth={2}
@@ -947,6 +1084,7 @@ export function Stage2D() {
                 vectorEffect="non-scaling-stroke"
               />
             )}
+            {guides && <SnapGuides lines={guides.lines} ring={guides.ring} k={k} />}
             {hoverWall && <line x1={hoverWall.a.x} y1={hoverWall.a.y} x2={hoverWall.b.x} y2={hoverWall.b.y} stroke={CLAY} strokeWidth={4} vectorEffect="non-scaling-stroke" />}
             </ViewRotationContext>
           </g>
@@ -1071,7 +1209,7 @@ export function Stage2D() {
 }
 
 /** A free dimension between two points (measure tool, pinned dimensions). */
-function FreeDim({ a, b, k, label, accent }: { a: Vec; b: Vec; k: number; label: string; accent?: boolean }) {
+function FreeDim({ a, b, k, label, accent, onDown, testId }: { a: Vec; b: Vec; k: number; label: string; accent?: boolean; onDown?: (e: React.PointerEvent) => void; testId?: string }) {
   const color = accent ? CLAY_DARK : "#2b2622";
   const d = sub(b, a);
   const len = Math.hypot(d.x, d.y) || 1;
@@ -1083,7 +1221,9 @@ function FreeDim({ a, b, k, label, accent }: { a: Vec; b: Vec; k: number; label:
   const fs = 10 / k;
   const tw = label.length * fs * 0.62 + 6 / k;
   return (
-    <g pointerEvents="none">
+    <g pointerEvents="none" data-testid={testId}>
+      {/* A wide invisible band along the line, so it can be clicked to select it. */}
+      {onDown && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="transparent" strokeWidth={14} vectorEffect="non-scaling-stroke" pointerEvents="stroke" style={{ cursor: "pointer" }} onPointerDown={onDown} />}
       <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={color} strokeWidth={1} vectorEffect="non-scaling-stroke" strokeDasharray={accent ? "5 3" : undefined} />
       {[a, b].map((p, i) => (
         <line key={i} x1={p.x - n.x * tick} y1={p.y - n.y * tick} x2={p.x + n.x * tick} y2={p.y + n.y * tick} stroke={color} strokeWidth={1} vectorEffect="non-scaling-stroke" />
@@ -1112,6 +1252,7 @@ interface RoomsLayerProps {
   onInnerWallDown: (r: PlanRoom, w: InnerWall, e: React.PointerEvent, end: "a" | "b" | null) => void;
   onZoneDown: (r: PlanRoom, z: FloorZone, e: React.PointerEvent) => void;
   onCornerDown: (r: PlanRoom, index: number, e: React.PointerEvent) => void;
+  onRoomSelect: (r: PlanRoom, e: React.PointerEvent) => void;
   onRoomDown: (r: PlanRoom, e: React.PointerEvent) => void;
   len: (cm: number) => string;
   kindLabel: (o: Opening) => string;
@@ -1121,7 +1262,7 @@ interface RoomsLayerProps {
 const LAYER_ORDER: Record<FurnitureItem["placement"], number> = { floor_covering: 0, floor: 1, wall: 2, ceiling: 3 };
 
 /** Every room: shell, furniture, labels, dimensions and the selection box. */
-const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onInnerWallDown, onZoneDown, onCornerDown, onRoomDown, len, kindLabel, onEditDim }: RoomsLayerProps) {
+const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection, tool, onItemDown, onRotateDown, onOpeningDown, onFixedDown, onInnerWallDown, onZoneDown, onCornerDown, onRoomSelect, onRoomDown, len, kindLabel, onEditDim }: RoomsLayerProps) {
   const off = new Set(hidden);
   const layers = { walls: !off.has("walls"), openings: !off.has("openings"), electrical: !off.has("electrical"), floor: !off.has("floor") };
   // Dimension lines sit 30 and 52 cm outside a wall; on a wall two rooms share, that is the neighbour's floor.
@@ -1172,14 +1313,16 @@ const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection,
                   );
                 })}
             {active && tool === "select" && layers.walls && <WallGrip room={r.room} onDown={(e) => onRoomDown(r, e)} />}
-            {active && tool === "select" && layers.walls && <CornerHandles room={r.room} k={k} onDown={(i, e) => onCornerDown(r, i, e)} />}
+            {selection?.kind === "wall" && selection.roomId === r.room.id && <WallHighlight room={r.room} index={Number(selection.id)} />}
             {active && tool === "select" && layers.walls && (
               <InnerWallHits room={r.room} k={k} onDown={(w, e, end) => onInnerWallDown(r, w, e, end)} selectedId={selection?.kind === "innerWall" && selection.roomId === r.room.id ? selection.id : null} />
             )}
             {active && tool === "select" && layers.openings && (
               <OpeningHits room={r.room} onDown={(op, e) => onOpeningDown(r, op, e)} selectedId={selection?.kind === "opening" && selection.roomId === r.room.id ? selection.id : null} />
             )}
-            {!off.has("labels") && <RoomLabel room={r.room} k={k} />}
+            {!off.has("labels") && (
+              <RoomLabel room={r.room} k={k} onSelect={active && tool === "select" ? (e) => onRoomSelect(r, e) : undefined} selected={selection?.kind === "room" && selection.roomId === r.room.id} />
+            )}
             {!off.has("dimensions") && active && (
               <RoomDimensions
                 room={r.room}
@@ -1190,6 +1333,10 @@ const RoomsLayer = memo(function RoomsLayer({ plan, scope, hidden, k, selection,
                 onEdit={tool === "select" ? (target, cm, e) => onEditDim(r.room.id, target, cm, e) : undefined}
                 focus={scope === r.room.id ? "room" : selection?.kind === "opening" && selection.roomId === r.room.id ? (r.room.openings.find((op) => op.id === selection.id)?.wallIndex ?? null) : null}
               />
+            )}
+            {/* Corner handles last, so a door or a dimension next to a corner never covers it. */}
+            {active && tool === "select" && layers.walls && (
+              <CornerHandles room={r.room} k={k} onDown={(i, e) => onCornerDown(r, i, e)} selected={selection?.kind === "corner" && selection.roomId === r.room.id ? Number(selection.id) : null} />
             )}
           </g>
         );

@@ -26,6 +26,8 @@ export type ShortcutAction =
   | "viewRight"
   | "toggle3d"
   | "help"
+  | "straight"
+  | "noSnap"
   | `tool:${Tool}`;
 
 export interface Shortcut {
@@ -36,6 +38,8 @@ export interface Shortcut {
   shift?: boolean;
   /** Groups for the help panel. */
   group: "edit" | "draw" | "move" | "view" | "tools";
+  /** Held while drawing or dragging rather than pressed: listed in the help, never matched as a command. */
+  hold?: boolean;
 }
 
 export const SHORTCUTS: readonly Shortcut[] = [
@@ -50,6 +54,8 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { action: "escape", key: "Escape", group: "edit" },
   { action: "finish", key: "Enter", group: "draw" },
   { action: "back", key: "Backspace", group: "draw" },
+  { action: "straight", key: "Shift", group: "draw", hold: true },
+  { action: "noSnap", key: "Control", group: "draw", hold: true },
   { action: "nudgeLeft", key: "ArrowLeft", group: "move" },
   { action: "nudgeRight", key: "ArrowRight", group: "move" },
   { action: "nudgeUp", key: "ArrowUp", group: "move" },
@@ -75,6 +81,7 @@ export function matchShortcut(e: { key: string; ctrlKey: boolean; metaKey: boole
   const mod = e.ctrlKey || e.metaKey;
   const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
   const hits = SHORTCUTS.filter((s) => {
+    if (s.hold) return false;
     if ((s.key.length === 1 ? s.key.toLowerCase() : s.key) !== key) return false;
     if (!!s.mod !== mod) return false;
     if (SHIFTED_KEYS.has(s.key)) return true;
@@ -90,6 +97,7 @@ export function matchShortcut(e: { key: string; ctrlKey: boolean; metaKey: boole
 
 /** How a shortcut is written for people: "Ctrl+Shift+Z", "Enter", "?". */
 export function shortcutLabel(s: Shortcut, mac: boolean): string {
+  if (s.key === "Control") return mac ? "⌘" : "Ctrl";
   const names: Record<string, string> = { ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓", Escape: "Esc", Delete: "Del", Backspace: "⌫" };
   const key = names[s.key] ?? (s.key.length === 1 ? s.key.toUpperCase() : s.key);
   return [s.mod ? (mac ? "⌘" : "Ctrl") : null, s.shift ? "Shift" : null, key].filter(Boolean).join("+");

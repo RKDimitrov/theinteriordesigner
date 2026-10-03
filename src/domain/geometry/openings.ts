@@ -22,6 +22,18 @@ export function openingSpan(walls: readonly Wall[], opening: Pick<Opening, "wall
   };
 }
 
+/** Width of the trim (architrave) round a door; it runs over the head of the opening too. */
+export const DOOR_TRIM_CM = 7;
+
+/**
+ * Top of the hole in the wall for a door. A door's height is measured to the
+ * top of its trim, as on the wall, so the hole stops one trim width lower;
+ * the trim never reaches past the ceiling.
+ */
+export function doorHoleTop(door: Pick<Door, "height">, ceiling: number): number {
+  return Math.max(20, Math.min(door.height, ceiling) - DOOR_TRIM_CM);
+}
+
 export const SWING_SEGMENTS = 16;
 
 export interface DoorSwing {

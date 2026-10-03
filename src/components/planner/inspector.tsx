@@ -16,6 +16,7 @@ import { FixedBlock, FixturePicker } from "./fixture-controls";
 import { BASIC_LAYERS, type LayerId, LAYERS, mapItem, mapRoom } from "./state";
 import { RoofBlock } from "./roof-controls";
 import { InnerWallBlock, ZoneBlock } from "./inner-controls";
+import { AnnotationBlock, CornerBlock, RoomBlock, WallBlock } from "./shape-controls";
 
 const LAYER_ICON: Record<LayerId, LucideIcon> = {
   walls: BrickWall,
@@ -77,6 +78,13 @@ export function SelectionBlock() {
   if (sel?.kind === "innerWall" && room) {
     const w = room.room.innerWalls.find((x) => x.id === sel.id);
     if (w) return <InnerWallBlock roomId={room.room.id} w={w} />;
+  }
+  if (sel?.kind === "corner" && room) return <CornerBlock room={room.room} index={Number(sel.id)} />;
+  if (sel?.kind === "wall" && room) return <WallBlock room={room.room} index={Number(sel.id)} />;
+  if (sel?.kind === "room" && room) return <RoomBlock room={room.room} />;
+  if (sel?.kind === "annotation") {
+    const a = s.plan.annotations.find((x) => x.id === sel.id);
+    if (a) return <AnnotationBlock a={a} />;
   }
   if (sel?.kind === "zone" && room) {
     const z = room.room.floorZones.find((x) => x.id === sel.id);

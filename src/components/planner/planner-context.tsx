@@ -11,15 +11,14 @@ import { floorOrigins } from "@/domain/planner/floor-layout";
 import { layoutRooms } from "@/domain/planner/layout";
 import type { ViewRotation } from "@/domain/planner/view";
 import { blockingIssues, checkRoom, type RoomIssue } from "@/domain/room/check-room";
-import { removeOpening } from "@/domain/room/inner-walls";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { Room, RoomShape } from "@/domain/schemas/room";
 import type { ValidationIssue } from "@/domain/schemas/validation-issue";
 import { validateDesign } from "@/domain/validator";
 import { saveRoomFinishesAction, savePlannerRoomAction, saveRoomPositionsAction } from "@/server/actions/planner";
-import { updateRoomAction } from "@/server/actions/rooms";
+import { deleteRoomAction, updateRoomAction } from "@/server/actions/rooms";
 import type { PlannerData } from "@/server/planner";
-import { copySelection, type Clip, nudgeSelection, pasteClip, turnSelection } from "./edit-ops";
+import { copySelection, type Clip, deleteSelection, nudgeSelection, pasteClip, turnSelection } from "./edit-ops";
 import { matchShortcut } from "./shortcuts";
 import { type Action, type Annotation, initialState, type SavedView, type Plan, type PlannerState, type PlannerView, reducer, TOOLS, type Units } from "./state";
 
@@ -50,6 +49,8 @@ interface PlannerCtx {
   toastMessage: string | null;
   /** Area in m² of a room. */
   roomArea: (roomId: string) => number;
+  /** Deletes a room on the server after asking; it cannot be undone. */
+  deleteRoom: (roomId: string) => Promise<void>;
 }
 
 const Ctx = createContext<PlannerCtx | null>(null);
@@ -318,6 +319,25 @@ export function PlannerProvider({
     return () => window.removeEventListener("pagehide", onHide);
   }, [flush]);
 
+  /* ---- deleting a room: on the server at once, so it asks first and leaves no undo step ---- */
+  const deleteRoom = useCallback(
+    async (roomId: string) => {
+      const r = latestPlan.current.rooms.find((x) => x.room.id === roomId);
+      if (!r) return;
+      if (!window.confirm(t("deleteRoomConfirm", { name: r.room.name }))) return;
+      const res = await deleteRoomAction(roomId).catch(() => null);
+      if (!res?.ok) return toast(t("deleteRoomFailed"));
+      saved.current.delete(roomId);
+      dispatch({ type: "remove-room", roomId });
+      toast(t("roomDeleted", { name: r.room.name }));
+    },
+    [t, toast],
+  );
+  const deleteRoomRef = useRef(deleteRoom);
+  useEffect(() => {
+    deleteRoomRef.current = deleteRoom;
+  });
+
   /* ---- keyboard ---- */
   const sRef = useRef(s);
   const clip = useRef<Clip | null>(null);
@@ -361,11 +381,16 @@ export function PlannerProvider({
           dispatch({ type: "edit", fn: () => res.plan });
           return dispatch({ type: "select", selection: res.selection });
         }
-        case "delete":
+        case "delete": {
           if (!sel) return;
           done();
-          dispatch({ type: "edit", fn: (p) => removeSelected(p, sel) });
+          if (sel.kind === "room") return void deleteRoomRef.current(sel.roomId);
+          const res = deleteSelection(st.plan, sel);
+          // A triangle cannot lose a wall or a corner: say so instead.
+          if (!res.ok) return toastRef.current(res.reason);
+          dispatch({ type: "edit", fn: () => res.plan });
           return dispatch({ type: "select", selection: null });
+        }
         case "escape":
           dispatch({ type: "set", patch: { selection: null, armed: null, swapFor: null, helpOpen: false } });
           if (st.tool !== "select") dispatch({ type: "tool", tool: "select" });
@@ -438,8 +463,9 @@ export function PlannerProvider({
         const r = s.plan.rooms.find((x) => x.room.id === roomId);
         return r ? m2(area(r.room.polygon)) : 0;
       },
+      deleteRoom,
     };
-  }, [s, data, view, pieces, tf, units, checks, save, flush, toast, toastMessage]);
+  }, [s, data, view, pieces, tf, units, checks, save, flush, toast, toastMessage, deleteRoom]);
 
   return (
     <Ctx value={value}>
@@ -469,25 +495,7 @@ export function roomShape(room: Room): RoomShape {
   };
 }
 
-/** Plan without the selected piece or opening. */
-export function removeSelected(p: Plan, sel: NonNullable<PlannerState["selection"]>): Plan {
-  return {
-    ...p,
-    rooms: p.rooms.map((r) =>
-      r.room.id !== sel.roomId
-        ? r
-        : sel.kind === "item"
-          ? { ...r, furniture: r.furniture.filter((f) => f.id !== sel.id) }
-          : sel.kind === "fixed"
-            ? { ...r, room: { ...r.room, fixedElements: r.room.fixedElements.filter((f) => f.id !== sel.id) } }
-            : sel.kind === "innerWall"
-              ? { ...r, room: { ...r.room, innerWalls: r.room.innerWalls.filter((w) => w.id !== sel.id) } }
-              : sel.kind === "zone"
-                ? { ...r, room: { ...r.room, floorZones: r.room.floorZones.filter((z) => z.id !== sel.id) } }
-                : { ...r, room: removeOpening(r.room, sel.id) },
-    ),
-  };
-}
+export { deleteSelection, removeSelected } from "./edit-ops";
 
 /** Bounding box of a room at its origin, in apartment cm. */
 export function roomBox(p: Plan, roomId: string) {

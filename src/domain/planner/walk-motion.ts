@@ -19,6 +19,6 @@ export const smoothstep = (t: number): number => {
   return x * x * (3 - 2 * x);
 };
 
-/** Eye height standing and sitting, in cm. */
-export const EYE_STANDING = 160;
-export const EYE_SITTING = 115;
+/** Eye height standing (a 180 cm person) and sitting, in cm. The standing height follows the walker's height setting. */
+export const EYE_STANDING = 168;
+export const EYE_SITTING = 120;

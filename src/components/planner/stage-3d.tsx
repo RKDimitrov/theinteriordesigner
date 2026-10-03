@@ -39,6 +39,7 @@ import { Opening3D } from "./three/openings3d";
 import { Fixed3D } from "./three/fixtures3d";
 import { Backdrop } from "./three/backdrop3d";
 import { walkViewStore } from "./three/use-walk-view";
+import { walkEye } from "@/domain/planner/walk-view";
 import { wallGeometry } from "./three/wall-geometry";
 import { RoomLights } from "./three/lights3d";
 import { PhotoCapture, type PhotoApi } from "./three/photo";
@@ -759,7 +760,7 @@ function OrbitRig({ cx, cz, radius }: { cx: number; cz: number; radius: number }
 export interface WalkApi {
   toggleNearestDoor: () => void;
   move: (key: string, down: boolean) => void;
-  /** Sit down or stand up (eye height 115 or 165 cm). */
+  /** Sit down or stand up (the sitting eye height, or back to the walker's own). */
   toggleSit: () => void;
   /** Where the walker is and looks, for a saved view. */
   spot: () => WalkSpot | null;
@@ -815,7 +816,7 @@ function WalkControls({
   const pitch = useRef(start?.pitch ?? 0);
   const shown = useRef({ yaw: start?.yaw ?? 90, pitch: start?.pitch ?? 0 });
   const vel = useRef({ x: 0, y: 0 });
-  const eye0 = start?.eye ?? walkViewStore.read().eye;
+  const eye0 = start?.eye ?? walkEye(walkViewStore.read());
   const eyeTarget = useRef(eye0);
   const eyeNow = useRef(eye0);
   const groundNow = useRef(0);
@@ -850,7 +851,7 @@ function WalkControls({
     callbacks.current = { onSit, onSaveView, onPhoto };
   });
   const toggleSit = () => {
-    eyeTarget.current = eyeTarget.current > EYE_SITTING ? EYE_SITTING : walkViewStore.read().eye;
+    eyeTarget.current = eyeTarget.current > EYE_SITTING ? EYE_SITTING : walkEye(walkViewStore.read());
     callbacks.current.onSit(eyeTarget.current <= EYE_SITTING);
   };
 

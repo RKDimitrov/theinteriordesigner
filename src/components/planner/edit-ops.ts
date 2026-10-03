@@ -2,7 +2,8 @@ import { containsPoint } from "@/domain/geometry/polygon";
 import type { Vec } from "@/domain/geometry/vec";
 import { wallsOf } from "@/domain/geometry/walls";
 import { nextItemId, turn } from "@/domain/planner/items";
-import { allOpenings, findOpening, innerWallFace, nearestInnerWall, updateOpening } from "@/domain/room/inner-walls";
+import { collapseWall, moveCorner, moveWall, removeCorner } from "@/domain/room/edit-shape";
+import { allOpenings, findOpening, innerWallFace, nearestInnerWall, removeOpening, updateOpening } from "@/domain/room/inner-walls";
 import { nextId } from "@/domain/room/openings-edit";
 import type { FurnitureItem } from "@/domain/schemas/design";
 import type { FixedElement, FloorZone, InnerWall, Opening } from "@/domain/schemas/room";
@@ -32,7 +33,8 @@ function withRoom(plan: Plan, roomId: string, fn: (r: PlanRoom) => PlanRoom): Pl
 }
 
 export function copySelection(plan: Plan, sel: Selection): Clip | null {
-  if (!sel) return null;
+  // Corners, walls, whole rooms and annotations are not copied.
+  if (!sel || sel.kind === "corner" || sel.kind === "wall" || sel.kind === "room" || sel.kind === "annotation") return null;
   const r = roomOf(plan, sel.roomId);
   if (!r) return null;
   if (sel.kind === "item") {
@@ -165,12 +167,30 @@ export function pasteClip(plan: Plan, clip: Clip, target: PasteTarget = {}): { p
 /** Moves the selection by (dx, dy) cm; an opening slides along its wall by the part of the move along it. */
 export function nudgeSelection(plan: Plan, sel: Selection, dx: number, dy: number): Plan {
   if (!sel) return plan;
+  if (sel.kind === "annotation") {
+    const move = (p: Vec) => ({ x: p.x + dx, y: p.y + dy });
+    return { ...plan, annotations: plan.annotations.map((a) => (a.id === sel.id ? { ...a, a: move(a.a), ...(a.b ? { b: move(a.b) } : {}) } : a)) };
+  }
+  if (sel.kind === "room") {
+    const o = plan.origins[sel.roomId] ?? { x: 0, y: 0 };
+    return { ...plan, origins: { ...plan.origins, [sel.roomId]: { x: o.x + dx, y: o.y + dy } } };
+  }
   return withRoom(plan, sel.roomId, (r) => {
     if (sel.kind === "item") return { ...r, furniture: r.furniture.map((f) => (f.id === sel.id ? { ...f, x: f.x + dx, y: f.y + dy } : f)) };
     if (sel.kind === "fixed") return { ...r, room: { ...r.room, fixedElements: r.room.fixedElements.map((f) => (f.id === sel.id ? { ...f, rect: { ...f.rect, x: f.rect.x + dx, y: f.rect.y + dy } } : f)) } };
     if (sel.kind === "innerWall") {
       const move = (p: Vec) => ({ x: p.x + dx, y: p.y + dy });
       return { ...r, room: { ...r.room, innerWalls: r.room.innerWalls.map((w) => (w.id === sel.id ? { ...w, a: move(w.a), b: move(w.b) } : w)) } };
+    }
+    if (sel.kind === "corner") {
+      const p = r.room.polygon[Number(sel.id)];
+      const res = p ? moveCorner(r.room, Number(sel.id), { x: p.x + dx, y: p.y + dy }) : null;
+      return res?.ok ? { ...r, room: res.room } : r;
+    }
+    if (sel.kind === "wall") {
+      // A wall moves square to itself: the arrow along it does nothing.
+      const res = moveWall(r.room, Number(sel.id), { x: dx, y: dy });
+      return res.ok ? { ...r, room: res.room } : r;
     }
     if (sel.kind === "zone") return { ...r, room: { ...r.room, floorZones: r.room.floorZones.map((z) => (z.id === sel.id ? { ...z, rect: { ...z.rect, x: z.rect.x + dx, y: z.rect.y + dy } } : z)) } };
     const found = findOpening(r.room, sel.id);
@@ -185,4 +205,45 @@ export function nudgeSelection(plan: Plan, sel: Selection, dx: number, dy: numbe
 export function turnSelection(plan: Plan, sel: Selection, deg: number): Plan {
   if (sel?.kind !== "item") return plan;
   return withRoom(plan, sel.roomId, (r) => ({ ...r, furniture: r.furniture.map((f) => (f.id === sel.id ? { ...f, rotation: turn(f.rotation, deg) } : f)) }));
+}
+
+/**
+ * The plan with the selection deleted, or why it cannot be: a room needs at
+ * least three walls. Rooms themselves are deleted on the server (deleteRoom).
+ */
+export function deleteSelection(p: Plan, sel: NonNullable<Selection>): { ok: true; plan: Plan } | { ok: false; reason: string } {
+  if (sel.kind === "annotation") return { ok: true, plan: { ...p, annotations: p.annotations.filter((a) => a.id !== sel.id) } };
+  if (sel.kind === "corner" || sel.kind === "wall") {
+    const r = p.rooms.find((x) => x.room.id === sel.roomId);
+    if (!r) return { ok: true, plan: p };
+    const res = sel.kind === "corner" ? removeCorner(r.room, Number(sel.id)) : collapseWall(r.room, Number(sel.id));
+    if (!res.ok) return res;
+    return { ok: true, plan: { ...p, rooms: p.rooms.map((x) => (x.room.id === sel.roomId ? { ...x, room: res.room } : x)) } };
+  }
+  if (sel.kind === "room") return { ok: true, plan: p };
+  return { ok: true, plan: removeSelected(p, sel) };
+}
+
+/** Plan without the selection (pieces, openings, fixed elements, inner walls, floor areas, corners, walls, annotations). */
+export function removeSelected(p: Plan, sel: NonNullable<Selection>): Plan {
+  if (sel.kind === "annotation" || sel.kind === "corner" || sel.kind === "wall" || sel.kind === "room") {
+    const res = deleteSelection(p, sel);
+    return res.ok ? res.plan : p;
+  }
+  return {
+    ...p,
+    rooms: p.rooms.map((r) =>
+      r.room.id !== sel.roomId
+        ? r
+        : sel.kind === "item"
+          ? { ...r, furniture: r.furniture.filter((f) => f.id !== sel.id) }
+          : sel.kind === "fixed"
+            ? { ...r, room: { ...r.room, fixedElements: r.room.fixedElements.filter((f) => f.id !== sel.id) } }
+            : sel.kind === "innerWall"
+              ? { ...r, room: { ...r.room, innerWalls: r.room.innerWalls.filter((w) => w.id !== sel.id) } }
+              : sel.kind === "zone"
+                ? { ...r, room: { ...r.room, floorZones: r.room.floorZones.filter((z) => z.id !== sel.id) } }
+                : { ...r, room: removeOpening(r.room, sel.id) },
+    ),
+  };
 }

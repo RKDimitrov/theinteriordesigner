@@ -87,6 +87,24 @@ describe("nudge and turn", () => {
   });
 });
 
+describe("corners, walls, rooms and annotations", () => {
+  it("nudges a corner, moves a wall square to itself, a room by its origin and an annotation", () => {
+    const corner = nudgeSelection(plan, { kind: "corner", roomId: "r1", id: "1" }, 10, 0);
+    expect(corner.rooms[0]!.room.polygon[1]).toEqual({ x: 410, y: 0 });
+    // Wall 2 (index 1) runs down the right side: only the move across it counts.
+    const wall = nudgeSelection(plan, { kind: "wall", roomId: "r1", id: "1" }, 10, 10);
+    expect(wall.rooms[0]!.room.polygon.slice(1, 3)).toEqual([{ x: 410, y: 0 }, { x: 410, y: 300 }]);
+    expect(nudgeSelection(plan, { kind: "room", roomId: "r2", id: "r2" }, 0, 5).origins["r2"]).toEqual({ x: 412, y: 5 });
+    const withDim: Plan = { ...plan, annotations: [{ id: "dim-1", kind: "dimension", a: { x: 0, y: 0 }, b: { x: 100, y: 0 } }] };
+    expect(nudgeSelection(withDim, { kind: "annotation", roomId: "", id: "dim-1" }, 0, 10).annotations[0]).toEqual({ id: "dim-1", kind: "dimension", a: { x: 0, y: 10 }, b: { x: 100, y: 10 } });
+  });
+
+  it("copies none of them", () => {
+    expect(copySelection(plan, { kind: "corner", roomId: "r1", id: "0" })).toBeNull();
+    expect(copySelection(plan, { kind: "room", roomId: "r1", id: "r1" })).toBeNull();
+  });
+});
+
 describe("inner walls and floor areas", () => {
   const pass: Opening = { id: "pass-1", kind: "door", wallIndex: 0, offset: 20, width: 80, height: 200, hinge: "start", swing: "none" };
   const withInner: Plan = {

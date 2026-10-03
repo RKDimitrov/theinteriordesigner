@@ -4,6 +4,7 @@ import { type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { PLANNER_WALL_CM } from "@/domain/planner/layout";
+import { doorHoleTop } from "@/domain/geometry/openings";
 import { doorDesign, doorStyle, finishOf, type FitOut, slides } from "@/domain/room/fit-out";
 import { leafParts, type Rect } from "@/domain/room/opening-parts";
 import type { Door, DoorDesign } from "@/domain/schemas/room";
@@ -48,7 +49,8 @@ export function Door3D({ door, ceiling, fitOut, realistic, side, open = false, o
   const look = DOOR_LOOK[finish];
   const trim = FRAME_LOOK[fitOut.trim.finish];
   const design = doorDesign(door, fitOut);
-  const h = Math.min(door.height, ceiling);
+  // The opening in the wall; the trim round it reaches up to the door's stated height.
+  const h = doorHoleTop(door, ceiling);
   const x0 = door.offset;
   const x1 = door.offset + door.width;
   const leafH = h - LINING - GAP - FLOOR_GAP;

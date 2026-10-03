@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { rectPolygon } from "@/domain/geometry/polygon";
 import { cataloguePieces, newPlannerItem } from "@/domain/planner/items";
 import type { Room } from "@/domain/schemas/room";
-import { initialState, mapItem, type Plan, reducer } from "./state";
+import { deleteSelection } from "./edit-ops";
+import { initialState, keepSelection, mapItem, type Plan, reducer } from "./state";
 
 const room: Room = {
   id: "r1",
@@ -85,6 +86,45 @@ describe("planner reducer", () => {
     expect(s.plan.rooms.map((r) => r.room.id)).toEqual(["r1", "r2"]);
     expect(s.plan.origins["r2"]).toEqual({ x: 412, y: 0 });
     expect(s.visible3d).toContain("r2");
+  });
+});
+
+describe("deleting rooms, corners and walls", () => {
+  const two: Plan = { ...plan, rooms: [...plan.rooms, { room: { ...room, id: "r2", name: "Hall" }, furniture: [] }], origins: { ...plan.origins, r2: { x: 412, y: 0 } } };
+
+  it("removes a deleted room from the plan and from every undo step", () => {
+    let s = initialState(two, "r2", true);
+    s = reducer(s, move(250));
+    s = reducer(s, { type: "select", selection: { kind: "room", roomId: "r2", id: "r2" } });
+    s = reducer(s, { type: "remove-room", roomId: "r2" });
+    expect(s.plan.rooms.map((r) => r.room.id)).toEqual(["r1"]);
+    expect(s.plan.origins).toEqual({ r1: { x: 0, y: 0 } });
+    expect(s.scope).toBe("all");
+    expect(s.selection).toBeNull();
+    s = reducer(s, { type: "undo" });
+    expect(s.plan.rooms.map((r) => r.room.id)).toEqual(["r1"]);
+    expect(xOf(s)).toBe(200);
+  });
+
+  it("collapses a wall and removes a corner, and refuses on a triangle", () => {
+    const wall = deleteSelection(plan, { kind: "wall", roomId: "r1", id: "0" });
+    expect(wall.ok && wall.plan.rooms[0]!.room.polygon).toEqual([{ x: 200, y: 0 }, { x: 400, y: 300 }, { x: 0, y: 300 }]);
+    const corner = deleteSelection(plan, { kind: "corner", roomId: "r1", id: "1" });
+    expect(corner.ok && corner.plan.rooms[0]!.room.polygon).toHaveLength(3);
+    const tri = corner.ok ? corner.plan : plan;
+    expect(deleteSelection(tri, { kind: "corner", roomId: "r1", id: "0" })).toEqual({ ok: false, reason: "A room needs at least three walls" });
+  });
+
+  it("deletes an annotation", () => {
+    const withNote: Plan = { ...plan, annotations: [{ id: "note-1", kind: "note", a: { x: 0, y: 0 }, text: "Hi" }] };
+    const res = deleteSelection(withNote, { kind: "annotation", roomId: "", id: "note-1" });
+    expect(res.ok && res.plan.annotations).toEqual([]);
+  });
+
+  it("keeps a selection only while what it names exists", () => {
+    expect(keepSelection(plan, { kind: "corner", roomId: "r1", id: "3" })).not.toBeNull();
+    expect(keepSelection(plan, { kind: "corner", roomId: "r1", id: "4" })).toBeNull();
+    expect(keepSelection(plan, { kind: "annotation", roomId: "", id: "x" })).toBeNull();
   });
 });
 

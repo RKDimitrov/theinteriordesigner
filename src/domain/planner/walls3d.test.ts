@@ -8,11 +8,11 @@ describe("wallPieces", () => {
     expect(wallPieces(400, 250, [])).toEqual([{ from: 0, to: 400, y0: 0, y1: 250 }]);
   });
 
-  it("cuts a door gap and keeps the lintel", () => {
+  it("cuts a door gap and keeps the lintel; a door's height runs to the top of its trim", () => {
     const door = { id: "d", kind: "door" as const, wallIndex: 0, offset: 100, width: 90, height: 200, hinge: "start" as const, swing: "in" as const };
     expect(wallPieces(400, 250, [door])).toEqual([
       { from: 0, to: 100, y0: 0, y1: 250 },
-      { from: 100, to: 190, y0: 200, y1: 250 },
+      { from: 100, to: 190, y0: 193, y1: 250 },
       { from: 190, to: 400, y0: 0, y1: 250 },
     ]);
   });

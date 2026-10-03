@@ -1,5 +1,6 @@
 import { itemFootprint } from "../geometry/obb";
 import { containsPoint } from "../geometry/polygon";
+import { doorHoleTop } from "../geometry/openings";
 import { add, dot, scale, sub, type Vec } from "../geometry/vec";
 import { wallsOf } from "../geometry/walls";
 import type { FurnitureItem } from "../schemas/design";
@@ -25,7 +26,7 @@ export function wallPieces(length: number, ceiling: number, openings: readonly O
       const from = Math.max(0, o.offset);
       const to = Math.min(length, o.offset + o.width);
       const bottom = o.kind === "window" ? o.sillHeight : 0;
-      const top = Math.min(ceiling, o.kind === "window" ? o.sillHeight + o.height : o.height);
+      const top = o.kind === "window" ? Math.min(ceiling, o.sillHeight + o.height) : doorHoleTop(o, ceiling);
       return { from, to, bottom, top };
     })
     .filter((h) => h.to > h.from)

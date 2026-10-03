@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Door } from "../schemas/room";
-import { doorLeaf, doorSwing, kindsConflict, openingSpan, spansOverlap } from "./openings";
+import { DOOR_TRIM_CM, doorHoleTop, doorLeaf, doorSwing, kindsConflict, openingSpan, spansOverlap } from "./openings";
 import { area, bbox, containsPoint, isAxisAlignedRect, isClockwise, isSelfIntersecting, offsetPolygon, rectPolygon, signedArea } from "./polygon";
 import { normDeg, snap } from "./units";
 import { rotate } from "./vec";
@@ -169,6 +169,18 @@ describe("openings", () => {
   it("detects span overlap (touching is fine)", () => {
     expect(spansOverlap({ offset: 0, width: 100 }, { offset: 100, width: 50 })).toBe(false);
     expect(spansOverlap({ offset: 0, width: 100 }, { offset: 99, width: 50 })).toBe(true);
+  });
+});
+
+describe("doorHoleTop", () => {
+  it("is the door's height less its trim, so the trim ends at the stated height", () => {
+    expect(DOOR_TRIM_CM).toBe(7);
+    expect(doorHoleTop({ height: 200 }, 210)).toBe(193);
+  });
+
+  it("keeps the trim under the ceiling", () => {
+    expect(doorHoleTop({ height: 215 }, 210)).toBe(203);
+    expect(doorHoleTop({ height: 200 }, 200)).toBe(193);
   });
 });
 
